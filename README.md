@@ -9,7 +9,7 @@ Add this repo to package.json and use via npm.
 In your Javascript file:
 
 ```javascript
-var SimpleSwiper = require("../index.js").SimpleSwiper;
+var SimpleSwiper = require("simpleswiper").SimpleSwiper;
 ```
 
 That's it.
