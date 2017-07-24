@@ -1,0 +1,17 @@
+{
+    "name": "ratio-swiper",
+    "description": "Super duper swiper",
+    "author": "Andrzej Dąbrowski <a.r.dabrowski@gmail.com>",
+    "version": "0.1.1",
+    "main": "index.js",
+    "dependencies": {
+        "hammerjs": "^2.0.8",
+        "gsap": "^1.20.2"
+    },
+    "devDependencies": {
+        "gulp": "^3.9.1",
+        "webpack-stream": "*",
+        "gulp-sass": "*",
+        "jquery": "*"
+    }
+}

@@ -1,0 +1,580 @@
+<html lang="en">
+
+	<head>
+        <meta charset="UTF-8" />
+
+        <meta name="viewport" content="width=device-width,user-scalable=no,minimum-scale=1,maximum-scale=1">
+
+        <title>Swiper demo</title>
+
+		<script src="dist/bundle.js"></script>
+		<link rel="stylesheet" href="dist/style.css">
+
+    </head>
+
+	<body>
+
+		<div id="page-wrapper">
+
+			<h1>SimpleSwiper</h1>
+
+			<p>To understand how to use SimpleSwiper, please read source of this file.</p>
+
+			<!--
+				INTRO
+
+				SimpleSwiper allows you to simply implement swipers with mobile app grade gesture handling.
+
+				It doesn't limit itself to images. You can place in slides any HTML content you want.
+
+				INSTALLATION
+				
+				Via npm.
+
+				ADVANTAGES
+
+				I'll write them down when I have time :)
+
+				HOW TO USE
+
+				I believe the best way to learn is through demos, so let's not waste time for too much talking.
+
+			-->
+
+			<h2>1. Basic swiper</h2>
+			
+			<!-- 
+				Below we show an example of simplest possible swiper. Every slide is 100% width of the container. We enabled all controls (arrows, pager and counter). Make sure to check it out on touch device!
+			-->
+
+			<!-- HTML STRUCTURE -->
+
+			<div class="wrapper">
+
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-1">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<button class="swiper-click-space-previous" data-swiper="demo-1">PREV</button>
+				<button class="swiper-click-space-next" data-swiper="demo-1">NEXT</button>
+
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="demo-1">X</button>
+				</div>
+
+				<div class="counter">
+					<span class="swiper-counter-current" data-swiper="demo-1"></span> / <span class="swiper-counter-all" data-swiper="demo-1"></span>
+				</div>
+			</div>
+
+			<!--
+				Every swiper should have a unique name, here it is "demo-1".
+
+				Every swiper component (touch space, container, left button, pager, counter) should be marked with data-swiper attribute so that script know which components belong to which swiper.
+				
+				What components we can use with swiper?
+
+				- .swiper-container
+
+				This is container which contains swiper items. Simple rule: all children of .swiper-container are slides.
+	
+
+				- .swiper-touch-space
+
+				This is the container with collects touch gestures. This container may be in totally different place of DOM than .swiper-container. It may be bigger or smaller than container, doesn't matter -> full flexibility.
+
+				However, very often the same DOM element will be .swiper-container and .swiper-touch-space. That's how we do in this example.
+
+
+				- .swiper-click-space-previous, .swiper-click-space-next
+
+				DOM elements with these classes represent automatically get onclick events for respectively going to previous or next slide.
+
+				SimpleSwiper adds .active class to them, when action makes sense. For example, when we're at the first slide, .swiper-click-space-previous doesn't have .active class, because we can't go to the previous slide.
+
+
+				- .swiper-pager-item
+
+				This item represents "pager dots" which indicates which slide is active at the moment.
+
+				JUST ADD ONE .swiper-pager-item. SimpleSwiper automatically will copy it so that there are as many .swiper-pager-item's as slides.
+
+				Active .swiper-pager-item will get .active class.
+
+				.swiper-pager-items are clickable! They will move you to the selected slide.
+
+
+				- .swiper-counter-current
+
+				Number of current slide.
+
+
+				- .swiper-counter-all
+
+				Number of all slides
+
+				IMPORTANT
+
+				These are very typical components which almost always go together with sliders. The purpose of this lib is that the only thing you do is to add them to DOM and style them with CSS. No JavaScript required.
+			-->
+
+			<!-- CSS -->
+
+			<style>
+				.swiper {
+					position: relative;
+					width: 100%;
+					height: 40vh;
+
+					overflow: hidden;
+					border: 1px solid lightgrey;
+				}
+			</style>
+
+			<!--
+				(!!! VERY IMPORTANT !!!)
+
+				Every swiper must:
+				1. Be positioned. Can't be position: static.
+				2. Have width and height defined.
+
+				`overflow: hidden` is optional, do whatever you need.
+				border is set to clearly see boundaries of container.
+			-->
+
+			<style>
+				.slide:nth-child(6n) { background-color: red; }
+				.slide:nth-child(6n+1) { background-color: blue; }
+				.slide:nth-child(6n+2) { background-color: yellow; }
+				.slide:nth-child(6n+3) { background-color: green; }
+				.slide:nth-child(6n+4) { background-color: black; }
+				.slide:nth-child(6n+5) { background-color: lightgrey; }
+			</style>
+
+			<!-- Our slides will be colorful boxes, yay, rainbow unicorns! -->
+
+			<!-- 
+				UNDER THE HOOD 
+
+				Well, that may be important. See the styles for .slide in console.
+
+				SimpleSwiper adds following styles dynamically:
+
+				position: absolute;
+				height: 100%;
+				top: 0;
+				width: X
+				left: X;
+
+				width and left are calculated by SimpleSwiper. By default width is 100% and left is set so that every slides is right after the previous one (no margins).
+
+				IMPORANT
+
+				It's very smart to set .slide styles in some smart way so that before JS loads, swiper content doesn't look like shit.
+
+			-->
+
+			<!-- ...and some dummy styles for swiper components -->
+			<style>
+				.swiper-click-space-previous, .swiper-click-space-next {
+					visibility: hidden; /* by default click spaces are hidde, should only be visible with .active class */
+				}
+
+				.swiper-click-space-previous.active, .swiper-click-space-next.active {
+					visibility: visible; /* let's show click spaces when active */
+				}
+
+				.swiper-pager-item.active {
+					color: red; /* let's show active pager item as red */
+				}
+			</style>
+
+			<!-- JAVASCRIPT -->
+
+			<script>
+				$(document).ready(function() {
+					var swiperBasic = new SimpleSwiper({
+						name: 'demo-1'
+					});
+
+					swiperBasic.init();
+				})
+			</script>
+
+			<!-- That's it. Simple, right? -->
+
+			<h2>2. Margins between slides</h2>
+
+			<!-- It's trivial to set margins for slides -->
+
+			<div class="wrapper">
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-2">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<button class="swiper-click-space-previous" data-swiper="demo-2">PREV</button>
+				<button class="swiper-click-space-next" data-swiper="demo-2">NEXT</button>
+			</div>
+
+			<!-- 
+				Couple of notes for this example:
+				1. We didn't create counter and pager items. It's totally OK.
+				2. We already styled .slide and components in first example, we don't have to repeat this here.
+
+				So let's jump straight away to JS.
+			-->
+			<script>
+				$(document).ready(function() {
+					var swiperWithMargins = new SimpleSwiper({
+						name: 'demo-2',
+						slideMarginSize: function() {
+							return window.innerWidth / 25;
+						}
+					});
+
+					swiperWithMargins.init();
+				})
+
+			</script>
+
+			<!--
+				Every slide will have margin now.
+
+				Why is slideMarginSize a function?
+
+				Because of responsive! This function is responsible to return a margin width depending on current resolution. For every window.onresize event it will be called again and layout will be recalculated.
+
+				You can test it by resizing window.
+			-->
+
+			<h2>3. Custom widths of slides</h2>
+
+			<!-- Slides may have different width than 100% of container width -->
+
+			<div class="wrapper">
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-3">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+			</div>
+
+			<!-- In this example we get rid of buttons. Just for fun. Swipe only! -->
+
+			<script>
+				var swiperWithCustomWidth = new SimpleSwiper({
+					name: 'demo-3',
+					slideSize: function() {
+						return window.innerWidth / 3;
+					},
+					slideMarginSize: function() {
+						return window.innerWidth / 15;
+					}
+				});
+
+				swiperWithCustomWidth.init();
+			</script>
+
+			<!-- Same story as with margins but we also define slide width -->
+
+			<h2>4. Variable width / margin slides</h2>
+
+			<!-- Every slide and every margin may have different width -->
+
+			<div class="wrapper">
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-4">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<!-- only dots! no buttons -->
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="demo-4">X</button>
+				</div>
+			</div>
+
+			<script>
+				var randomWidths = [];
+				var randomMargins = [];
+				for(var i = 0; i < $('.swiper[data-swiper=demo-4] .slide').length; i++) {
+					randomWidths[i] = Math.random() * 6 + 1.5;
+					randomMargins[i] = Math.random() * 10 + 10;
+				}
+
+				var swiperRandom = new SimpleSwiper({
+					name: 'demo-4',
+					slideSize: function(n) {
+						return window.innerWidth / randomWidths[n];
+					},
+					slideMarginSize: function(n) {
+						return window.innerWidth / randomMargins[n];
+					}
+				});
+
+				swiperRandom.init();
+
+			</script>
+
+			<!--
+				Here we set variable lengths for slides and slides.
+
+				Random for fun. Every refresh will set different widths / margins.
+
+				Note that slideSize and slideMarginSize may take parameter with the slide number. Depending on slide you may set different width / margin.
+			-->
+
+
+			<h3>onActiveSlidesChange / onVisibleSlidesChange</h3>
+			<p>[We can show here that inactive elements get some opacity or sth]</p>
+
+			<h3>onMove event -> key to customization</h3>
+			<p>[We can say that above solution jump and is not superb, we can do this with intermediate states and using visibilities].</p>
+
+			<h3>Vertical slider</h3>
+			<p>Analogous, just positioning changes to vertical from horizontal, and swipe direction too</p>
+
+			<h3>Available options and API methods</h3>
+
+
+<!-- 			<div class="wrapper">
+
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="first">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<button class="swiper-click-space-previous" data-swiper="first">PREV</button>
+				<button class="swiper-click-space-next" data-swiper="first">NEXT</button>
+
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="first">X</button>
+				</div>
+
+				<div class="counter">
+					<span class="swiper-counter-current" data-swiper="first"></span> / <span class="swiper-counter-all" data-swiper="first"></span>
+				</div>
+			</div> -->
+
+<!-- 			<div class="wrapper">
+
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="second">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<button class="swiper-click-space-previous" data-swiper="second">PREV</button>
+				<button class="swiper-click-space-next" data-swiper="second">NEXT</button>
+
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="second">X</button>
+				</div>
+
+				<div class="counter">
+					<span class="swiper-counter-current" data-swiper="second"></span> / <span class="swiper-counter-all" data-swiper="second"></span>
+				</div>
+			</div>
+
+
+
+	 		<div class="wrapper">
+
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="third">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<button class="swiper-click-space-previous" data-swiper="third">PREV</button>
+				<button class="swiper-click-space-next" data-swiper="third">NEXT</button>
+
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="third">X</button>
+				</div>
+
+				<div class="counter">
+					<span class="swiper-counter-current" data-swiper="third"></span> / <span class="swiper-counter-all" data-swiper="third"></span>
+				</div>
+			</div>
+
+	 		<div class="wrapper">
+
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="fourth">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<button class="swiper-click-space-previous" data-swiper="fourth">PREV</button>
+				<button class="swiper-click-space-next" data-swiper="fourth">NEXT</button>
+
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="fourth">X</button>
+				</div>
+
+				<div class="counter">
+					<span class="swiper-counter-current" data-swiper="fourth"></span> / <span class="swiper-counter-all" data-swiper="fourth"></span>
+				</div>
+			</div>
+
+			<h1>Vertical SimpleSwiper</h1>
+
+			<div class="wrapper">
+
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="vertical">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<button class="swiper-click-space-previous" data-swiper="vertical">PREV</button>
+				<button class="swiper-click-space-next" data-swiper="vertical">NEXT</button>
+
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="vertical">X</button>
+				</div>
+
+				<div class="counter">
+					<span class="swiper-counter-current" data-swiper="vertical"></span> / <span class="swiper-counter-all" data-swiper="vertical"></span>
+				</div>
+			</div> -->
+
+
+
+
+
+
+
+	<!-- 		<h1>Vertical swiper</h1>
+
+			<div id="swiper-vertical">
+				<div class="slide"></div>
+				<div class="slide"></div>
+				<div class="slide"></div>
+				<div class="slide"></div>
+			</div>
+
+			<h1>Horizontal simple swiper</h1>
+
+			<div id="simple-swiper-horizontal">
+				<div class="ratio-swiper">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<div class="ratio-swiper-touch-space">
+
+				</div>
+
+				<button class="ratio-swiper-click-space-previous">PREV</button>
+				<button class="ratio-swiper-click-space-next">NEXT</button>
+
+				<div class="pager">
+					<button class="ratio-swiper-pager-item">X</button>
+				</div>
+
+				<div class="counter">
+					<span class="ratio-swiper-counter-current"></span> / <span class="ratio-swiper-counter-all"></span>
+				</div>
+			</div> -->
+
+	<!-- 		<h1>Vertical simple swiper</h1>
+
+			<div id="swiper-vertical">
+				<div class="slide"></div>
+				<div class="slide"></div>
+				<div class="slide"></div>
+				<div class="slide"></div>
+			</div> -->
+		</div>
+	</body>
+
+</html>
+
+
+
+
+
+
+
