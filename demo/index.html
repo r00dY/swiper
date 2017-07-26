@@ -350,8 +350,46 @@
 				Note that slideSize and slideMarginSize may take parameter with the slide number. Depending on slide you may set different width / margin.
 			-->
 
-			<h3>onActiveSlidesChange / onVisibleSlidesChange</h3>
-			<p>[To do]</p>
+			<h3>5. onActiveSlidesChange / onVisibleSlidesChange</h3>
+
+			<div class="wrapper">
+				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-5">
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+					<div class="slide"></div>
+				</div>
+
+				<!-- only dots! no buttons -->
+				<div class="pager">
+					<button class="swiper-pager-item" data-swiper="demo-5">X</button>
+				</div>
+			</div>
+
+			<script>
+				$(document).ready(function() {
+					var swiper5 = new SimpleSwiper({
+						name: 'demo-5',
+						onMove: function(coords) {
+							console.log('onMove: ', coords);
+							console.log('visibilities: ', swiper5.getSlidesVisibilityPercentages());
+						},
+						onActiveSlidesChange: function(activeSlides) {
+							console.log('onActiveSlidesChange: ', activeSlides)
+						}
+					});
+
+					swiper5.init();
+				})
+			</script>
+
+
+
 
 			<h3>onMove event -> key to customization</h3>
 			<p>[To do]</p>

@@ -70,17 +70,17 @@ var SimpleSwiper = function(options) {
 		}
 	}
 
-	this.init = function() {
+	// SimpleSwiper has its own layout!
+	this.layout = function() {
 		this._positionElements();
+		AbstractSwiper.prototype.layout.call(this);
+	}
+
+	this.init = function() {
 		this.layout();
 		this.enable();
 	}
-
-	this._onResizeCallback = function() {
-		_this._positionElements();
-		_this.layout();
-	}
-
+	
 	this.initComponents();
 
 }

@@ -18278,15 +18278,13 @@
 		// _this._isFirstSlideSnappedToEdge; // bool values saying if first or last slide are snapped to the edge. (cached to know if they changed to call onSnapToEdgeChange callback when necessary)
 		// _this._isLastSlideSnappedToEdge;
 
-		this._onResizeCallback = function() {};
-
-		if (this._options.autoLayoutOnResize) {
-			this._onResizeCallback = function() {
-				_this.layout();
-			}
+		this._onResizeCallback = function() {
+			this.layout();
 		}
 
 		window.addEventListener('resize', function() {
+			if (!_this._options.autoLayoutOnResize) { return; }
+
 			_this._onResizeCallback();
 		})
 
@@ -18321,6 +18319,7 @@
 	}
 
 	AbstractSwiper.prototype.layout = function() {
+		
 		this._killAnimations(); // stop all ongoing animations after resize!
 
 		this._slidePositions = [];
@@ -21606,17 +21605,17 @@
 			}
 		}
 
-		this.init = function() {
+		// SimpleSwiper has its own layout!
+		this.layout = function() {
 			this._positionElements();
+			AbstractSwiper.prototype.layout.call(this);
+		}
+
+		this.init = function() {
 			this.layout();
 			this.enable();
 		}
-
-		this._onResizeCallback = function() {
-			_this._positionElements();
-			_this.layout();
-		}
-
+		
 		this.initComponents();
 
 	}
