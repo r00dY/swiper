@@ -21,6 +21,7 @@
 			<p>To understand how to use SimpleSwiper, please read source of this file.</p>
 
 			<!--
+
 				INTRO
 
 				SimpleSwiper allows you to simply implement swipers with mobile app grade gesture handling.
@@ -28,7 +29,7 @@
 				It doesn't limit itself to images. You can place in slides any HTML content you want.
 
 				INSTALLATION
-				
+
 				Via npm.
 
 				ADVANTAGES
@@ -42,8 +43,8 @@
 			-->
 
 			<h2>1. Basic swiper</h2>
-			
-			<!-- 
+
+			<!--
 				Below we show an example of simplest possible swiper. Every slide is 100% width of the container. We enabled all controls (arrows, pager and counter). Make sure to check it out on touch device!
 			-->
 
@@ -52,16 +53,18 @@
 			<div class="wrapper">
 
 				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-1">
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
+					<div class="swiper-items">
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+                    </div>
 				</div>
 
 				<button class="swiper-click-space-previous" data-swiper="demo-1">PREV</button>
@@ -80,13 +83,13 @@
 				Every swiper should have a unique name, here it is "demo-1".
 
 				Every swiper component (touch space, container, left button, pager, counter) should be marked with data-swiper attribute so that script know which components belong to which swiper.
-				
+
 				What components we can use with swiper?
 
 				- .swiper-container
 
 				This is container which contains swiper items. Simple rule: all children of .swiper-container are slides.
-	
+
 
 				- .swiper-touch-space
 
@@ -133,7 +136,6 @@
 				.swiper {
 					position: relative;
 					width: 100%;
-					height: 40vh;
 
 					overflow: hidden;
 					border: 1px solid lightgrey;
@@ -144,14 +146,18 @@
 				(!!! VERY IMPORTANT !!!)
 
 				Every swiper must:
-				1. Be positioned. Can't be position: static.
-				2. Have width and height defined.
+				1. Have width defined.
 
 				`overflow: hidden` is optional, do whatever you need.
 				border is set to clearly see boundaries of container.
 			-->
 
 			<style>
+
+                .slide {
+                    height: 40vh;
+                }
+
 				.slide:nth-child(6n) { background-color: red; }
 				.slide:nth-child(6n+1) { background-color: blue; }
 				.slide:nth-child(6n+2) { background-color: yellow; }
@@ -160,22 +166,24 @@
 				.slide:nth-child(6n+5) { background-color: lightgrey; }
 			</style>
 
-			<!-- Our slides will be colorful boxes, yay, rainbow unicorns! -->
+			<!--
+                Our slides will be colorful boxes, yay, rainbow unicorns!
 
-			<!-- 
-				UNDER THE HOOD 
+                We MUST specify .slide height. If not, slider will have 0 height. It could also be 100% if .swiper-container has height defined and is positioned.
+            -->
+
+			<!--
+				UNDER THE HOOD
 
 				Well, that may be important. See the styles for .slide in console.
 
 				SimpleSwiper adds following styles dynamically:
 
-				position: absolute;
-				height: 100%;
-				top: 0;
+				position: relative;
 				width: X
-				left: X;
+				margin-right: X;
 
-				width and left are calculated by SimpleSwiper. By default width is 100% and left is set so that every slides is right after the previous one (no margins).
+				width and margin-right are calculated by SimpleSwiper. By default width is 100% and margin-right is set so that every slide is right after the previous one (no margins).
 
 				IMPORANT
 
@@ -218,19 +226,21 @@
 
 			<div class="wrapper">
 				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-2">
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
+                    <div class="swiper-items">
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+                    </div>
 				</div>
 
 				<button class="swiper-click-space-previous" data-swiper="demo-2">PREV</button>
 				<button class="swiper-click-space-next" data-swiper="demo-2">NEXT</button>
 			</div>
 
-			<!-- 
+			<!--
 				Couple of notes for this example:
 				1. We didn't create counter and pager items. It's totally OK.
 				2. We already styled .slide and components in first example, we don't have to repeat this here.
@@ -267,15 +277,17 @@
 
 			<div class="wrapper">
 				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-3">
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
+                    <div class="swiper-items">
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+                    </div>
 				</div>
 			</div>
 
@@ -303,15 +315,17 @@
 
 			<div class="wrapper">
 				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-4">
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
+                    <div class="swiper-items">
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+                    </div>
 				</div>
 
 				<!-- only dots! no buttons -->
@@ -354,15 +368,17 @@
 
 			<div class="wrapper">
 				<div class="swiper swiper-touch-space swiper-container" data-swiper="demo-5">
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
-					<div class="slide"></div>
+                    <div class="swiper-items">
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+    					<div class="slide"></div>
+                    </div>
 				</div>
 
 				<!-- only dots! no buttons -->
