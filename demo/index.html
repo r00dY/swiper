@@ -64,7 +64,7 @@
     					<div class="slide"></div>
     					<div class="slide"></div>
     					<div class="slide"></div>
-                    </div>
+            </div>
 				</div>
 
 				<button class="swiper-click-space-previous" data-swiper="demo-1">PREV</button>
@@ -394,6 +394,7 @@
 						onMove: function(coords) {
 							console.log('onMove: ', coords);
 							console.log('visibilities: ', swiper5.getSlidesVisibilityPercentages());
+              console.log('orientations: ', swiper5.getSlidesOrientations());
 						},
 						onActiveSlidesChange: function(activeSlides) {
 							console.log('onActiveSlidesChange: ', activeSlides)

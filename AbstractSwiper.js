@@ -53,7 +53,7 @@ var AbstractSwiper = function(optionsArg) {
 	/**
 	 *  Set up slide widths and snap points
 	 */
-	
+
 	 this._pos = 0;  // current position of slider
 	 this._targetSlide = 0; // slide to which animation goes.
 
@@ -96,7 +96,7 @@ var AbstractSwiper = function(optionsArg) {
 
 	this._enabled = false;
 
-	
+
 	// this.layout();
 }
 
@@ -108,7 +108,7 @@ AbstractSwiper.prototype._getSelectorForComponent = function(component) {
 }
 
 AbstractSwiper.prototype.layout = function() {
-	
+
 	this._killAnimations(); // stop all ongoing animations after resize!
 
 	this._slidePositions = [];
@@ -145,9 +145,42 @@ AbstractSwiper.prototype.layout = function() {
 }
 
 /**
+ * Get array of -1, 1, 0 values, which mean that either element is on the left of edge, on the right, or active -> let's call it "orientation".
+ */
+AbstractSwiper.prototype.getSlideOrientation = function(i) {
+  var leftEdge = this._slidePositions[i];
+  var rightEdge = leftEdge + this._options.slideSize(i);
+
+  var containerLeftEdge = -this._pos;
+  var containerRightEdge = -this._pos + this._options.containerSize();
+
+  if (rightEdge < containerLeftEdge) {
+    return -1;
+  }
+  else if (leftEdge > containerRightEdge) {
+    return 1;
+  }
+  else if (leftEdge <= containerLeftEdge && rightEdge >= containerRightEdge) {
+    return 0;
+  }
+  else if (leftEdge >= containerLeftEdge && rightEdge <= containerRightEdge) {
+    return 0;
+  }
+  else if (leftEdge <= containerLeftEdge) {
+    return -1;
+  }
+  else if (rightEdge >= containerRightEdge) {
+    return 1;
+  }
+}
+
+/**
  * Get array of how much visible in container is each slide.
  */
 AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
+
+  var orientation = this.getSlideOrientation(i);
+
 	var leftEdge = this._slidePositions[i];
 	var rightEdge = leftEdge + this._options.slideSize(i);
 
@@ -177,7 +210,7 @@ AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
 AbstractSwiper.prototype.isSlideActive = function(i) {
 	return this.getSlidePercentOfVisibility(i) >= 0.5;
 }
- 	
+
 // AbstractSwiper.prototype.isSlideFullyVisible = function(i) {
 // 	return this.getSlidePercentOfVisibility(i) >= 0.99;
 // }
@@ -248,6 +281,17 @@ AbstractSwiper.prototype.getSlidesVisibilityPercentages = function() {
 	return visibilities;
 }
 
+
+AbstractSwiper.prototype.getSlidesOrientations = function() {
+  var orientations = [];
+
+  for(var i = 0; i < this._options.count; i++) {
+    orientations.push(this.getSlideOrientation(i));
+  }
+
+  return orientations;
+}
+
 /**
  * Is snapped to left / right
  */
@@ -311,7 +355,7 @@ AbstractSwiper.prototype.enable = function() {
 
 			_this._killAnimations();
 
-			_this._panStartPos = -_this._pos; 
+			_this._panStartPos = -_this._pos;
 
 			_this.setStill(false);
 		}
@@ -477,7 +521,7 @@ AbstractSwiper.prototype._updatePos = function() {
 		shouldUpdateComponents = true;
 	}
 
-	if (shouldUpdateComponents) { 
+	if (shouldUpdateComponents) {
 		this._componentsUpdate();
 	}
 
@@ -485,6 +529,43 @@ AbstractSwiper.prototype._updatePos = function() {
 	this._options.onMove({
 		position: this._pos
 	});
+}
+
+AbstractSwiper.prototype.goToPos = function(pos, animated) {
+  var _this = this;
+
+  if (typeof animated === 'undefined') { animated = true; }
+
+  // Don't initiate animation if we're already in the same spot! It would wrongly set "still" callback and "empty animation" would run.
+  if (Math.abs(-pos - this._pos) < 1) {
+    return;
+  }
+
+  this._targetSlide = Math.min(slide, this._maxTargetSlide);
+
+  this.setStill(false);
+
+  var tmp = { pos: _this._pos }
+
+  this._killAnimations();
+
+    var anim1 = TweenMax.to(tmp, animated ? this._options.animationTime : 0, { pos: -pos, ease: this._options.animationEase, onUpdate: function() {
+
+      _this._pos = tmp.pos;
+      _this._updatePos();
+
+    }, onComplete: function() {
+
+      _this._animations = [];
+
+      _this._swipeTarget = null;
+
+    _this.setStill(true);
+
+    }});
+
+    this._animations = [anim1];
+
 }
 
 
@@ -517,10 +598,10 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
 
     	_this._animations = [];
 
-    	_this._swipeTarget = null; 
+    	_this._swipeTarget = null;
 
 		_this.setStill(true);
-    	
+
     }});
 
     this._animations = [anim1];
@@ -529,7 +610,7 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
 /**
  *
  * COMPONENTS
- * 
+ *
  */
 AbstractSwiper.prototype.initComponents = function() {
 	var _this = this;
@@ -558,7 +639,7 @@ AbstractSwiper.prototype.initComponents = function() {
 		};
 	}
 
-	//Pager 
+	//Pager
 	this._pagerItemTemplate = document.querySelector(this._getSelectorForComponent('pager-item'));
 
 	if (this._pagerItemTemplate) {

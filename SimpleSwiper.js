@@ -50,11 +50,13 @@ var SimpleSwiper = function(options) {
     if (_this._options.direction == AbstractSwiper.HORIZONTAL) {
         _this._containerInner.style["display"] = "flex";
         _this._containerInner.style["width"] = "1000000px";
+        _this._containerInner.style["overflow"] = "1000000px";
         _this._containerInner.style["flex-flow"] = "row nowrap";
     }
     else {
         _this._containerInner.style["display"] = "flex";
         _this._containerInner.style["height"] = "1000000px";
+        _this._containerInner.style["width"] = "1000000px";
         _this._containerInner.style["flex-flow"] = "column nowrap";
     }
 
