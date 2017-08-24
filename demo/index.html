@@ -154,9 +154,9 @@
 
 			<style>
 
-                .slide {
-                    height: 40vh;
-                }
+          .slide {
+              height: 40vh;
+          }
 
 				.slide:nth-child(6n) { background-color: red; }
 				.slide:nth-child(6n+1) { background-color: blue; }
@@ -211,7 +211,11 @@
 			<script>
 				$(document).ready(function() {
 					var swiperBasic = new SimpleSwiper({
-						name: 'demo-1'
+						name: 'demo-1',
+            infinite: false,
+            slideMarginSize: function() {
+              return window.innerWidth / 25;
+            }
 					});
 
 					swiperBasic.init();
@@ -256,7 +260,7 @@
 						}
 					});
 
-					swiperWithMargins.init();
+					// swiperWithMargins.init();
 				})
 
 			</script>
@@ -304,7 +308,7 @@
 					}
 				});
 
-				swiperWithCustomWidth.init();
+				// swiperWithCustomWidth.init();
 			</script>
 
 			<!-- Same story as with margins but we also define slide width -->
@@ -352,7 +356,7 @@
 					}
 				});
 
-				swiperRandom.init();
+				// swiperRandom.init();
 
 			</script>
 
@@ -401,7 +405,7 @@
 						}
 					});
 
-					swiper5.init();
+					// swiper5.init();
 				})
 			</script>
 

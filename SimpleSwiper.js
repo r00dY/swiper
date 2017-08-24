@@ -28,11 +28,13 @@ var SimpleSwiper = function(options) {
   this._options.count = this._items.length;
 
   this._options.onMove = function(coords) {
+    // console.log(coords.positions);
+
     for (var i = 0; i < _this._items.length; i++) {
       var item = _this._items[i];
 
       var direction = _this._options.direction == AbstractSwiper.HORIZONTAL ? 'X' : 'Y';
-      item.style.transform = 'translate' + direction + '(' + coords.position + 'px)'
+      item.style.transform = 'translate' + direction + '(' + coords.positions[i] + 'px)'
     }
 
     if (typeof options.onMove !== 'undefined') {
