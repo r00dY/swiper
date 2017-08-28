@@ -2,7 +2,7 @@
     "name": "simpleswiper",
     "description": "Super duper swiper",
     "author": "Andrzej Dąbrowski <a.r.dabrowski@gmail.com>",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "main": "index.js",
     "dependencies": {
         "hammerjs": "^2.0.8",
