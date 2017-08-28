@@ -211,11 +211,7 @@
 			<script>
 				$(document).ready(function() {
 					var swiperBasic = new SimpleSwiper({
-						name: 'demo-1',
-            infinite: false,
-            slideMarginSize: function() {
-              return window.innerWidth / 25;
-            }
+						name: 'demo-1'
 					});
 
 					swiperBasic.init();
@@ -260,7 +256,7 @@
 						}
 					});
 
-					// swiperWithMargins.init();
+					swiperWithMargins.init();
 				})
 
 			</script>
@@ -308,7 +304,7 @@
 					}
 				});
 
-				// swiperWithCustomWidth.init();
+				swiperWithCustomWidth.init();
 			</script>
 
 			<!-- Same story as with margins but we also define slide width -->
@@ -356,7 +352,7 @@
 					}
 				});
 
-				// swiperRandom.init();
+				swiperRandom.init();
 
 			</script>
 
@@ -405,11 +401,65 @@
 						}
 					});
 
-					// swiper5.init();
+					swiper5.init();
 				})
 			</script>
 
+      <!--
+        Infinite slider!
 
+        Works like shit when total length of slides is less than container width.
+      -->
+
+      <h3>6. Infinite mother fucker.</h3>
+
+      <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-6">
+          <div class="swiper-items">
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+            </div>
+        </div>
+
+        <button class="swiper-click-space-previous" data-swiper="demo-6">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-6">NEXT</button>
+
+        <div class="pager">
+          <button class="swiper-pager-item" data-swiper="demo-6">X</button>
+        </div>
+
+        <div class="counter">
+          <span class="swiper-counter-current" data-swiper="demo-6"></span> / <span class="swiper-counter-all" data-swiper="demo-6"></span>
+        </div>
+      </div>
+
+
+
+      <script>
+        $(document).ready(function() {
+          var swiper6 = new SimpleSwiper({
+            name: 'demo-6',
+            infinite: true,
+            slideMarginSize: function() {
+              return window.innerWidth / 15;
+            },
+            slideSize: function() {
+              return window.innerWidth / 4;
+            }
+          });
+
+          swiper6.init();
+        })
+      </script>
 
 
 			<h3>onMove event -> key to customization</h3>
