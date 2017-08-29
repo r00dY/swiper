@@ -15,15 +15,24 @@ var SimpleSwiper = function(options) {
   // this._containerSize = this._container.offsetWidth;
 
   // By default slide has width of enclosing container. Slide margin by default is 0.
+
+  if (typeof options.containerSize === 'undefined') {
+
+    this._options.containerSize = function() {
+      return _this._options.direction == AbstractSwiper.HORIZONTAL ?
+      _this._container.offsetWidth :
+      _this._container.offsetHeight;
+      // return _this._containerSize;
+    }
+
+  }
+
   if (typeof options.slideSize === 'undefined') {
     this._options.slideSize = function() {
-      return _this._containerSize;
+      return _this._options.containerSize();
     }
   }
 
-  this._options.containerSize = function() {
-    return _this._containerSize;
-  }
 
   this._options.count = this._items.length;
 
@@ -43,9 +52,9 @@ var SimpleSwiper = function(options) {
   }
 
   this._positionElements = function() {
-    this._containerSize = _this._options.direction == AbstractSwiper.HORIZONTAL ?
-      this._container.offsetWidth :
-      this._container.offsetHeight;
+    // this._containerSize = _this._options.direction == AbstractSwiper.HORIZONTAL ?
+    //   this._container.offsetWidth :
+    //   this._container.offsetHeight;
 
     var distance = 0;
 

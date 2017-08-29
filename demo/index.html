@@ -164,6 +164,11 @@
 				.slide:nth-child(6n+3) { background-color: green; }
 				.slide:nth-child(6n+4) { background-color: black; }
 				.slide:nth-child(6n+5) { background-color: lightgrey; }
+        .slide:nth-child(6n+6) { background-color: pink; }
+        .slide:nth-child(6n+7) { background-color: magenta; }
+        .slide:nth-child(6n+8) { background-color: orange; }
+        .slide:nth-child(6n+9) { background-color: darkgrey; }
+        .slide:nth-child(6n+10) { background-color: cyan; }
 			</style>
 
 			<!--
@@ -458,6 +463,56 @@
           });
 
           swiper6.init();
+        })
+      </script>
+
+
+
+      <h2>7. Snap offset</h2>
+
+      <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-7">
+          <div class="swiper-items">
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+            </div>
+        </div>
+
+        <button class="swiper-click-space-previous" data-swiper="demo-7">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-7">NEXT</button>
+
+        <div class="pager">
+          <button class="swiper-pager-item" data-swiper="demo-7">X</button>
+        </div>
+
+        <div class="counter">
+          <span class="swiper-counter-current" data-swiper="demo-7"></span> / <span class="swiper-counter-all" data-swiper="demo-7"></span>
+        </div>
+      </div>
+
+      <script>
+        $(document).ready(function() {
+          var swiperDemo7 = new SimpleSwiper({
+            name: 'demo-7',
+            snapOffset: function() {
+              return $('.swiper').width() / 10;
+            },
+            infinite: true,
+            containerSize: function() {
+              return $('.swiper').width() * 8 / 10;
+            }
+          });
+
+          swiperDemo7.init();
         })
       </script>
 

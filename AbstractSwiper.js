@@ -24,6 +24,7 @@ var AbstractSwiper = function(optionsArg) {
     // initMarginSize: function() { return 0; }, // function!
     slideMarginSize: function() { return 0; }, // function!
     slideSize: function() { throw "AbstractSwiper: undefined slideSize function!"; }, // function!
+    snapOffset: function() { return 0; },
 
     // callbacks
     onMove: function() {},
@@ -167,40 +168,6 @@ AbstractSwiper.prototype.layout = function() {
 
   this._killAnimations(); // stop all ongoing animations after resize!
 
-  // this._slidePositions = [];
-  // this._snapPoints = [];
-  // this._width = 0;
-
-  // for (var i = 0; i < this._options.count; i++) { // get full _width and _snapPoints
-  //   this._slidePositions.push(this._width);
-
-  //   this._width += this._options.slideSize(i);
-
-  //   if (i == this._options.count - 1 && !this._options.infinite) { break; } // total slideable width can't include right margin of last element unless we are at infinite scrolling!
-
-  //   this._width += this._options.slideMarginSize(i);
-  // }
-
-  // if (!this._options.infinite) { // _maxPos, _maxTargetSlide and _snapPoints make sense only in case of finite slider.
-
-  //   this._maxPos = Math.max(0, this._width - this._options.containerSize());
-  //   this._maxTargetSlide = undefined;
-
-  //   for (var i = 0; i < this._slidePositions.length; i++) { // normalize _snapPoints so that rightmost gallery item always snaps to the right side of container
-  //     if (this._slidePositions[i] > this._width - this._options.containerSize()) {
-  //       this._snapPoints[i] = this._maxPos;
-
-  //       if (typeof this._maxTargetSlide === 'undefined') { this._maxTargetSlide = i; }
-  //     } else {
-  //       this._snapPoints[i] = this._slidePositions[i];
-  //     }
-  //   }
-
-  //   if (typeof this._maxTargetSlide === 'undefined') { this._maxTargetSlide = this._options.count - 1; }
-
-  // }
-
-
   this._pos = -this._getSlideSnapPos(this._targetSlide);//-this._snapPoints[this._targetSlide];
 
   this._updatePos();
@@ -210,12 +177,8 @@ AbstractSwiper.prototype.layout = function() {
  * Get array of -1, 1, 0 values, which mean that either element is on the left of edge, on the right, or active -> let's call it "orientation".
  */
 AbstractSwiper.prototype.getSlideOrientation = function(i) {
-  // var leftEdge = this._slidePositions[i];
   var leftEdge = this._slidePos[i] + this._getSlideInitPos(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
-
-  // var containerLeftEdge = -this._pos;
-  // var containerRightEdge = -this._pos + this._options.containerSize();
 
   if (rightEdge < 0) {
     return -1;
@@ -237,14 +200,8 @@ AbstractSwiper.prototype.getSlideOrientation = function(i) {
  */
 AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
 
-  // var leftEdge = this._slidePositions[i];
   var leftEdge = this._slidePos[i] + this._getSlideInitPos(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
-
-  // console.log(i, leftEdge, rightEdge);
-
-  // var containerLeftEdge = -this._pos;
-  // var containerRightEdge = -this._pos + this._options.containerSize();
 
   if (rightEdge < 0) {
     return 0;
@@ -566,7 +523,6 @@ AbstractSwiper.prototype.goToPrevious = function(animated) {
   }
   else {
     var slide = Math.max(this._targetSlide - this._options.numberOfItemsMovedAtOneAction, 0);
-    console.log('prev', this._targetSlide, slide);
   }
 
   this.goTo(slide, animated);
@@ -618,8 +574,13 @@ AbstractSwiper.prototype._updatePos = function() {
     // Wrap positions!
     for(var i = 0; i < this._options.count; i++) {
 
-      if (this._getSlideInitPos(i) + this._pos + this._options.slideSize(i) < 0) { // if slide is further than viewport on the right side, move it to front.
+      var tmp = this._getSlideInitPos(i) + this._pos + this._options.slideSize(i) + this._options.snapOffset();
+
+      if (tmp < 0) { // if slide is further than viewport on the right side, move it to front.
         positions[i] = this._pos + this._getSlideableWidth();
+      }
+      else if (tmp > this._getSlideableWidth()) {
+        positions[i] = this._pos - this._getSlideableWidth();
       }
       else {
         positions[i] = this._pos;
@@ -632,6 +593,14 @@ AbstractSwiper.prototype._updatePos = function() {
     }
   }
 
+  // Take snapOffset into account
+  var positionsWithOffset = {}
+  for(var i = 0; i < this._options.count; i++) {
+    positionsWithOffset[i] = positions[i] + this._options.snapOffset();
+  }
+
+  // console.log(positions, positionsWithOffset);
+
   this._slidePos = positions;
 
 
@@ -640,7 +609,6 @@ AbstractSwiper.prototype._updatePos = function() {
   var shouldUpdateComponents = false;
 
   var currentActiveSlides = this.getActiveSlides();
-  console.log(currentActiveSlides);
 
   if (typeof this._activeSlides === 'undefined' || currentActiveSlides.join(",") != this._activeSlides.join(",")) {
 
@@ -670,7 +638,7 @@ AbstractSwiper.prototype._updatePos = function() {
 
   // Invoke onMove callback!
   this._options.onMove({
-    positions: positions
+    positions: positionsWithOffset
   });
 }
 
