@@ -168,6 +168,11 @@ AbstractSwiper.prototype.layout = function() {
 
   this._killAnimations(); // stop all ongoing animations after resize!
 
+  // There's a chance that number of items was changed, so let's normalize targetSlide.
+  if (this._targetSlide >= this._options.count) {
+    this._targetSlide = this._options.count - 1;
+  }
+
   this._pos = -this._getSlideSnapPos(this._targetSlide);//-this._snapPoints[this._targetSlide];
 
   this._updatePos();
@@ -720,7 +725,40 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
  * COMPONENTS
  *
  */
+
+AbstractSwiper.prototype.deinitComponents = function() {
+
+  // Unbind clicks on next / previous
+  if (this._clickSpaceNext) {
+    this._clickSpaceNext.removeEventListener('click', this._clickSpaceNextOnClickListener);
+  }
+
+  if (this._clickSpacePrevious) {
+    this._clickSpacePrevious.removeEventListener('click', this._clickSpacePreviousOnClickListener);
+  }
+
+  // Reset pager items to single item + remove listener
+
+  if (this._pagerItems) {
+    for (var i = 0; i < this._pagerItems.length; i++) {
+
+      // Let's leave first element alive, just unbind listener
+      if (i == 0) {
+        this._pagerItems[i].removeEventListener('click', this._pagerItemsOnClickListeners[i]);
+      }
+      else { // rest elements -> out.
+        this._pagerItems[i].remove();
+      }
+    }
+  }
+
+}
+
+
 AbstractSwiper.prototype.initComponents = function() {
+
+  this.deinitComponents();
+
   var _this = this;
 
   // Arrows
@@ -728,23 +766,30 @@ AbstractSwiper.prototype.initComponents = function() {
   this._clickSpaceNext = document.querySelector(this._getSelectorForComponent('click-space-next'));
 
   if (this._clickSpaceNext) {
-    this._clickSpaceNext.onclick = function(e) {
+
+    this._clickSpaceNextOnClickListener = function(e) {
       e.preventDefault();
 
       if (_this._clickSpaceNext.classList.contains('active')) {
         _this.goToNext();
       }
-    };
+    }
+
+    _this._clickSpaceNext.addEventListener('click', this._clickSpaceNextOnClickListener);
   }
 
   if (this._clickSpacePrevious) {
-    this._clickSpacePrevious.onclick = function(e) {
+
+    this._clickSpacePreviousOnClickListener = function(e) {
       e.preventDefault();
 
       if (_this._clickSpacePrevious.classList.contains("active")) {
         _this.goToPrevious();
       }
-    };
+    }
+
+    _this._clickSpacePrevious.addEventListener('click', this._clickSpacePreviousOnClickListener);
+
   }
 
   //Pager
@@ -758,14 +803,19 @@ AbstractSwiper.prototype.initComponents = function() {
   }
 
   this._pagerItems = document.querySelectorAll(this._getSelectorForComponent('pager-item'));
+  this._pagerItemsOnClickListeners = [];
 
   for (var i = 0; i < this._pagerItems.length; i++) {
 
     (function(i) {
-      _this._pagerItems[i].onclick = function(e) {
+
+      _this._pagerItemsOnClickListeners[i] = function(e) {
         _this.goTo(i);
         e.preventDefault();
       }
+
+      _this._pagerItems[i].addEventListener('click', _this._pagerItemsOnClickListeners[i]);
+
     })(i);
   }
 
@@ -773,6 +823,7 @@ AbstractSwiper.prototype.initComponents = function() {
   this._counterAll = document.querySelector(this._getSelectorForComponent('counter-all'));
   this._counterCurrent = document.querySelector(this._getSelectorForComponent('counter-current'));
 
+  this._componentsUpdate();
 }
 
 AbstractSwiper.prototype._componentsUpdate = function() {

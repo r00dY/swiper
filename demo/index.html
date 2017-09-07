@@ -517,6 +517,73 @@
       </script>
 
 
+      <!--
+        8. Let's try to change number of items in Swiper dynamically
+      -->
+
+        <h2>8. Adding elements dynamically</h2>
+
+      <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-8">
+          <div class="swiper-items">
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+            </div>
+        </div>
+
+        <button class="swiper-click-space-previous" data-swiper="demo-8">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-8">NEXT</button>
+
+        <div class="pager">
+          <button class="swiper-pager-item" data-swiper="demo-8">X</button>
+        </div>
+
+        <div class="counter">
+          <span class="swiper-counter-current" data-swiper="demo-8"></span> / <span class="swiper-counter-all" data-swiper="demo-8"></span>
+        </div>
+
+        <div class="add-items">
+          <button class="add-items-button">Add 3 items</button>
+          <button class="remove-items-button">Remove 3 items</button>
+        </div>
+
+      </div>
+
+      <script>
+        $(document).ready(function() {
+          var swiperBasic = new SimpleSwiper({
+            name: 'demo-8'
+          });
+
+          swiperBasic.init();
+
+          var swiperItems = $('.swiper[data-swiper=demo-8] .swiper-items');
+
+          $('button.add-items-button').click(function() {
+
+            swiperItems.append('<div class="slide"></div>');
+            swiperItems.append('<div class="slide"></div>');
+            swiperItems.append('<div class="slide"></div>');
+
+            swiperBasic.layout();
+          });
+
+          $('button.remove-items-button').click(function() {
+
+            for(var i = 0; i < 3; i++) {
+              if (swiperItems.children().length <= 3) { return; }
+
+              swiperItems.children().last().remove();
+            }
+
+            swiperBasic.layout();
+          });
+        })
+      </script>
+
+
 			<h3>onMove event -> key to customization</h3>
 			<p>[To do]</p>
 
