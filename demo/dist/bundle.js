@@ -18280,9 +18280,6 @@
 	  // _this._maxTargetSlide; // maximum target slide to which we can animate. It's always the one which is "on left edge" when slider is maximally to the left!
 	  // _this._activeSlides; // current active slides (cached to know if they changed to call onActiveSlidesChange callback)
 
-	  // _this._isFirstSlideSnappedToEdge; // bool values saying if first or last slide are snapped to the edge. (cached to know if they changed to call onSnapToEdgeChange callback when necessary)
-	  // _this._isLastSlideSnappedToEdge;
-
 	  this._onResizeCallback = function() {
 	    this.layout();
 	  }
@@ -18538,22 +18535,6 @@
 
 	  return orientations;
 	}
-
-	/**
-	 * Is snapped to left / right
-	 */
-	AbstractSwiper.prototype.isFirstSlideSnappedToEdge = function() {
-	  if (this._options.infinite) { throw "isFirstSlideSnappedToEdge method not available in infinite mode" };
-
-	  return -this._pos <= 1;
-	}
-
-	AbstractSwiper.prototype.isLastSlideSnappedToEdge = function() {
-	  if (this._options.infinite) { throw "isLastSlideSnappedToEdge method not available in infinite mode" };
-
-	  return -this._pos >= this._maxPos - 1;
-	}
-
 
 	AbstractSwiper.prototype._killAnimations = function() {
 	  for (var i = 0; i < this._animations.length; i++) {
@@ -18834,20 +18815,6 @@
 	    shouldUpdateComponents = true;
 	  }
 
-
-	  // Invoke callback if gallery became snapped to some edge
-	  // var isFirstSlideSnappedToEdge = this.isFirstSlideSnappedToEdge();
-	  // var isLastSlideSnappedToEdge = this.isLastSlideSnappedToEdge();
-
-	  // if (isFirstSlideSnappedToEdge !== this._isFirstSlideSnappedToEdge || isLastSlideSnappedToEdge !== this._isLastSlideSnappedToEdge) {
-	  //   this._options.onSnapToEdgeChange(isFirstSlideSnappedToEdge || isLastSlideSnappedToEdge);
-
-	  //   this._isFirstSlideSnappedToEdge = isFirstSlideSnappedToEdge;
-	  //   this._isLastSlideSnappedToEdge = isLastSlideSnappedToEdge;
-
-	  //   shouldUpdateComponents = true;
-	  // }
-
 	  if (shouldUpdateComponents) {
 	    this._componentsUpdate();
 	  }
@@ -19043,7 +19010,7 @@
 	  if (this._clickSpaceNext) {
 	    this._clickSpaceNext.classList.add('active');
 
-	    if (!this._options.infinite && this.isLastSlideSnappedToEdge()) {
+	    if (!this._options.infinite && this.getActiveSlides().indexOf(this._options.count - 1) > -1) {
 	      this._clickSpaceNext.classList.remove('active');
 	    }
 	  }
@@ -19051,7 +19018,7 @@
 	  if (this._clickSpacePrevious) {
 	    this._clickSpacePrevious.classList.add('active');
 
-	    if (!this._options.infinite && this.isFirstSlideSnappedToEdge()) {
+	    if (!this._options.infinite && this.getActiveSlides().indexOf(0) > -1) {
 	      this._clickSpacePrevious.classList.remove('active');
 	    }
 	  }
@@ -21879,6 +21846,12 @@
 
 	  // SimpleSwiper has its own layout!
 	  this.layout = function() {
+
+	    // If container is already removed from DOM do not do anything.
+	    if (!document.body.contains(this._container)) {
+	        return;
+	    }
+
 	    init();
 	    this._positionElements();
 	    AbstractSwiper.prototype.layout.call(this);
@@ -21889,8 +21862,6 @@
 	    this.layout();
 	    this.enable();
 	  }
-
-	  this.initComponents();
 
 	}
 

@@ -106,6 +106,12 @@ var SimpleSwiper = function(options) {
 
   // SimpleSwiper has its own layout!
   this.layout = function() {
+
+    // If container is already removed from DOM do not do anything.
+    if (!document.body.contains(this._container)) {
+        return;
+    }
+
     init();
     this._positionElements();
     AbstractSwiper.prototype.layout.call(this);
@@ -116,8 +122,6 @@ var SimpleSwiper = function(options) {
     this.layout();
     this.enable();
   }
-
-  this.initComponents();
 
 }
 
