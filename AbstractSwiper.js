@@ -58,7 +58,10 @@ var AbstractSwiper = function(optionsArg) {
    */
 
   this._pos = 0; // current position of slider (whole container)
-  this._slidePos = {}; // positions of specific slides
+  this._slideState = {} // 1 - normal, -1 moved to the back
+
+
+  // this._slidePos = {}; // positions of specific slides
 
   this._targetSlide = 0; // slide to which animation goes.
 
@@ -170,7 +173,7 @@ AbstractSwiper.prototype.layout = function() {
     this._targetSlide = this._options.count - 1;
   }
 
-  this._pos = -this._getSlideSnapPos(this._targetSlide);//-this._snapPoints[this._targetSlide];
+  this._pos = this._getSlideSnapPos(this._targetSlide);//-this._snapPoints[this._targetSlide];
 
   this._updatePos();
 }
@@ -179,7 +182,7 @@ AbstractSwiper.prototype.layout = function() {
  * Get array of -1, 1, 0 values, which mean that either element is on the left of edge, on the right, or active -> let's call it "orientation".
  */
 AbstractSwiper.prototype.getSlideOrientation = function(i) {
-  var leftEdge = this._slidePos[i] + this._getSlideInitPos(i);
+  var leftEdge = this.getSlidePosition(i) + this._getSlideInitPos(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
 
   if (rightEdge < 0) {
@@ -202,7 +205,7 @@ AbstractSwiper.prototype.getSlideOrientation = function(i) {
  */
 AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
 
-  var leftEdge = this._slidePos[i] + this._getSlideInitPos(i);
+  var leftEdge = this.getSlidePosition(i) + this._getSlideInitPos(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
 
   if (rightEdge < 0) {
@@ -218,6 +221,10 @@ AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
   } else if (rightEdge >= this._options.containerSize()) {
     return (this._options.containerSize() - leftEdge) / this._options.slideSize(i);
   }
+}
+
+AbstractSwiper.prototype.getSlidePosition = function(i) {
+  return -this._pos + this._options.snapOffset() + this._slideState[i] * this._getSlideableWidth();
 }
 
 
@@ -239,7 +246,8 @@ AbstractSwiper.prototype.getSnapSlide = function() {
   var index;
 
   for(var i = 0; i < this._options.count; i++) {
-    var distance = Math.abs(this._slidePos[i] + this._getSlideInitPos(i));
+
+    var distance = Math.abs(this.getSlidePosition(i) + this._getSlideInitPos(i));
 
     if (distance < minDistance) {
       index = i;
@@ -248,30 +256,6 @@ AbstractSwiper.prototype.getSnapSlide = function() {
   }
 
   return index;
-
-
-  // if (-this._pos < 0) {
-  //   return 0;
-  // }
-
-  // if (-this._pos > this._maxPos) {
-  //   return this._options.count - 1;
-  // }
-
-  // var slideOnEdge = this._options.count - 1; // default
-  // for (var i = 0; i < this._slidePositions.length; i++) {
-
-  //   if (this._slidePositions[i] > -this._pos) {
-  //     slideOnEdge = (i - 1);
-  //     break;
-  //   }
-  // }
-
-  // if (this.isSlideActive(slideOnEdge)) {
-  //   return slideOnEdge;
-  // }
-
-  // return Math.min(slideOnEdge + 1, this._options.count - 1);
 }
 
 /**
@@ -376,7 +360,7 @@ AbstractSwiper.prototype.enable = function() {
 
       _this._killAnimations();
 
-      _this._panStartPos = -_this._pos;
+      _this._panStartPos = _this._pos;
 
       _this.setStill(false);
     }
@@ -515,35 +499,40 @@ AbstractSwiper.prototype.goToPrevious = function(animated) {
 }
 
 AbstractSwiper.prototype._normalizePosForInfinite = function(position) {
-  if (position > 0) {
-    return position - this._getSlideableWidth();
-  } else if (position <= -this._getSlideableWidth()) {
+  if (position < 0) {
     return position + this._getSlideableWidth();
+  } else if (position >= this._getSlideableWidth()) {
+    return position - this._getSlideableWidth();
   }
 
   return position;
 }
 
+// Overfscroll function for noninfinite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
+AbstractSwiper.prototype._overscrollFunction = function(val) {
+  return 0.3 * Math.log(1 + val);
+}
+
+
 AbstractSwiper.prototype._pan = function(deltaX, startX) {
 
-  var position = -startX + deltaX;
+  var position = startX - deltaX;
 
   if (!this._options.infinite) { // overflow bounce effect
 
-    if (-position < 0) {
-      var rest = position / this._options.containerSize();
-      position = 0.3 * Math.log(rest + 1) * this._options.containerSize();
+    if (position < 0) {
+      var rest = -position / this._options.containerSize();
+
+      position = -this._overscrollFunction(rest) * this._options.containerSize();
     }
-    if (-position > this._getMaxPos()) {
-      var rest = (-position - this._getMaxPos()) / this._options.containerSize();
-      position = -(this._getMaxPos() + 0.3 * Math.log(rest + 1) * this._options.containerSize());
+    if (position > this._getMaxPos()) {
+      var rest = (position - this._getMaxPos()) / this._options.containerSize();
+      position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
     }
 
   }
   else { // in case of infinite, position is always in range <0; MAX_WIDTH> for simplicity
-
     position = this._normalizePosForInfinite(position);
-
   }
 
   this._pos = position;
@@ -560,34 +549,42 @@ AbstractSwiper.prototype._updatePos = function() {
     // Wrap positions!
     for(var i = 0; i < this._options.count; i++) {
 
-      var tmp = this._getSlideInitPos(i) + this._pos + this._options.slideSize(i) + this._options.snapOffset();
+      var rightEdge = this._getSlideInitPos(i) - this._pos + this._options.snapOffset() + this._options.slideSize(i);
 
-      if (tmp < 0) { // if slide is further than viewport on the right side, move it to front.
-        positions[i] = this._pos + this._getSlideableWidth();
+      // Every element which is totally hidden on the left hand side of container gets transferred to the right
+      if (rightEdge < 0) {
+        this._slideState[i] = 1;
       }
-      else if (tmp > this._getSlideableWidth()) {
-        positions[i] = this._pos - this._getSlideableWidth();
+      // Every element which right edge is bigger then slideable width should be moved to the left
+      else if (rightEdge > this._getSlideableWidth()) {
+        this._slideState[i] = -1;
       }
       else {
-        positions[i] = this._pos;
+        this._slideState[i] = 0;
       }
+
+      positions[i] = -this._pos + this._options.snapOffset() + this._slideState[i] * this._getSlideableWidth();
     }
   }
   else {
     for(var i = 0; i < this._options.count; i++) {
-      positions[i] = this._pos;
+      this._slideState[i] = 0;
+      positions[i] = -this._pos;
     }
   }
 
-  // Take snapOffset into account
-  var positionsWithOffset = {}
-  for(var i = 0; i < this._options.count; i++) {
-    positionsWithOffset[i] = positions[i] + this._options.snapOffset();
-  }
+  // console.log(this._pos);
+  // console.log(this._slideState);
 
-  // console.log(positions, positionsWithOffset);
+  // // Take snapOffset into account
+  // var positionsWithOffset = {}
+  // for(var i = 0; i < this._options.count; i++) {
+  //   positionsWithOffset[i] = positions[i] + this._options.snapOffset();
+  // }
 
-  this._slidePos = positions;
+  // // console.log(positions, positionsWithOffset);
+
+  // this._slidePos = positions;
 
 
 
@@ -610,10 +607,9 @@ AbstractSwiper.prototype._updatePos = function() {
 
   // Invoke onMove callback!
   this._options.onMove({
-    positions: positionsWithOffset
+    positions: positions
   });
 }
-
 
 AbstractSwiper.prototype.goTo = function(slide, animated) {
   var _this = this;
@@ -621,40 +617,20 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
   if (typeof animated === 'undefined') { animated = true; }
 
   var pos = this._getSlideSnapPos(slide);//this._snapPoints[slide];
-  var diff = Math.abs(-pos - this._pos);
+  var diff = Math.abs(pos - this._pos);
 
   // Don't initiate animation if we're already in the same spot! It would wrongly set "Still" callback and "empty animation" would run.
   if (diff < 1) {  return; }
 
   // in case of infinite slider, we must take strategy of shortest path. So if we go from 10th slide (last) to 1st, we go one slide right, not 10 slides left.
   if (this._options.infinite && diff > this._getSlideableWidth() / 2) {
-    if (pos + this._pos > 0) {
+    if (pos - this._pos > 0) {
       pos -= this._getSlideableWidth();
     }
     else {
       pos += this._getSlideableWidth();
     }
   }
-
-
-  // // var diff2 = Math.abs(-pos - this._pos - this._getSlideableWidth());
-
-
-  // if (diff1 < 1 || diff2 < 1) {
-  //   return;
-  // }
-
-  // console.log(pos);
-  // // For infinite slider, strategy of shortest path!
-  // if (this._options.infinite && diff2 < diff1) {
-  //   pos += this._getSlideableWidth();
-  // }
-
-
-  // Don't initiate animation if we're already in the same spot! It would wrongly set "Still" callback and "empty animation" would run.
-  // if (Math.abs(-pos - this._pos) < 1) {
-  //   return;
-  // }
 
   this._targetSlide = this._options.infinite ? slide : Math.min(slide, this._getMaxTargetSlide()); // if not infinite, max target slide is limited.
 
@@ -665,7 +641,7 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
   this._killAnimations();
 
   var anim1 = TweenMax.to(tmp, animated ? this._options.animationTime : 0, {
-    pos: -pos,
+    pos: pos,
     ease: this._options.animationEase,
     onUpdate: function() {
 
