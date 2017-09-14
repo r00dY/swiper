@@ -350,7 +350,7 @@ AbstractSwiper.prototype.enable = function() {
       // When we are on slider and we start scrolling in vertical direction (body scroll) starting with touch space of slider, slider gets unexpected panstart and one panleft/panright with HUGE delta.
       return;
     }
-
+    console.log('pan start');
     if (!_this._isTouched) {
 
       _this._options.onPanStart();
@@ -372,12 +372,20 @@ AbstractSwiper.prototype.enable = function() {
 
     switch (ev.type) {
 
-      // case "swipeleft":
-      // case "swipeup":
+      case "swipeleft":
+      case "swipeup":
 
-      //    console.log('swipe', ev);
+         console.log('swipe left', ev);
 
-      //    if (_isTouched) {
+         if (_this._isTouched) {
+
+            _this._getSlideFromOffset(1);
+
+            // var newTarget = Math.min(_this._targetSlide + 1, _this._getMaxTargetSlide());
+             _this.goTo(_this._getSlideFromOffset(1));
+
+             swiped = true;
+
 
       //        if (_swipeDirection == 1 && _swipeTarget != null) {
       //            _swipeTarget = Math.min(_swipeTarget + 1, options.count - 1);
@@ -394,35 +402,44 @@ AbstractSwiper.prototype.enable = function() {
       //        _swipeTimer = setTimeout(function() { _swipeTarget = null; }, 600);
 
       //        swiped = true;
-      //    }
+         }
 
-      // break;
-      // case "swiperight":
-      // case "swipedown":
+      break;
+      case "swiperight":
+      case "swipedown":
 
-      //    if (_isTouched) {
+         console.log('swipe right', ev);
 
-      //        if (_swipeDirection == 2 && _swipeTarget != null) {
-      //            _swipeTarget = Math.max(_swipeTarget - 1, 0.0);
-      //        }
-      //        else {
-      //            _swipeTarget = Math.max(Math.floor(_pos), 0.0);
-      //        }
+         if (_this._isTouched) {
 
-      //        _swipeDirection = 2;
-      //        _this.goTo(_swipeTarget);
+            // var newTarget = Math.max(_this._targetSlide - 1, 0);
+             _this.goTo(_this._getSlideFromOffset(-1));
 
-      //        clearTimeout(_swipeTimer);
-      //        _swipeTimer = setTimeout(function() { _swipeTarget = null; }, 600);
+             swiped = true;
 
-      //        swiped = true;
-      //    }
 
-      // break;
+             // if (_swipeDirection == 2 && _swipeTarget != null) {
+             //     _swipeTarget = Math.max(_swipeTarget - 1, 0.0);
+             // }
+             // else {
+             //     _swipeTarget = Math.max(Math.floor(_pos), 0.0);
+             // }
+
+             // _swipeDirection = 2;
+             // _this.goTo(_swipeTarget);
+
+             // clearTimeout(_swipeTimer);
+             // _swipeTimer = setTimeout(function() { _swipeTarget = null; }, 600);
+
+             // swiped = true;
+         }
+
+      break;
       case "panstart":
         break;
 
       case "panleft":
+        console.log('panleft');
         if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
       case "panup":
         onPanStart(ev); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
@@ -435,6 +452,7 @@ AbstractSwiper.prototype.enable = function() {
         break;
 
       case "panright":
+        console.log('panright');
         if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
       case "pandown":
 
@@ -472,30 +490,60 @@ AbstractSwiper.prototype.disable = function() {
   this._mc.off("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown");
 }
 
-AbstractSwiper.prototype.goToNext = function(animated) {
+AbstractSwiper.prototype._getSlideFromOffset = function(offset) {
+
+  var newSlide = this._targetSlide + offset;
 
   if (this._options.infinite) {
-    var slide = this._targetSlide + this._options.numberOfItemsMovedAtOneAction;
-    if (slide >= this._options.count) { slide -= this._options.count; }
-  }
-  else {
-    var slide = Math.min(this._targetSlide + this._options.numberOfItemsMovedAtOneAction, this._options.count - 1);
+
+    newSlide = newSlide % this._options.count;
+    if (newSlide < 0) { newSlide += this._options.count }
   }
 
-  this.goTo(slide, animated);
+  else {
+
+    if (newSlide < 0) {
+      newSlide = 0;
+    }
+    else if (newSlide > this._getMaxTargetSlide()) {
+      newSlide = this._getMaxTargetSlide();
+    }
+  }
+
+  return newSlide;
+}
+
+
+
+AbstractSwiper.prototype.goToNext = function(animated) {
+
+  // if (this._options.infinite) {
+  //   var slide = this._targetSlide + this._options.numberOfItemsMovedAtOneAction;
+  //   if (slide >= this._options.count) { slide -= this._options.count; }
+  // }
+  // else {
+  //   var slide = Math.min(this._targetSlide + this._options.numberOfItemsMovedAtOneAction, this._options.count - 1);
+  // }
+
+  // this.goTo(slide, animated);
+
+
+  this.goTo(this._getSlideFromOffset(this._options.numberOfItemsMovedAtOneAction), animated);
 }
 
 AbstractSwiper.prototype.goToPrevious = function(animated) {
 
-  if (this._options.infinite) {
-    var slide = this._targetSlide - this._options.numberOfItemsMovedAtOneAction;
-    if (slide < 0) { slide += this._options.count; }
-  }
-  else {
-    var slide = Math.max(this._targetSlide - this._options.numberOfItemsMovedAtOneAction, 0);
-  }
+  // if (this._options.infinite) {
+  //   var slide = this._targetSlide - this._options.numberOfItemsMovedAtOneAction;
+  //   if (slide < 0) { slide += this._options.count; }
+  // }
+  // else {
+  //   var slide = Math.max(this._targetSlide - this._options.numberOfItemsMovedAtOneAction, 0);
+  // }
 
-  this.goTo(slide, animated);
+  // this.goTo(slide, animated);
+
+  this.goTo(this._getSlideFromOffset(-this._options.numberOfItemsMovedAtOneAction), animated);
 }
 
 AbstractSwiper.prototype._normalizePosForInfinite = function(position) {

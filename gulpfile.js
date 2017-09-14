@@ -1,6 +1,10 @@
 var gulp = require('gulp');
 var webpack = require('webpack-stream');
 var sass = require('gulp-sass');
+var browserSync = require('browser-sync').create();
+
+var SASS_FILES = ['./*.scss', './demo/**/*.scss'];
+var JS_FILES = ['./*.js', './demo/**/*.js'];
 
 gulp.task('webpack', function() {
   return gulp.src('./demo/scripts.js')
@@ -18,9 +22,24 @@ gulp.task('sass', [], function() {
         .pipe(gulp.dest('./demo/dist/'))
 });
 
-gulp.task('watch', function() {
-    gulp.watch(['./*.js', './demo/**/*.js', './*.scss', './demo/**/*.scss'], ['webpack', 'sass']);
+
+gulp.task('run', ['webpack', 'sass'], function() {
+
+  browserSync.init({
+      server: {
+          baseDir: "./demo/"
+      },
+      ghostMode: {
+          clicks: true,
+          forms: true,
+          scroll: false
+      }
+  });
+
+  gulp.watch(SASS_FILES, ['sass']);
+  gulp.watch(JS_FILES, ['webpack']).on('change', browserSync.reload);
+
 });
 
-gulp.task('default', ['webpack', 'sass', 'watch']);
+gulp.task('default', ['run']);
 
