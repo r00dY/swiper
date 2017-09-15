@@ -350,7 +350,7 @@ AbstractSwiper.prototype.enable = function() {
       // When we are on slider and we start scrolling in vertical direction (body scroll) starting with touch space of slider, slider gets unexpected panstart and one panleft/panright with HUGE delta.
       return;
     }
-    console.log('pan start');
+
     if (!_this._isTouched) {
 
       _this._options.onPanStart();
@@ -375,16 +375,32 @@ AbstractSwiper.prototype.enable = function() {
       case "swipeleft":
       case "swipeup":
 
-         console.log('swipe left', ev);
-
          if (_this._isTouched) {
 
-            _this._getSlideFromOffset(1);
+            var v = Math.abs(ev.velocityX) * 1000;
+            var s = 0.3 * v * _this._options.animationTime / 2;
 
-            // var newTarget = Math.min(_this._targetSlide + 1, _this._getMaxTargetSlide());
-             _this.goTo(_this._getSlideFromOffset(1));
+            var target = _this._pos + s;
+            var wholePart = Math.floor(target / _this._getSlideableWidth());
+            var restPart = target % _this._getSlideableWidth();
 
+            var result = 0;
+
+            for(var i = 0; i < _this._options.count; i++) {
+
+              if (_this._getSlideInitPos(i) > restPart) {
+                result = i;
+                break;
+              }
+
+            }
+
+             _this.goTo(i);
              swiped = true;
+
+             // _this.goTo(_this._getSlideFromOffset(1));
+
+             // swiped = true;
 
 
       //        if (_swipeDirection == 1 && _swipeTarget != null) {
@@ -546,14 +562,32 @@ AbstractSwiper.prototype.goToPrevious = function(animated) {
   this.goTo(this._getSlideFromOffset(-this._options.numberOfItemsMovedAtOneAction), animated);
 }
 
-AbstractSwiper.prototype._normalizePosForInfinite = function(position) {
-  if (position < 0) {
-    return position + this._getSlideableWidth();
-  } else if (position >= this._getSlideableWidth()) {
-    return position - this._getSlideableWidth();
+AbstractSwiper.prototype._normalisePos = function(position) {
+
+  if (this._options.infinite) {
+
+    if (position < 0) {
+      return position + this._getSlideableWidth();
+    } else if (position >= this._getSlideableWidth()) {
+      return position - this._getSlideableWidth();
+    }
+
+    return position;
+  }
+  else {
+
+    if (position < 0) {
+      var rest = -position / this._options.containerSize();
+      position = -this._overscrollFunction(rest) * this._options.containerSize();
+    }
+    if (position > this._getMaxPos()) {
+      var rest = (position - this._getMaxPos()) / this._options.containerSize();
+      position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
+    }
+
+    return position;
   }
 
-  return position;
 }
 
 // Overfscroll function for noninfinite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
@@ -564,26 +598,26 @@ AbstractSwiper.prototype._overscrollFunction = function(val) {
 
 AbstractSwiper.prototype._pan = function(deltaX, startX) {
 
-  var position = startX - deltaX;
+  // var position = startX - deltaX;
 
-  if (!this._options.infinite) { // overflow bounce effect
+  // if (!this._options.infinite) { // overflow bounce effect
 
-    if (position < 0) {
-      var rest = -position / this._options.containerSize();
+  //   // if (position < 0) {
+  //   //   var rest = -position / this._options.containerSize();
 
-      position = -this._overscrollFunction(rest) * this._options.containerSize();
-    }
-    if (position > this._getMaxPos()) {
-      var rest = (position - this._getMaxPos()) / this._options.containerSize();
-      position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
-    }
+  //   //   position = -this._overscrollFunction(rest) * this._options.containerSize();
+  //   // }
+  //   // if (position > this._getMaxPos()) {
+  //   //   var rest = (position - this._getMaxPos()) / this._options.containerSize();
+  //   //   position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
+  //   // }
 
-  }
-  else { // in case of infinite, position is always in range <0; MAX_WIDTH> for simplicity
-    position = this._normalizePosForInfinite(position);
-  }
+  // }
+  // else { // in case of infinite, position is always in range <0; MAX_WIDTH> for simplicity
+  //   position = this._normalisePos(position);
+  // }
 
-  this._pos = position;
+  this._pos = startX - deltaX;
 
   this._updatePos();
 }
@@ -592,7 +626,11 @@ AbstractSwiper.prototype._updatePos = function() {
 
   var positions = {};
 
+  var normalizedPos = this._normalisePos(this._pos);
+
   if (this._options.infinite) {
+
+    this._pos = normalizedPos; // In case of infinite we enforce normalization
 
     // Wrap positions!
     for(var i = 0; i < this._options.count; i++) {
@@ -617,7 +655,19 @@ AbstractSwiper.prototype._updatePos = function() {
   else {
     for(var i = 0; i < this._options.count; i++) {
       this._slideState[i] = 0;
-      positions[i] = -this._pos;
+
+      // var position = this._pos;
+
+      // if (position < 0) {
+      //   var rest = -position / this._options.containerSize();
+      //   position = -this._overscrollFunction(rest) * this._options.containerSize();
+      // }
+      // if (position > this._getMaxPos()) {
+      //   var rest = (position - this._getMaxPos()) / this._options.containerSize();
+      //   position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
+      // }
+
+      positions[i] = -normalizedPos;
     }
   }
 
@@ -659,6 +709,40 @@ AbstractSwiper.prototype._updatePos = function() {
   });
 }
 
+AbstractSwiper.prototype._animateTo = function(pos) {
+
+  // Don't initiate animation if we're already in the same spot! It would wrongly set "Still" callback and "empty animation" would run.
+  var diff = Math.abs(pos - this._pos);
+  if (diff < 1) {  return; }
+
+  this.setStill(false);
+
+  var tmp = { pos: _this._pos }
+
+  this._killAnimations();
+
+  var anim1 = TweenMax.to(tmp, this._options.animationTime, {
+    pos: pos,
+    ease: this._options.animationEase,
+    onUpdate: function() {
+
+      _this._pos = _this._options.infinite ? _this._normalisePos(tmp.pos) : tmp.pos; // if infinite, we need to normalize position here.
+      _this._updatePos();
+
+    },
+    onComplete: function() {
+
+      _this._animations = [];
+      _this._swipeTarget = null;
+
+      _this.setStill(true);
+
+    }
+  });
+
+  this._animations = [anim1];
+}
+
 AbstractSwiper.prototype.goTo = function(slide, animated) {
   var _this = this;
 
@@ -693,7 +777,7 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
     ease: this._options.animationEase,
     onUpdate: function() {
 
-      _this._pos = _this._options.infinite ? _this._normalizePosForInfinite(tmp.pos) : tmp.pos; // if infinite, we need to normalize position here.
+      _this._pos = _this._options.infinite ? _this._normalisePos(tmp.pos) : tmp.pos; // if infinite, we need to normalize position here.
       _this._updatePos();
 
     },
@@ -710,6 +794,58 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
 
   this._animations = [anim1];
 }
+
+// AbstractSwiper.prototype.goTo = function(slide, animated) {
+//   var _this = this;
+
+//   if (typeof animated === 'undefined') { animated = true; }
+
+//   var pos = this._getSlideSnapPos(slide);//this._snapPoints[slide];
+//   var diff = Math.abs(pos - this._pos);
+
+//   // Don't initiate animation if we're already in the same spot! It would wrongly set "Still" callback and "empty animation" would run.
+//   if (diff < 1) {  return; }
+
+//   // in case of infinite slider, we must take strategy of shortest path. So if we go from 10th slide (last) to 1st, we go one slide right, not 10 slides left.
+//   if (this._options.infinite && diff > this._getSlideableWidth() / 2) {
+//     if (pos - this._pos > 0) {
+//       pos -= this._getSlideableWidth();
+//     }
+//     else {
+//       pos += this._getSlideableWidth();
+//     }
+//   }
+
+//   this._targetSlide = this._options.infinite ? slide : Math.min(slide, this._getMaxTargetSlide()); // if not infinite, max target slide is limited.
+
+//   this.setStill(false);
+
+//   var tmp = { pos: _this._pos }
+
+//   this._killAnimations();
+
+//   var anim1 = TweenMax.to(tmp, animated ? this._options.animationTime : 0, {
+//     pos: pos,
+//     ease: this._options.animationEase,
+//     onUpdate: function() {
+
+//       _this._pos = _this._options.infinite ? _this._normalisePos(tmp.pos) : tmp.pos; // if infinite, we need to normalize position here.
+//       _this._updatePos();
+
+//     },
+//     onComplete: function() {
+
+//       _this._animations = [];
+
+//       _this._swipeTarget = null;
+
+//       _this.setStill(true);
+
+//     }
+//   });
+
+//   this._animations = [anim1];
+// }
 
 /**
  *
