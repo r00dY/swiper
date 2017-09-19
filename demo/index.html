@@ -501,14 +501,17 @@
 
       <script>
         $(document).ready(function() {
+
+          var width = $('.swiper').width();
+
           var swiperDemo7 = new SimpleSwiper({
             name: 'demo-7',
             snapOffset: function() {
-              return $('.swiper').width() / 10;
+              return width / 10;
             },
             infinite: true,
             containerSize: function() {
-              return $('.swiper').width() * 8 / 10;
+              return width * 8 / 10;
             }
           });
 
