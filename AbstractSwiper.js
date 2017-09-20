@@ -16,7 +16,7 @@ var AbstractSwiper = function(optionsArg) {
     direction: AbstractSwiper.HORIZONTAL,
 
     animationEase: Expo.easeOut,
-    animationTime: 0.8,
+    animationTime: 0.6,
 
     count: undefined,
 
@@ -43,7 +43,9 @@ var AbstractSwiper = function(optionsArg) {
 
     autoLayoutOnResize: true,
 
-    infinite: false
+    infinite: false,
+
+    snapOnlyToAdjacentSlide: true
   }
 
   this._options = defaultOptions;
@@ -60,18 +62,6 @@ var AbstractSwiper = function(optionsArg) {
   this._pos = 0; // current position of slider (whole container)
   this._relativePos = 0; // this is kept only for the purpose of changing number of items. It's important to keep old relativePos to keep old position right in new layout.
   this._slideState = {} // 1 - normal, -1 moved to the back
-
-
-  // this._slidePos = {}; // positions of specific slides
-
-  // this._targetSlide = 0; // slide to which animation goes.
-
-  // _this._maxPos; // maximal position of slider (we can overflow behind it, but never snap)
-  // _this._snapPoints; // array representing to which position slide should snap.
-  // _this._slidePositions; // array representing positions of slides
-  // _this._width; // width of whole scrollable area
-  // _this._maxTargetSlide; // maximum target slide to which we can animate. It's always the one which is "on left edge" when slider is maximally to the left!
-  // _this._activeSlides; // current active slides (cached to know if they changed to call onActiveSlidesChange callback)
 
   this._onResizeCallback = function() {
     this.layout();
@@ -92,18 +82,7 @@ var AbstractSwiper = function(optionsArg) {
   this._animations = [];
 
   this._panStartPos = 0;
-
-  // These 3 variables detects case of multiple and very quick swipes.
-  this._swipeTarget = null;
-  this._swipeDirection = 1;
-  this._swipeTimer = undefined;
-
-  // this._mc;
-
   this._enabled = false;
-
-
-  // this.layout();
 }
 
 AbstractSwiper.HORIZONTAL = 0;
@@ -177,14 +156,6 @@ AbstractSwiper.prototype.layout = function() {
   }
 
   this._updatePos(newPos);
-
-  // if (this._targetSlide >= this._options.count) {
-  //   this._targetSlide = this._options.count - 1;
-  // }
-
-  // this._pos = this._getSlideSnapPos(this._targetSlide);//-this._snapPoints[this._targetSlide];
-
-  // this._updatePos(this._getSlideSnapPos(this._targetSlide));
 }
 
 /**
@@ -251,6 +222,7 @@ AbstractSwiper.prototype._getClosestSnappedPosition = function(pos, side) {
 
   var minDistance, index;
 
+  // Let's find slide which distance to normalisedPos is minimum
   for(var i = 0; i < this._options.count; i++) {
 
     var distance = normalizedPos - this._getSlideInitPos(i);
@@ -261,24 +233,28 @@ AbstractSwiper.prototype._getClosestSnappedPosition = function(pos, side) {
     }
   }
 
+  // In case of infinite slider let's just adjust real position (not normalized) with calculated delta to closest snapped position.
   if (this._options.infinite) {
     var result = pos - minDistance;
   }
-  else {
+  else { // In case of finite slide, we can safely just takie initial position of found slide.
     var result = this._getSlideInitPos(index);
   }
 
-  console.log('RESULT', result, 'MODE', side, 'POS', this._pos, 'INDEX', index);
+  // If side is not default, we want to assure that closest snapped position is on the right hand side of current position.
+  // If result is < pos, then we don't have to nothing because condition is already met. In other case,
+  // we need to take next slide instead of current one.
+  if (side == 1 && result < pos) {
 
- if (side == 1 && result < pos) {
-    console.log('pyk 1');
+    // We change position to next slide position.
     var newResult = result - this._getSlideInitPos(index) + this._getSlideInitPos(this._getSlideFromOffset(1));
 
+    // In case of infinite sliders next slide position may be smaller than current because of wrapping. Below we take care of this case.
     if (newResult < result) { newResult += this._getSlideableWidth(); }
 
   }
+  // This condition is analogous to the above one.
   else if (side == -1 && result > pos) {
-    console.log('pyk 2');
     var newResult = result - this._getSlideInitPos(index) + this._getSlideInitPos(this._getSlideFromOffset(-1));
 
     if (newResult > result) { newResult -= this._getSlideableWidth(); }
@@ -287,14 +263,13 @@ AbstractSwiper.prototype._getClosestSnappedPosition = function(pos, side) {
     newResult = result;
   }
 
+  // If slider is not infinite, we must normalise calculated position so that it doesn't exceed minimum and maximum position.
   if (!this._options.infinite) {
     newResult = Math.min(this._getMaxPos(), newResult);
+    newResult = Math.max(0, newResult);
   }
 
-  console.log('NEW RESULT', newResult)
-
   return newResult;
-
 }
 
 
@@ -365,7 +340,29 @@ AbstractSwiper.prototype.setStill = function(status) {
   if (status == this._isStill) { return; }
   this._isStill = status;
 
+  if (this._isStill) {
+    this._unblockScrolling();
+  }
+  else {
+    this._blockScrolling();
+  }
+
   this._options.onStillChange(this._isStill);
+}
+
+AbstractSwiper.prototype._blockScrolling = function() {
+  if (this._mc) {
+    this._mc.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+    this._mc.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+  }
+}
+
+AbstractSwiper.prototype._unblockScrolling = function() {
+  if (this._mc) {
+    var hammerDirection = this._options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
+    this._mc.get('pan').set({ direction: hammerDirection });
+    this._mc.get('swipe').set({ direction: hammerDirection });
+  }
 }
 
 AbstractSwiper.prototype.enable = function() {
@@ -376,20 +373,19 @@ AbstractSwiper.prototype.enable = function() {
 
   this._mc = new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: true });
 
-  var lastMove = 1;
   var swiped = false;
 
   var hammerDirection = this._options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
 
-  this._mc.get('pan').set({ direction: hammerDirection, threshold: 10 });
-  this._mc.get('swipe').set({ direction: hammerDirection, threshold: 10 });
+  this._mc.get('pan').set({ direction: hammerDirection, threshold: 20 });
+  this._mc.get('swipe').set({ direction: hammerDirection, threshold: 20 });
 
   function onPanStart(ev) {
 
     if (ev.distance > 50) {
       // prevents weird bug, when on pan start there's a HUGE distance and huge deltas on Chrome.
       // When we are on slider and we start scrolling in vertical direction (body scroll) starting with touch space of slider, slider gets unexpected panstart and one panleft/panright with HUGE delta.
-      return;
+      // return;
     }
 
     if (!_this._isTouched) {
@@ -417,34 +413,16 @@ AbstractSwiper.prototype.enable = function() {
       case "swipeup":
 
          if (_this._isTouched) {
-
             var v = Math.abs(ev.velocityX) * 1000;
             var newPos = _this._getNextPositionFromVelocity(v);
             _this._animateTo(newPos);
 
-            // var v = Math.abs(ev.velocityX) * 1000;
-            // var s = 0.3 * v * _this._options.animationTime / 2;
-
-            // var target = _this._pos + s;
-            // var wholePart = Math.floor(target / _this._getSlideableWidth());
-            // var restPart = target % _this._getSlideableWidth();
-
-            // var result = 0;
-
-            // for(var i = 0; i < _this._options.count; i++) {
-
-            //   if (_this._getSlideInitPos(i) > restPart) {
-            //     result = i;
-            //     break;
-            //   }
-
-            // }
-
-            //  _this.goTo(i);
-             swiped = true;
+            swiped = true;
          }
 
       break;
+
+
       case "swiperight":
       case "swipedown":
 
@@ -453,35 +431,19 @@ AbstractSwiper.prototype.enable = function() {
             var v = -Math.abs(ev.velocityX) * 1000;
             var newPos = _this._getNextPositionFromVelocity(v);
             _this._animateTo(newPos);
-             // _this.goTo(_this._getSlideFromOffset(-1));
-             swiped = true;
+            swiped = true;
          }
 
       break;
       case "panstart":
         break;
 
-      case "panleft":
+      case "pan":
         if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
-      case "panup":
         onPanStart(ev); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
 
         if (_this._isTouched && !swiped) {
           _this._pan(delta, _this._panStartPos);
-          lastMove = 1;
-        }
-
-        break;
-
-      case "panright":
-        if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
-      case "pandown":
-
-        onPanStart(ev); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
-
-        if (_this._isTouched && !swiped) {
-          _this._pan(delta, _this._panStartPos);
-          lastMove = 2;
         }
 
         break;
@@ -495,12 +457,7 @@ AbstractSwiper.prototype.enable = function() {
           _this._isTouched = false;
 
           if (!swiped) {
-
-            // console.log('closest pos: ', _this._getClosestSnappedPosition(_this._pos));
-
             _this._animateTo(_this._getClosestSnappedPosition(_this._pos));
-
-            // _this.goTo(_this.getSnapSlide());
           }
 
           swiped = false;
@@ -552,26 +509,18 @@ AbstractSwiper.prototype._getNextPositionFromVelocity = function(v) {
 
   // In case of freefloat just add s.
 
-  var s = 0.3 * v * this._options.animationTime / 2;
+  var s = 0.2 * v * this._options.animationTime / 2;
   var targetPos = this._pos + s; // targetPos at this stage is not snapped to any slide.
 
+  // If this options is true, we want to snap to as closest slide as possible and not further.
+  // This is necessary because when you have slider when slide is 100% width, strong flick gestures
+  // would make swiper move 2 or 3 positions to right / left which feels bad. This flag should be
+  // disabled in case of "item swiper" when couple of items are visible in viewport at the same time.
+  if (this._options.snapOnlyToAdjacentSlide) {
+    targetPos = v < 0 ? this._pos - 1 : this._pos + 1;
+  }
+
   return this._getClosestSnappedPosition(targetPos, v < 0 ? -1 : 1);
-
-
-  // var wholePart = Math.floor(target / this._getSlideableWidth());
-  // var restPart = target % this._getSlideableWidth();
-
-  // var result = 0;
-
-  // for(var i = 0; i < this._options.count; i++) {
-
-  //   if (this._getSlideInitPos(i) > restPart) {
-  //     result = i;
-  //     break;
-  //   }
-
-  // }
-
 }
 
 AbstractSwiper.prototype._normalizePos = function(position) {
@@ -699,8 +648,6 @@ AbstractSwiper.prototype._animateTo = function(pos) {
     onComplete: function() {
 
       _this._animations = [];
-      _this._swipeTarget = null;
-
       _this.setStill(true);
 
     }

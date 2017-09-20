@@ -38,7 +38,6 @@ var SimpleSwiper = function(options) {
 
 
   this._options.onMove = function(coords) {
-    // console.log(coords.positions);
 
     for (var i = 0; i < _this._items.length; i++) {
       var item = _this._items[i];
@@ -53,10 +52,6 @@ var SimpleSwiper = function(options) {
   }
 
   this._positionElements = function() {
-    // this._containerSize = _this._options.direction == AbstractSwiper.HORIZONTAL ?
-    //   this._container.offsetWidth :
-    //   this._container.offsetHeight;
-
     var distance = 0;
 
     if (_this._options.direction == AbstractSwiper.HORIZONTAL) {
