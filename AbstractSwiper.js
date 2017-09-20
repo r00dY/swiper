@@ -45,7 +45,9 @@ var AbstractSwiper = function(optionsArg) {
 
     infinite: false,
 
-    snapOnlyToAdjacentSlide: true
+    snapOnlyToAdjacentSlide: true,
+
+    freefloat: false
   }
 
   this._options = defaultOptions;
@@ -265,8 +267,10 @@ AbstractSwiper.prototype._getClosestSnappedPosition = function(pos, side) {
 
   // If slider is not infinite, we must normalise calculated position so that it doesn't exceed minimum and maximum position.
   if (!this._options.infinite) {
-    newResult = Math.min(this._getMaxPos(), newResult);
-    newResult = Math.max(0, newResult);
+    newResult = this._normalizePos(newResult, false);
+
+    // newResult = Math.min(this._getMaxPos(), newResult);
+    // newResult = Math.max(0, newResult);
   }
 
   return newResult;
@@ -412,7 +416,7 @@ AbstractSwiper.prototype.enable = function() {
          if (_this._isTouched) {
             var v = Math.abs(ev.velocityX) * 1000;
             var newPos = _this._getNextPositionFromVelocity(v);
-            _this._animateTo(newPos);
+            _this.moveTo(newPos);
 
             swiped = true;
          }
@@ -427,7 +431,7 @@ AbstractSwiper.prototype.enable = function() {
 
             var v = -Math.abs(ev.velocityX) * 1000;
             var newPos = _this._getNextPositionFromVelocity(v);
-            _this._animateTo(newPos);
+            _this.moveTo(newPos);
             swiped = true;
          }
 
@@ -454,7 +458,17 @@ AbstractSwiper.prototype.enable = function() {
           _this._isTouched = false;
 
           if (!swiped) {
-            _this._animateTo(_this._getClosestSnappedPosition(_this._pos));
+
+            var pos = _this._pos;
+
+            if (_this._options.freefloat && !_this._options.infinite) {
+              pos = this._normalizePos(pos, false);
+            }
+            else if (!_this._options.freefloat) {
+              pos = _this._getClosestSnappedPosition(pos);
+            }
+
+            _this.moveTo(pos);
           }
 
           swiped = false;
@@ -509,6 +523,15 @@ AbstractSwiper.prototype._getNextPositionFromVelocity = function(v) {
   var s = 0.2 * v * this._options.animationTime / 2;
   var targetPos = this._pos + s; // targetPos at this stage is not snapped to any slide.
 
+  if (this._options.freefloat) {
+
+    if (!this._options.infinite) {
+      targetPos = this._normalizePos(targetPos, false);
+    }
+
+    return targetPos;
+  }
+
   // If this options is true, we want to snap to as closest slide as possible and not further.
   // This is necessary because when you have slider when slide is 100% width, strong flick gestures
   // would make swiper move 2 or 3 positions to right / left which feels bad. This flag should be
@@ -520,7 +543,7 @@ AbstractSwiper.prototype._getNextPositionFromVelocity = function(v) {
   return this._getClosestSnappedPosition(targetPos, v < 0 ? -1 : 1);
 }
 
-AbstractSwiper.prototype._normalizePos = function(position) {
+AbstractSwiper.prototype._normalizePos = function(position, overscroll) {
 
   if (this._options.infinite) {
 
@@ -531,13 +554,22 @@ AbstractSwiper.prototype._normalizePos = function(position) {
   }
   else {
 
-    if (position < 0) {
-      var rest = -position / this._options.containerSize();
-      position = -this._overscrollFunction(rest) * this._options.containerSize();
+    // If overscroll is true, we run _overscrollFunction on position. If not, we simply limit min / max position.
+    if (typeof overscroll === 'undefined') { overscroll = true; }
+
+    if (overscroll) {
+      if (position < 0) {
+        var rest = -position / this._options.containerSize();
+        position = -this._overscrollFunction(rest) * this._options.containerSize();
+      }
+      if (position > this._getMaxPos()) {
+        var rest = (position - this._getMaxPos()) / this._options.containerSize();
+        position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
+      }
     }
-    if (position > this._getMaxPos()) {
-      var rest = (position - this._getMaxPos()) / this._options.containerSize();
-      position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
+    else {
+      if (position < 0) { position = 0; }
+      if (position > this._getMaxPos()) { position = this._getMaxPos(); }
     }
 
     return position;
@@ -621,36 +653,45 @@ AbstractSwiper.prototype._updatePos = function(pos) {
   });
 }
 
-AbstractSwiper.prototype._animateTo = function(pos) {
+AbstractSwiper.prototype.moveTo = function(pos, animated) {
+
+  if (typeof animated === 'undefined') { animated = true; }
+
   var _this = this;
 
   // Don't initiate animation if we're already in the same spot! It would wrongly set "Still" callback and "empty animation" would run.
   var diff = Math.abs(pos - this._pos);
   if (diff < 1) {  return; }
 
-  this.setStill(false);
-
-  var tmp = { pos: _this._pos }
-
   this._killAnimations();
 
-  var anim1 = TweenMax.to(tmp, this._options.animationTime, {
-    pos: pos,
-    ease: this._options.animationEase,
-    onUpdate: function() {
+  if (animated) {
 
-      _this._updatePos(tmp.pos);
+    this.setStill(false);
+    var tmp = { pos: _this._pos }
 
-    },
-    onComplete: function() {
+    var anim1 = TweenMax.to(tmp, this._options.animationTime, {
+      pos: pos,
+      ease: this._options.animationEase,
+      onUpdate: function() {
 
-      _this._animations = [];
-      _this.setStill(true);
+        _this._updatePos(tmp.pos);
 
-    }
-  });
+      },
+      onComplete: function() {
 
-  this._animations = [anim1];
+        _this._animations = [];
+        _this.setStill(true);
+
+      }
+    });
+
+    this._animations = [anim1];
+  }
+  else {
+    _this._updatePos(pos);
+  }
+
 }
 
 AbstractSwiper.prototype.goTo = function(slide, animated) {
@@ -675,7 +716,7 @@ AbstractSwiper.prototype.goTo = function(slide, animated) {
 
   //
   if (animated) {
-    _this._animateTo(pos);
+    _this.moveTo(pos);
   }
   else {
     _this._updatePos(pos);
