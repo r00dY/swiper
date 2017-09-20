@@ -7,23 +7,19 @@ var VerticalScrollDetector = new function() {
 
 	$(window).on("touchstart", function(ev) {
 		initScroll = $(window).scrollTop();
-    console.log('global touch start!');
 	});
 
 	$(window).on("touchmove", function(ev) {
-    console.log('touch move');
 		if (!isScrolling) {
 			var scroll = $(window).scrollTop();
 
 			if (scroll != initScroll) {
-        console.log('scrolling!');
 				isScrolling = true;
 			}
 		}
 	});
 
 	$(window).on("touchend", function(ev) {
-    console.log('not scrolling');
 		isScrolling = false;
 	});
 

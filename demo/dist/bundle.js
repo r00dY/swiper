@@ -18670,12 +18670,6 @@ AbstractSwiper.prototype.enable = function() {
 
   function onPanStart(ev) {
 
-    if (ev.distance > 50) {
-      // prevents weird bug, when on pan start there's a HUGE distance and huge deltas on Chrome.
-      // When we are on slider and we start scrolling in vertical direction (body scroll) starting with touch space of slider, slider gets unexpected panstart and one panleft/panright with HUGE delta.
-      // return;
-    }
-
     if (!_this._isTouched) {
 
       _this._options.onPanStart();
@@ -18693,10 +18687,13 @@ AbstractSwiper.prototype.enable = function() {
 
   _this._mc.on("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown", function(ev) {
 
+    // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
+    // https://github.com/hammerjs/hammer.js/issues/1050
+    if (ev.srcEvent.type == "pointercancel") { return; }
+
     var delta = _this._options.direction == AbstractSwiper.HORIZONTAL ? ev.deltaX : ev.deltaY;
 
     switch (ev.type) {
-
       case "swipeleft":
       case "swipeup":
 
@@ -21822,23 +21819,19 @@ var VerticalScrollDetector = new function() {
 
 	$(window).on("touchstart", function(ev) {
 		initScroll = $(window).scrollTop();
-    console.log('global touch start!');
 	});
 
 	$(window).on("touchmove", function(ev) {
-    console.log('touch move');
 		if (!isScrolling) {
 			var scroll = $(window).scrollTop();
 
 			if (scroll != initScroll) {
-        console.log('scrolling!');
 				isScrolling = true;
 			}
 		}
 	});
 
 	$(window).on("touchend", function(ev) {
-    console.log('not scrolling');
 		isScrolling = false;
 	});
 
