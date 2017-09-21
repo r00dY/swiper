@@ -21916,7 +21916,6 @@ var SimpleSwiper = function(options) {
       return _this._options.direction == AbstractSwiper.HORIZONTAL ?
       _this._container.offsetWidth :
       _this._container.offsetHeight;
-      // return _this._containerSize;
     }
 
   }
@@ -21980,15 +21979,6 @@ var SimpleSwiper = function(options) {
         item.style["position"] = "relative";
         item.style["height"] = this._options.slideSize(i);
         item.style["margin-bottom"] = this._options.slideMarginSize(i);
-
-        // this._containerInner.style["height"] = "1000000px";
-        // this._containerInner.style["flex-flow"] = "column nowrap";
-
-
-        // item.style.left = 0;
-        // item.style.width = "100%";
-        // item.style.height = this._options.slideSize(i);
-        // item.style.top = distance;
       }
 
       item.style["will-change"] = "transform";
