@@ -35,7 +35,7 @@ var AbstractSwiper = function(optionsArg) {
     onSnapToEdgeChange: function() {},
 
     // miscellaneous
-    numberOfItemsMovedAtOneAction: 1,
+    numberOfItemsMovedAtOneAction: function() { return 1; },
     // numberOfActiveSlides: 1,
     // shouldShowSingleDot: false,
 
@@ -493,11 +493,11 @@ AbstractSwiper.prototype.disable = function() {
 }
 
 AbstractSwiper.prototype.goToNext = function(animated) {
-  this.goTo(this._getSlideFromOffset(this._options.numberOfItemsMovedAtOneAction), animated);
+  this.goTo(this._getSlideFromOffset((this._options.numberOfItemsMovedAtOneAction)()), animated);
 }
 
 AbstractSwiper.prototype.goToPrevious = function(animated) {
-  this.goTo(this._getSlideFromOffset(-this._options.numberOfItemsMovedAtOneAction), animated);
+  this.goTo(this._getSlideFromOffset(-(this._options.numberOfItemsMovedAtOneAction)()), animated);
 }
 
 AbstractSwiper.prototype._getSlideFromOffset = function(offset) {
