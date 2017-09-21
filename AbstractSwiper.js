@@ -401,7 +401,7 @@ AbstractSwiper.prototype.enable = function() {
     }
   }
 
-  _this._mc.on("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown", function(ev) {
+  _this._mc.on("pan panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown", function(ev) {
 
     // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
     // https://github.com/hammerjs/hammer.js/issues/1050
@@ -439,7 +439,15 @@ AbstractSwiper.prototype.enable = function() {
       case "panstart":
         break;
 
-      case "pan":
+
+      case "panup":
+      case "pandown":
+        // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
+        // However, if we gave up returning when _this._isTouched is false, Android would too eagerly start "panning" instaed of waiting for scroll.
+        if (!_this._isTouched) { return; }
+
+      case "panleft":
+      case "panright":
         if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
         onPanStart(ev); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
 
