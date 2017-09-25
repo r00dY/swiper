@@ -164,7 +164,7 @@ AbstractSwiper.prototype.layout = function() {
  * Get array of -1, 1, 0 values, which mean that either element is on the left of edge, on the right, or active -> let's call it "orientation".
  */
 AbstractSwiper.prototype.getSlideOrientation = function(i) {
-  var leftEdge = this.getSlidePosition(i) + this._getSlideInitPos(i);
+  var leftEdge = this.getSlidePosition(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
 
   if (rightEdge < 0) {
@@ -187,7 +187,7 @@ AbstractSwiper.prototype.getSlideOrientation = function(i) {
  */
 AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
 
-  var leftEdge = this.getSlidePosition(i) + this._getSlideInitPos(i);
+  var leftEdge = this.getSlidePosition(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
 
   if (rightEdge < 0) {
@@ -206,7 +206,7 @@ AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
 }
 
 AbstractSwiper.prototype.getSlidePosition = function(i) {
-  return -this._pos + this._options.snapOffset() + this._slideState[i] * this._getSlideableWidth();
+  return -this._pos + this._options.snapOffset() + this._slideState[i] * this._getSlideableWidth() + this._getSlideInitPos(i);
 }
 
 
@@ -283,11 +283,16 @@ AbstractSwiper.prototype._getClosestSnappedPosition = function(pos, side) {
  * 2. Active slides are always the ones that are at least 50% visible in container!
  */
 AbstractSwiper.prototype.getActiveSlides = function() {
+  var _this = this;
+
   var newActiveSlides = [];
 
   for (var i = 0; i < this._options.count; i++) {
     if (this.getSlidePercentOfVisibility(i) >= 0.5) {
-      newActiveSlides.push(i);
+      newActiveSlides.push({
+        index: i,
+        pos: _this.getSlidePosition(i)
+      });
     }
   }
 
@@ -305,7 +310,13 @@ AbstractSwiper.prototype.getActiveSlides = function() {
     return [maxIndex];
   }
 
-  return newActiveSlides;
+  newActiveSlides.sort(function (a, b) {
+    return a.pos > b.pos;
+  });
+
+  var result = newActiveSlides.map(function(x) { return x.index });
+
+  return result;
 }
 
 AbstractSwiper.prototype.getSlidesVisibilityPercentages = function() {
@@ -493,11 +504,11 @@ AbstractSwiper.prototype.disable = function() {
 }
 
 AbstractSwiper.prototype.goToNext = function(animated) {
-  this.goTo(this._getSlideFromOffset((this._options.numberOfItemsMovedAtOneAction)()), animated);
+  this.goTo(this._getSlideFromOffset((this._options.numberOfItemsMovedAtOneAction)()), animated, 1);
 }
 
 AbstractSwiper.prototype.goToPrevious = function(animated) {
-  this.goTo(this._getSlideFromOffset(-(this._options.numberOfItemsMovedAtOneAction)()), animated);
+  this.goTo(this._getSlideFromOffset(-(this._options.numberOfItemsMovedAtOneAction)()), animated, -1);
 }
 
 AbstractSwiper.prototype._getSlideFromOffset = function(offset) {
@@ -702,27 +713,39 @@ AbstractSwiper.prototype.moveTo = function(pos, animated) {
 
 }
 
-AbstractSwiper.prototype.goTo = function(slide, animated) {
+// If side = 0, shortest path, 1 -> always right, -1 always left
+AbstractSwiper.prototype.goTo = function(slide, animated, side) {
   var _this = this;
 
   if (typeof animated === 'undefined') { animated = true; }
+  if (typeof side === 'undefined') { side = 0; }
 
   var pos = this._getSlideSnapPos(slide);
 
   // In case of infinite slider, we must take strategy of shortest path. So if we go from 10th slide (last) to 1st, we go one slide right, not 10 slides left.
-  if (this._options.infinite && Math.abs(pos - this._pos) > this._getSlideableWidth() / 2) {
-    if (pos - this._pos > 0) {
-      pos -= this._getSlideableWidth();
+
+  if (this._options.infinite) {
+
+    if (side == 0) { // shortest path strategy
+
+      if (Math.abs(pos - this._pos) > this._getSlideableWidth() / 2) {
+        if (pos - this._pos > 0) {
+          pos -= this._getSlideableWidth();
+        }
+        else {
+          pos += this._getSlideableWidth();
+        }
+      }
     }
-    else {
+    else if (side == 1 && pos - this._pos < 0) { // force right movement
       pos += this._getSlideableWidth();
     }
+    else if (side == -1 && pos - this._pos > 0) { // force left movement
+      pos -= this._getSlideableWidth();
+    }
+
   }
 
-  // Let's set target slide
-  // this._targetSlide = this._options.infinite ? slide : Math.min(slide, this._getMaxTargetSlide()); // if not infinite, max target slide is limited.
-
-  //
   if (animated) {
     _this.moveTo(pos);
   }
