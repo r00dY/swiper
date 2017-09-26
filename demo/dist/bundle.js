@@ -18455,17 +18455,20 @@ AbstractSwiper.prototype.getSlideOrientation = function(i) {
   var leftEdge = this.getSlidePosition(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
 
-  if (rightEdge < 0) {
+  var leftContainerEdge = this._options.snapOffset();
+  var rightContainerEdge = this._options.snapOffset() + this._options.containerSize();
+
+  if (rightEdge < leftContainerEdge) {
     return -1;
-  } else if (leftEdge > this._options.containerSize()) {
+  } else if (leftEdge > rightContainerEdge) {
     return 1;
-  } else if (leftEdge <= 0 && rightEdge >= this._options.containerSize()) {
+  } else if (leftEdge <= leftContainerEdge && rightEdge >= rightContainerEdge) {
     return 0;
-  } else if (leftEdge >= 0 && rightEdge <= this._options.containerSize()) {
+  } else if (leftEdge >= leftContainerEdge && rightEdge <= rightContainerEdge) {
     return 0;
-  } else if (leftEdge <= 0) {
+  } else if (leftEdge <= leftContainerEdge) {
     return -1;
-  } else if (rightEdge >= this._options.containerSize()) {
+  } else if (rightEdge >= rightContainerEdge) {
     return 1;
   }
 }
@@ -18478,18 +18481,21 @@ AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
   var leftEdge = this.getSlidePosition(i);
   var rightEdge = leftEdge + this._options.slideSize(i);
 
-  if (rightEdge < 0) {
+  var leftContainerEdge = this._options.snapOffset();
+  var rightContainerEdge = this._options.snapOffset() + this._options.containerSize();
+
+  if (rightEdge < leftContainerEdge) {
     return 0;
-  } else if (leftEdge > this._options.containerSize()) {
+  } else if (leftEdge > rightContainerEdge) {
     return 0;
-  } else if (leftEdge <= 0 && rightEdge >= this._options.containerSize()) {
+  } else if (leftEdge <= leftContainerEdge && rightEdge >= rightContainerEdge) {
     return 1;
-  } else if (leftEdge >= 0 && rightEdge <= this._options.containerSize()) {
+  } else if (leftEdge >= leftContainerEdge && rightEdge <= rightContainerEdge) {
     return 1;
-  } else if (leftEdge <= 0) {
-    return (rightEdge - 0) / this._options.slideSize(i);
-  } else if (rightEdge >= this._options.containerSize()) {
-    return (this._options.containerSize() - leftEdge) / this._options.slideSize(i);
+  } else if (leftEdge <= leftContainerEdge) {
+    return (rightEdge - leftContainerEdge) / this._options.slideSize(i);
+  } else if (rightEdge >= rightContainerEdge) {
+    return (rightContainerEdge - leftEdge) / this._options.slideSize(i);
   }
 }
 
