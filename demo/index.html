@@ -474,7 +474,7 @@
 
 
 
-      <h2>7. Snap offset</h2>
+      <h2>7. Snap offset infinite</h2>
 
       <div class="wrapper">
 
@@ -525,6 +525,65 @@
         })
       </script>
 
+
+      <h2>7.1 Snap offset finite + opacity changing!</h2>
+
+      <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-71">
+          <div class="swiper-items">
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+            </div>
+        </div>
+
+        <button class="swiper-click-space-previous" data-swiper="demo-71">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-71">NEXT</button>
+
+        <div class="pager">
+          <button class="swiper-pager-item" data-swiper="demo-71">X</button>
+        </div>
+
+        <div class="counter">
+          <span class="swiper-counter-current" data-swiper="demo-71"></span> / <span class="swiper-counter-all" data-swiper="demo-71"></span>
+        </div>
+      </div>
+
+      <script>
+        $(document).ready(function() {
+
+          var width = $('.swiper').width();
+          var slides = $('.swiper[data-swiper=demo-71]').find('.slide');
+
+          var swiperDemo71 = new SimpleSwiper({
+            name: 'demo-71',
+            snapOffset: function() {
+              return width / 10;
+            },
+            containerSize: function() {
+              return width * 8 / 10;
+            },
+            onMove: function() {
+
+              var visibilities = swiperDemo71.getSlidesVisibilityPercentages();
+              slides.each(function(index) {
+                $(this).css('opacity', visibilities[index]);
+              });
+
+            }
+          });
+
+          swiperDemo71.init();
+        })
+      </script>
 
       <!--
         8. Let's try to change number of items in Swiper dynamically

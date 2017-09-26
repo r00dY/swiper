@@ -18936,7 +18936,7 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     for(var i = 0; i < this._options.count; i++) {
       this._slideState[i] = 0;
 
-      positions[i] = -normalizedPos;
+      positions[i] = -normalizedPos + this._options.snapOffset();
     }
   }
 
