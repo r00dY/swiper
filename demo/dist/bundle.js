@@ -22000,14 +22000,14 @@ var SimpleSwiper = function(options) {
 
       if (_this._options.direction == AbstractSwiper.HORIZONTAL) {
         item.style["position"] = "relative";
-        item.style["width"] = this._options.slideSize(i);
-        item.style["margin-right"] = this._options.slideMarginSize(i);
+        item.style["width"] = this._options.slideSize(i) + 'px';
+        item.style["margin-right"] = this._options.slideMarginSize(i) + 'px';
 
       } else {
 
         item.style["position"] = "relative";
-        item.style["height"] = this._options.slideSize(i);
-        item.style["margin-bottom"] = this._options.slideMarginSize(i);
+        item.style["height"] = this._options.slideSize(i) + 'px';
+        item.style["margin-bottom"] = this._options.slideMarginSize(i) + 'px';
       }
 
       item.style["will-change"] = "transform";
