@@ -1,19 +1,12 @@
 .swiper-container.panning > .swiper-items * {
   pointer-events: none; }
 
-.swiper-container > .swiper-items {
-  display: flex;
-  width: 1000000px;
-  flex-flow: row nowrap; }
-  .swiper-container > .swiper-items > * {
-    position: relative;
-    will-change: transform; }
-  .swiper-container > .swiper-items * {
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none; }
+.swiper-container > .swiper-items * {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none; }
 
 html, body {
   -webkit-font-smoothing: antialiased;

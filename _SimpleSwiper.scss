@@ -8,14 +8,14 @@
   }
 
   > .swiper-items {
-    display: flex;
-    width: 1000000px;
-    flex-flow: row nowrap;
+    // display: flex;
+    // width: 1000000px;
+    // flex-flow: row nowrap;
 
-    > * {
-      position: relative;
-      will-change: transform;
-    }
+    // > * {
+    //   position: relative;
+    //   will-change: transform;
+    // }
 
     * {
       -webkit-user-drag: none;
