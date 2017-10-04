@@ -21955,6 +21955,23 @@ var SimpleSwiper = function(options) {
     }
   }
 
+  // Add extra actions to onPanUp and onPanDown
+  var tmpOnPanStart = this._options.onPanStart;
+  var tmpOnPanEnd = this._options.onPanEnd;
+
+  this._options.onPanStart = function() {
+    _this._container.classList.add('panning');
+    tmpOnPanStart();
+  }
+
+  this._options.onPanEnd = function() {
+    setTimeout(function() {
+      _this._container.classList.remove('panning');
+    }, 0);
+
+    tmpOnPanEnd();
+  }
+
 
   function init() {
     _this._items = _this._containerInner.children;

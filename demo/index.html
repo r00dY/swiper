@@ -652,6 +652,93 @@
         })
       </script>
 
+      <h2>9. Click interception</h2>
+
+      <!--
+        Below we show an example of simplest possible swiper. Every slide is 100% width of the container. We enabled all controls (arrows, pager and counter). Make sure to check it out on touch device!
+      -->
+
+      <!-- HTML STRUCTURE -->
+
+      <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-9">
+          <div class="swiper-items">
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+              <div class="slide"><a href="https://www.destroyallsoftware.com/" target="_blank">Link</a></div>
+            </div>
+        </div>
+
+        <button class="swiper-click-space-previous" data-swiper="demo-9">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-9">NEXT</button>
+
+        <div class="pager">
+          <button class="swiper-pager-item" data-swiper="demo-9">X</button>
+        </div>
+
+        <div class="counter">
+          <span class="swiper-counter-current" data-swiper="demo-9"></span> / <span class="swiper-counter-all" data-swiper="demo-9"></span>
+        </div>
+      </div>
+
+      <style>
+          .slide {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-size: 24px;
+          }
+
+/*          .swiper.panning .swiper-items * {
+            pointer-events: none !important;
+          }*/
+
+/*          .slide a {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+          }*/
+      </style>
+
+      <script>
+        $(document).ready(function() {
+          var swiper = new SimpleSwiper({
+            name: 'demo-9',
+            // onPanStart: function() {
+            //   console.log('on pan start');
+
+            //   $('.swiper[data-swiper=demo-9]').addClass('panning');
+            // },
+            // onPanEnd: function() {
+            //   console.log('on pan end');
+
+            //   setTimeout(function() {
+            //     $('.swiper[data-swiper=demo-9]').removeClass('panning');
+            //     console.log('on pan end 2');
+            //   }, 0);
+            // }
+          });
+
+          swiper.init();
+
+          $('.swiper[data-swiper=demo-9] .slide').click(function(e) {
+            // e.preventDefault();
+            console.log('slide click!');
+          })
+
+        })
+      </script>
+
 
 			<h3>onMove event -> key to customization</h3>
 			<p>[To do]</p>
