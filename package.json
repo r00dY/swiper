@@ -13,6 +13,7 @@
         "gulp": "^3.9.1",
         "gulp-sass": "*",
         "jquery": "*",
+        "qunitjs": "^2.4.0",
         "webpack-stream": "^4.0.0"
     }
 }
