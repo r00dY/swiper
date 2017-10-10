@@ -2,7 +2,7 @@ var Hammer = require("hammerjs");
 require("gsap");
 var VerticalScrollDetector = require("./VerticalScrollDetector.js");
 
-var AbstractSwiper = function(optionsArg) {
+var AbstractSwiper = function(gesturesProvider, optionsArg) {
   var _this = this;
 
   /**
@@ -10,47 +10,49 @@ var AbstractSwiper = function(optionsArg) {
    */
   if (typeof optionsArg === 'undefined') { optionsArg = {} };
 
-  var defaultOptions = {
-    name: undefined, // must be unique
+  this.gesturesProvider = gesturesProvider === 'undefined' ?
+          new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: true }):
+          gesturesProvider;
 
-    direction: AbstractSwiper.HORIZONTAL,
+  this._options = {
+      name: undefined, // must be unique
 
-    animationEase: Expo.easeOut,
-    animationTime: 0.6,
+      direction: AbstractSwiper.HORIZONTAL,
 
-    count: undefined,
+      animationEase: Expo.easeOut,
+      animationTime: 0.6,
 
-    containerSize: function() { throw "AbstractSwiper: undefined containerSize function!"; }, // relativeX is relatively to this size!!!
-    // initMarginSize: function() { return 0; }, // function!
-    slideMarginSize: function() { return 0; }, // function!
-    slideSize: function() { throw "AbstractSwiper: undefined slideSize function!"; }, // function!
-    snapOffset: function() { return 0; },
+      count: undefined,
 
-    // callbacks
-    onMove: function() {},
-    onPanStart: function() {},
-    onPanEnd: function() {},
-    onStillChange: function() {},
-    onActiveSlidesChange: function() {},
-    onSnapToEdgeChange: function() {},
+      containerSize: function() { throw "AbstractSwiper: undefined containerSize function!"; }, // relativeX is relatively to this size!!!
+      // initMarginSize: function() { return 0; }, // function!
+      slideMarginSize: function() { return 0; }, // function!
+      slideSize: function() { throw "AbstractSwiper: undefined slideSize function!"; }, // function!
+      snapOffset: function() { return 0; },
 
-    // miscellaneous
-    numberOfItemsMovedAtOneAction: function() { return 1; },
-    // numberOfActiveSlides: 1,
-    // shouldShowSingleDot: false,
+      // callbacks
+      onMove: function() {},
+      onPanStart: function() {},
+      onPanEnd: function() {},
+      onStillChange: function() {},
+      onActiveSlidesChange: function() {},
+      onSnapToEdgeChange: function() {},
 
-    counterTransformer: function(num) { return "" + num; },
+      // miscellaneous
+      numberOfItemsMovedAtOneAction: function() { return 1; },
+      // numberOfActiveSlides: 1,
+      // shouldShowSingleDot: false,
 
-    autoLayoutOnResize: true,
+      counterTransformer: function(num) { return "" + num; },
 
-    infinite: false,
+      autoLayoutOnResize: true,
 
-    snapOnlyToAdjacentSlide: true,
+      infinite: false,
 
-    freefloat: false
-  }
+      snapOnlyToAdjacentSlide: true,
 
-  this._options = defaultOptions;
+      freefloat: false
+  };
 
   for (var key in optionsArg) {
     if (!optionsArg.hasOwnProperty(key)) { continue; }
@@ -89,6 +91,10 @@ var AbstractSwiper = function(optionsArg) {
 
 AbstractSwiper.HORIZONTAL = 0;
 AbstractSwiper.VERTICAL = 1;
+
+AbstractSwiper.getSelectorForComponent = function(component, name) {
+    return '.swiper-' + component + '[data-swiper="' + name + '"]';
+}
 
 AbstractSwiper.prototype._getSelectorForComponent = function(component) {
   return '.swiper-' + component + '[data-swiper="' + this._options.name + '"]';
@@ -163,27 +169,27 @@ AbstractSwiper.prototype.layout = function() {
 /**
  * Get array of -1, 1, 0 values, which mean that either element is on the left of edge, on the right, or active -> let's call it "orientation".
  */
-AbstractSwiper.prototype.getSlideOrientation = function(i) {
-  var leftEdge = this.getSlidePosition(i);
-  var rightEdge = leftEdge + this._options.slideSize(i);
-
-  var leftContainerEdge = this._options.snapOffset();
-  var rightContainerEdge = this._options.snapOffset() + this._options.containerSize();
-
-  if (rightEdge < leftContainerEdge) {
-    return -1;
-  } else if (leftEdge > rightContainerEdge) {
-    return 1;
-  } else if (leftEdge <= leftContainerEdge && rightEdge >= rightContainerEdge) {
-    return 0;
-  } else if (leftEdge >= leftContainerEdge && rightEdge <= rightContainerEdge) {
-    return 0;
-  } else if (leftEdge <= leftContainerEdge) {
-    return -1;
-  } else if (rightEdge >= rightContainerEdge) {
-    return 1;
-  }
-}
+// AbstractSwiper.prototype.getSlideOrientation = function(i) {
+//   var leftEdge = this.getSlidePosition(i);
+//   var rightEdge = leftEdge + this._options.slideSize(i);
+//
+//   var leftContainerEdge = this._options.snapOffset();
+//   var rightContainerEdge = this._options.snapOffset() + this._options.containerSize();
+//
+//   if (rightEdge < leftContainerEdge) {
+//     return -1;
+//   } else if (leftEdge > rightContainerEdge) {
+//     return 1;
+//   } else if (leftEdge <= leftContainerEdge && rightEdge >= rightContainerEdge) {
+//     return 0;
+//   } else if (leftEdge >= leftContainerEdge && rightEdge <= rightContainerEdge) {
+//     return 0;
+//   } else if (leftEdge <= leftContainerEdge) {
+//     return -1;
+//   } else if (rightEdge >= rightContainerEdge) {
+//     return 1;
+//   }
+// }
 
 /**
  * Get array of how much visible in container is each slide.
@@ -353,160 +359,38 @@ AbstractSwiper.prototype._killAnimations = function() {
   this._animations = [];
 }
 
-AbstractSwiper.prototype.getCount = function() {
-  return this._options.count;
-}
+// AbstractSwiper.prototype.getCount = function() {
+//   return this._options.count;
+// }
 
-AbstractSwiper.prototype.setStill = function(status) {
-  if (status == this._isStill) { return; }
-  this._isStill = status;
-
-  if (this._isStill) {
-    this._unblockScrolling();
-  }
-  else {
-    this._blockScrolling();
-  }
-
-  this._options.onStillChange(this._isStill);
-}
+// AbstractSwiper.prototype.setStill = function(status) {
+//   if (status == this._isStill) { return; }
+//   this._isStill = status;
+//
+//   if (this._isStill) {
+//     this._unblockScrolling();
+//   }
+//   else {
+//     this._blockScrolling();
+//   }
+//
+//   this._options.onStillChange(this._isStill);
+// }
 
 AbstractSwiper.prototype._blockScrolling = function() {
-  if (this._mc) {
-    this._mc.get('pan').set({ direction: Hammer.DIRECTION_ALL });
-    this._mc.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
-  }
+    this.gesturesProvider.blockScrolling();
 }
 
 AbstractSwiper.prototype._unblockScrolling = function() {
-  if (this._mc) {
-    var hammerDirection = this._options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
-    this._mc.get('pan').set({ direction: hammerDirection });
-    this._mc.get('swipe').set({ direction: hammerDirection });
-  }
+    this.gesturesProvider.unblockScrolling();
 }
 
 AbstractSwiper.prototype.enable = function() {
-  var _this = this;
-
-  if (this._enabled) { return; }
-  this._enabled = true;
-
-  this._mc = new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: true });
-
-  var swiped = false;
-
-  var hammerDirection = this._options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
-
-  this._mc.get('pan').set({ direction: hammerDirection, threshold: 20 });
-  this._mc.get('swipe').set({ direction: hammerDirection, threshold: 20 });
-
-  function onPanStart(ev) {
-
-    if (!_this._isTouched) {
-
-      _this._options.onPanStart();
-
-      _this._isTouched = true;
-      swiped = false;
-
-      _this._killAnimations();
-
-      _this._panStartPos = _this._pos;
-
-      _this.setStill(false);
-    }
-  }
-
-  _this._mc.on("pan panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown", function(ev) {
-
-    // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
-    // https://github.com/hammerjs/hammer.js/issues/1050
-    if (ev.srcEvent.type == "pointercancel") { return; }
-
-    var delta = _this._options.direction == AbstractSwiper.HORIZONTAL ? ev.deltaX : ev.deltaY;
-
-    switch (ev.type) {
-      case "swipeleft":
-      case "swipeup":
-
-         if (_this._isTouched) {
-            var v = Math.abs(ev.velocityX) * 1000;
-            var newPos = _this._getNextPositionFromVelocity(v);
-            _this.moveTo(newPos);
-
-            swiped = true;
-         }
-
-      break;
-
-
-      case "swiperight":
-      case "swipedown":
-
-         if (_this._isTouched) {
-
-            var v = -Math.abs(ev.velocityX) * 1000;
-            var newPos = _this._getNextPositionFromVelocity(v);
-            _this.moveTo(newPos);
-            swiped = true;
-         }
-
-      break;
-      case "panstart":
-        break;
-
-
-      case "panup":
-      case "pandown":
-        // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
-        // However, if we gave up returning when _this._isTouched is false, Android would too eagerly start "panning" instaed of waiting for scroll.
-        if (!_this._isTouched) { return; }
-
-      case "panleft":
-      case "panright":
-        if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
-        onPanStart(ev); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
-
-        if (_this._isTouched && !swiped) {
-          _this._pan(delta, _this._panStartPos);
-        }
-
-        break;
-
-      case "panend":
-
-        if (_this._isTouched) {
-
-          _this._options.onPanEnd();
-
-          _this._isTouched = false;
-
-          if (!swiped) {
-
-            var pos = _this._pos;
-
-            if (_this._options.freefloat && !_this._options.infinite) {
-              pos = this._normalizePos(pos, false);
-            }
-            else if (!_this._options.freefloat) {
-              pos = _this._getClosestSnappedPosition(pos);
-            }
-
-            _this.moveTo(pos);
-          }
-
-          swiped = false;
-        }
-        break;
-    }
-  });
+  this.gesturesProvider.enable(this);
 };
 
 AbstractSwiper.prototype.disable = function() {
-  if (!this._enabled) { return; }
-  this._enabled = false;
-  this._mc.off("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown");
+  this.gesturesProvider.disable();
 }
 
 AbstractSwiper.prototype.goToNext = function(animated) {

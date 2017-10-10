@@ -1,12 +1,11 @@
-// var SimpleSwiper = require("../SimpleSwiper.js");
-//
-//
-// console.log(document);
+require('../new_swiper/bundle')
+
+console.log(SimpleSwiperFactory);
 // var xx = new SimpleSwiper({
 //     name: 'demo-1'
 // });
 
-var assert = require('assert');
+let assert = require('assert');
 
 describe('Array', function() {
     describe('#indexOf()', function() {
