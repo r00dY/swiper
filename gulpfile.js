@@ -16,6 +16,17 @@ gulp.task('webpack', function() {
     .pipe(gulp.dest('./demo/dist/'));
 });
 
+gulp.task('webpack-test', function() {
+    return gulp.src('./test/tests.js')
+        .pipe(webpack({
+            output: {
+                filename: 'bundle.js',
+            }
+        }))
+        .pipe(gulp.dest('./test/'));
+});
+
+
 gulp.task('sass', [], function() {
     return gulp.src('./demo/style.scss')
         .pipe(sass().on('error', sass.logError))

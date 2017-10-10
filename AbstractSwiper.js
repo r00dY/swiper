@@ -336,15 +336,15 @@ AbstractSwiper.prototype.getSlidesVisibilityPercentages = function() {
 }
 
 
-AbstractSwiper.prototype.getSlidesOrientations = function() {
-  var orientations = [];
-
-  for (var i = 0; i < this._options.count; i++) {
-    orientations.push(this.getSlideOrientation(i));
-  }
-
-  return orientations;
-}
+// AbstractSwiper.prototype.getSlidesOrientations = function() {
+//   var orientations = [];
+//
+//   for (var i = 0; i < this._options.count; i++) {
+//     orientations.push(this.getSlideOrientation(i));
+//   }
+//
+//   return orientations;
+// }
 
 AbstractSwiper.prototype._killAnimations = function() {
   for (var i = 0; i < this._animations.length; i++) {

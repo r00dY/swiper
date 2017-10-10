@@ -7,13 +7,13 @@
     "dependencies": {
         "browser-sync": "^2.18.13",
         "gsap": "^1.20.2",
-        "hammerjs": "^2.0.8"
+        "hammerjs": "^2.0.8",
+        "mocha": "^4.0.1"
     },
     "devDependencies": {
         "gulp": "^3.9.1",
         "gulp-sass": "*",
         "jquery": "*",
-        "qunitjs": "^2.4.0",
         "webpack-stream": "^4.0.0"
     }
 }
