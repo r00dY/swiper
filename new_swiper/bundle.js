@@ -155,8 +155,6 @@ var AbstractSwiper = function(gesturesProvider, animationsProvider, optionsArg) 
   this._isStill = true; // true if at peace - this means that slider is still and there's no touch event active.
 
   this._animations = [];
-
-  this._panStartPos = 0;
   this._enabled = false;
 }
 
@@ -496,6 +494,10 @@ AbstractSwiper.prototype._getSlideFromOffset = function(offset) {
   return newSlide;
 }
 
+AbstractSwiper.prototype.getCurrentPosition = function() {
+  return this._pos;
+}
+
 AbstractSwiper.prototype._getNextPositionFromVelocity = function(v) {
 
   // In case of freefloat just add s.
@@ -560,11 +562,6 @@ AbstractSwiper.prototype._normalizePos = function(position, overscroll) {
 // Overfscroll function for noninfinite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
 AbstractSwiper.prototype._overscrollFunction = function(val) {
   return 0.6 * Math.log(1 + val);
-}
-
-
-AbstractSwiper.prototype._pan = function(deltaX, startX) {
-  this._updatePos(startX - deltaX);
 }
 
 AbstractSwiper.prototype._updatePos = function(pos) {
@@ -645,6 +642,9 @@ AbstractSwiper.prototype.moveTo = function(pos, animated) {
 
   this.animationsProvider.killAnimations();
 
+  console.log('POZYCJE');
+  console.log(_this._pos);
+  console.log(pos);
   if (animated) {
     this.animationsProvider.moveTo(_this.gesturesProvider, _this._pos, _this._updatePos.bind(_this, pos));
   }
@@ -21974,7 +21974,6 @@ var AbstractSwiper = __webpack_require__(0);
 
 class SwiperFactory {
     createSwiper(options) {
-        /** options = { animation: {animationTime, onStillChange, animationEase}, gestures: {direction, freefloat, infinite, onPanStart}} */
 
         this._options = {
             animation: {
@@ -21987,36 +21986,36 @@ class SwiperFactory {
                 freefloat: false,
                 infinite: false,
                 onPanStart: function() {},
+                onPanEnd: function() {},
             },
+            swiper: {
+                autoLayoutOnResize: true,
+                // slideSize: function() { throw "AbstractSwiper: undefined slideSize function!"; }, // function!
 
-            name: undefined, // must be unique
+                name: undefined, // must be unique
 
-            count: undefined,
+                count: undefined,
 
-            containerSize: function() { throw "AbstractSwiper: undefined containerSize function!"; }, // relativeX is relatively to this size!!!
-            // initMarginSize: function() { return 0; }, // function!
-            slideMarginSize: function() { return 0; }, // function!
-            slideSize: function() { throw "AbstractSwiper: undefined slideSize function!"; }, // function!
-            snapOffset: function() { return 0; },
+                // containerSize: function() { throw "AbstractSwiper: undefined containerSize function!"; }, // relativeX is relatively to this size!!!
+                // initMarginSize: function() { return 0; }, // function!
+                slideMarginSize: function() { return 0; }, // function!
+                snapOffset: function() { return 0; },
 
-            // callbacks
-            onMove: function() {},
-            onPanEnd: function() {},
-            onActiveSlidesChange: function() {},
-            onSnapToEdgeChange: function() {},
+                // callbacks
+                onMove: function() {},
+                onPanEnd: function() {},
+                onActiveSlidesChange: function() {},
+                onSnapToEdgeChange: function() {},
 
-            // miscellaneous
-            numberOfItemsMovedAtOneAction: function() { return 1; },
-            // numberOfActiveSlides: 1,
-            // shouldShowSingleDot: false,
+                // miscellaneous
+                numberOfItemsMovedAtOneAction: function() { return 1; },
+                // numberOfActiveSlides: 1,
+                // shouldShowSingleDot: false,
 
-            counterTransformer: function(num) { return "" + num; },
+                counterTransformer: function(num) { return "" + num; },
 
-            autoLayoutOnResize: true,
-
-
-            snapOnlyToAdjacentSlide: true,
-
+                snapOnlyToAdjacentSlide: true,
+            },
         };
 
         for (let key in options) {
@@ -22024,10 +22023,12 @@ class SwiperFactory {
             this._options[key] = options[key];
         }
 
+        let animationsProvider = new __WEBPACK_IMPORTED_MODULE_1__AnimationsProvider__["a" /* default */](this._options.animation);
+
         let swiper = new SimpleSwiper(
-            new __WEBPACK_IMPORTED_MODULE_0__HammerGesturesProvider__["a" /* default */](AbstractSwiper.getSelectorForComponent('touch-space', options.name), this._options.gestures),
-            new __WEBPACK_IMPORTED_MODULE_1__AnimationsProvider__["a" /* default */](this._options.animation),
-            options,
+            new __WEBPACK_IMPORTED_MODULE_0__HammerGesturesProvider__["a" /* default */](AbstractSwiper.getSelectorForComponent('touch-space', options.name), this._options.gestures, animationsProvider),
+            animationsProvider,
+            this._options.swiper,
             document.querySelector(AbstractSwiper.getSelectorForComponent('container', options.name)),
             document.querySelector(AbstractSwiper.getSelectorForComponent('container', options.name)).querySelector('.swiper-items')
         );
@@ -22051,8 +22052,7 @@ let Hammer = __webpack_require__(5);
 class HammerGesturesProvider {
     constructor(selector, _options, animationsProvider) {
 
-        /** options = {direction, freefloat, infinite, onPanStart} */
-
+        /** options = {direction, freefloat, infinite, onPanStart, onPanEnd} */
         this._mc = new Hammer(document.querySelector(selector), { domEvents: true });
         this._options = _options;
         this.hammerDirection = _options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
@@ -22060,6 +22060,7 @@ class HammerGesturesProvider {
         this._isStill = false;
         this.animationsProvider = animationsProvider;
         this.swiped = false;
+        this._panStartPos = 0;
     }
     blockScrolling() {
         this._mc.get('pan').set({ direction: Hammer.DIRECTION_ALL });
@@ -22078,34 +22079,46 @@ class HammerGesturesProvider {
         this._mc.get('pan').set({ direction: this.hammerDirection, threshold: 20 });
         this._mc.get('swipe').set({ direction: this.hammerDirection, threshold: 20 });
 
+        let _this = this;
+
         this._mc.on("pan panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown", function(ev) {
 
             // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
             // https://github.com/hammerjs/hammer.js/issues/1050
             if (ev.srcEvent.type == "pointercancel") { return; }
-
-            var delta = this._options.direction == AbstractSwiper.HORIZONTAL ? ev.deltaX : ev.deltaY;
+            var delta = _this._options.direction == AbstractSwiper.HORIZONTAL ? ev.deltaX : ev.deltaY;
 
             switch (ev.type) {
+                case "panstart":
+                    console.log('panstart');
+                    console.log(swiper.getCurrentPosition());
+                    break;
                 case "swipeleft":
                 case "swipeup":
-                    if (this._isTouched) {
-                        var v = Math.abs(ev.velocityX) * 1000;
-                        var newPos = swiper._getNextPositionFromVelocity(v);
-                        swiper.moveTo(newPos);
-
-                        this.swiped = true;
+                    if (!_this._isTouched) {
+                        break;
                     }
+
+                    var v = Math.abs(ev.velocityX) * 1000;
+                    var newPos = swiper._getNextPositionFromVelocity(v);
+                    swiper.moveTo(newPos);
+
+                    console.log('POZYCJE xx');
+                    console.log(swiper.getCurrentPosition());
+                    console.log(newPos);
+
+                    _this.swiped = true;
                     break;
 
                 case "swiperight":
                 case "swipedown":
-                    if (this._isTouched) {
+                    if (!this._isTouched) {
+                        break;
+                    }
                         var v = -Math.abs(ev.velocityX) * 1000;
                         var newPos = swiper._getNextPositionFromVelocity(v);
                         swiper.moveTo(newPos);
-                        this.swiped = true;
-                    }
+                        _this.swiped = true;
                     break;
                 case "panstart":
                     break;
@@ -22114,35 +22127,37 @@ class HammerGesturesProvider {
                 case "pandown":
                     // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
                     // However, if we gave up returning when this._isTouched is false, Android would too eagerly start "panning" instaed of waiting for scroll.
-                    if (!this._isTouched) { return; }
+                    if (!_this._isTouched) { return; }
 
                 case "panleft":
                 case "panright":
                     if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
-                    this._onPanStart(); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
-                    if (this._isTouched && !this.swiped) {
-                        this._pan(delta, this._panStartPos);
+                    _this._onPanStart(swiper.getCurrentPosition()); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
+                    if (_this._isTouched && !_this.swiped) {
+                        swiper._updatePos(delta - _this._panStartPos);
                     }
                     break;
 
                 case "panend":
-                    if (this._isTouched) {
-                        this._options.onPanEnd();
-                        this._isTouched = false;
+                    if (_this._isTouched) {
+                        _this._options.onPanEnd();
+                        _this._isTouched = false;
 
                         if (!this.swiped) {
-                            var pos = this._pos;
-                            if (this._options.freefloat && !this._options.infinite) {
+                            var pos = swiper.getCurrentPosition();
+                            if (_this._options.freefloat && !this._options.infinite) {
                                 pos = swiper._normalizePos(pos, false);
                             }
-                            else if (!this._options.freefloat) {
+                            else if (!_this._options.freefloat) {
                                 pos = swiper._getClosestSnappedPosition(pos);
                             }
 
                             swiper.moveTo(pos);
                         }
-                        this.swiped = false;
+                        _this.swiped = false;
                     }
+                    console.log('panend');
+                    console.log(swiper.getCurrentPosition());
                     break;
             }
         });
@@ -22154,13 +22169,13 @@ class HammerGesturesProvider {
         this._mc.off("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown");
     }
 
-    _onPanStart() {
+    _onPanStart(pos) {
         if (!this._isTouched) {
             this._options.onPanStart();
             this._isTouched = true;
             this.swiped = false;
             this.animationsProvider.killAnimations();
-            this._panStartPos = this._pos;
+            this._panStartPos = pos;
             this.animationsProvider.setStill(this, false);
         }
     }

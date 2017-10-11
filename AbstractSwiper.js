@@ -86,8 +86,6 @@ var AbstractSwiper = function(gesturesProvider, animationsProvider, optionsArg) 
   this._isStill = true; // true if at peace - this means that slider is still and there's no touch event active.
 
   this._animations = [];
-
-  this._panStartPos = 0;
   this._enabled = false;
 }
 
@@ -427,6 +425,10 @@ AbstractSwiper.prototype._getSlideFromOffset = function(offset) {
   return newSlide;
 }
 
+AbstractSwiper.prototype.getCurrentPosition = function() {
+  return this._pos;
+}
+
 AbstractSwiper.prototype._getNextPositionFromVelocity = function(v) {
 
   // In case of freefloat just add s.
@@ -491,11 +493,6 @@ AbstractSwiper.prototype._normalizePos = function(position, overscroll) {
 // Overfscroll function for noninfinite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
 AbstractSwiper.prototype._overscrollFunction = function(val) {
   return 0.6 * Math.log(1 + val);
-}
-
-
-AbstractSwiper.prototype._pan = function(deltaX, startX) {
-  this._updatePos(startX - deltaX);
 }
 
 AbstractSwiper.prototype._updatePos = function(pos) {
@@ -576,6 +573,9 @@ AbstractSwiper.prototype.moveTo = function(pos, animated) {
 
   this.animationsProvider.killAnimations();
 
+  console.log('POZYCJE');
+  console.log(_this._pos);
+  console.log(pos);
   if (animated) {
     this.animationsProvider.moveTo(_this.gesturesProvider, _this._pos, _this._updatePos.bind(_this, pos));
   }

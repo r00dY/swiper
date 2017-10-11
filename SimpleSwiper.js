@@ -83,7 +83,6 @@ var SimpleSwiper = function(options) {
         _this._containerInner.style["flex-flow"] = "column nowrap";
     }
 
-
     for (var i = 0; i < this._items.length; i++) {
       var item = this._items[i];
 
