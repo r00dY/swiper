@@ -1,11 +1,11 @@
 var AbstractSwiper = require("../AbstractSwiper.js");
 
 // Argument is id of container with slides
-var SimpleSwiper = function(gesturesProvider, options, container, innerContainer) {
+var SimpleSwiper = function(gesturesProvider, animationsProvider, options, container, innerContainer) {
 
   var _this = this;
 
-  AbstractSwiper.call(this, gesturesProvider, options);
+  AbstractSwiper.call(this, gesturesProvider, animationsProvider, options);
 
   this._container = container;
   this._containerInner = innerContainer;

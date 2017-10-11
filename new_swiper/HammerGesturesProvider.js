@@ -3,13 +3,16 @@ let VerticalScrollDetector = require("../VerticalScrollDetector.js");
 let Hammer = require("hammerjs");
 
 export default class HammerGesturesProvider {
-    constructor(selector, _options) {
-        // get selector for component
-        // this._mc = new Hammer(document.querySelector(selector), { domEvents: true });
+    constructor(selector, _options, animationsProvider) {
+
+        /** options = {direction, freefloat, infinite, onPanStart} */
+
+        this._mc = new Hammer(document.querySelector(selector), { domEvents: true });
         this._options = _options;
         this.hammerDirection = _options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
         this._enabled = false;
         this._isStill = false;
+        this.animationsProvider = animationsProvider;
         this.swiped = false;
     }
     blockScrolling() {
@@ -20,20 +23,6 @@ export default class HammerGesturesProvider {
         let hammerDirection = this._options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
         this._mc.get('pan').set({ direction: hammerDirection });
         this._mc.get('swipe').set({ direction: hammerDirection });
-    }
-
-    setStill(status) {
-        if (status == this._isStill) { return; }
-        this._isStill = status;
-
-        if (this._isStill) {
-            this.unblockScrolling();
-        }
-        else {
-            this.blockScrolling();
-        }
-
-        this._options.onStillChange(this._isStill);
     }
 
     enable(swiper) {
@@ -119,21 +108,14 @@ export default class HammerGesturesProvider {
         this._mc.off("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown");
     }
 
-    _killAnimations() {
-        for (var i = 0; i < this._animations.length; i++) {
-            this._animations[i].kill();
-        }
-        this._animations = [];
-    }
-
     _onPanStart() {
         if (!this._isTouched) {
             this._options.onPanStart();
             this._isTouched = true;
             this.swiped = false;
-            this._killAnimations();
+            this.animationsProvider.killAnimations();
             this._panStartPos = this._pos;
-            this.setStill(false);
+            this.animationsProvider.setStill(this, false);
         }
     }
 }

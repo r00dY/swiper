@@ -71,13 +71,15 @@ var Hammer = __webpack_require__(5);
 __webpack_require__(3);
 var VerticalScrollDetector = __webpack_require__(6);
 
-var AbstractSwiper = function(gesturesProvider, optionsArg) {
+var AbstractSwiper = function(gesturesProvider, animationsProvider, optionsArg) {
   var _this = this;
 
   /**
    * Resolve options
    */
   if (typeof optionsArg === 'undefined') { optionsArg = {} };
+
+  this.animationsProvider = animationsProvider;
 
   this.gesturesProvider = gesturesProvider === 'undefined' ?
           new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: true }):
@@ -641,30 +643,10 @@ AbstractSwiper.prototype.moveTo = function(pos, animated) {
   var diff = Math.abs(pos - this._pos);
   if (diff < 1) {  return; }
 
-  this._killAnimations();
+  this.animationsProvider.killAnimations();
 
   if (animated) {
-
-    this.setStill(false);
-    var tmp = { pos: _this._pos }
-
-    var anim1 = TweenMax.to(tmp, this._options.animationTime, {
-      pos: pos,
-      ease: this._options.animationEase,
-      onUpdate: function() {
-
-        _this._updatePos(tmp.pos);
-
-      },
-      onComplete: function() {
-
-        _this._animations = [];
-        _this.setStill(true);
-
-      }
-    });
-
-    this._animations = [anim1];
+    this.animationsProvider.moveTo(_this.gesturesProvider, _this._pos, _this._updatePos.bind(_this, pos));
   }
   else {
     _this._updatePos(pos);
@@ -705,6 +687,7 @@ AbstractSwiper.prototype.goTo = function(slide, animated, side) {
 
   }
 
+  // @TODO: this.moveTo(pos, animated); ?
   if (animated) {
     _this.moveTo(pos);
   }
@@ -19127,11 +19110,11 @@ if (_gsScope._gsDefine) { _gsScope._gsQueue.pop()(); } //necessary in case Tween
 var AbstractSwiper = __webpack_require__(0);
 
 // Argument is id of container with slides
-var SimpleSwiper = function(gesturesProvider, options, container, innerContainer) {
+var SimpleSwiper = function(gesturesProvider, animationsProvider, options, container, innerContainer) {
 
   var _this = this;
 
-  AbstractSwiper.call(this, gesturesProvider, options);
+  AbstractSwiper.call(this, gesturesProvider, animationsProvider, options);
 
   this._container = container;
   this._containerInner = innerContainer;
@@ -21983,16 +21966,67 @@ global.$ = $;
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__HammerGesturesProvider__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__AnimationsProvider__ = __webpack_require__(10);
 var SimpleSwiper = __webpack_require__(4);
 var AbstractSwiper = __webpack_require__(0);
 
 
+
 class SwiperFactory {
     createSwiper(options) {
-        let gesturesProvider = new __WEBPACK_IMPORTED_MODULE_0__HammerGesturesProvider__["a" /* default */]();
+        /** options = { animation: {animationTime, onStillChange, animationEase}, gestures: {direction, freefloat, infinite, onPanStart}} */
+
+        this._options = {
+            animation: {
+                animationEase: Expo.easeOut,
+                animationTime: 0.6,
+                onStillChange: function() {},
+            },
+            gestures: {
+                direction: AbstractSwiper.HORIZONTAL,
+                freefloat: false,
+                infinite: false,
+                onPanStart: function() {},
+            },
+
+            name: undefined, // must be unique
+
+            count: undefined,
+
+            containerSize: function() { throw "AbstractSwiper: undefined containerSize function!"; }, // relativeX is relatively to this size!!!
+            // initMarginSize: function() { return 0; }, // function!
+            slideMarginSize: function() { return 0; }, // function!
+            slideSize: function() { throw "AbstractSwiper: undefined slideSize function!"; }, // function!
+            snapOffset: function() { return 0; },
+
+            // callbacks
+            onMove: function() {},
+            onPanEnd: function() {},
+            onActiveSlidesChange: function() {},
+            onSnapToEdgeChange: function() {},
+
+            // miscellaneous
+            numberOfItemsMovedAtOneAction: function() { return 1; },
+            // numberOfActiveSlides: 1,
+            // shouldShowSingleDot: false,
+
+            counterTransformer: function(num) { return "" + num; },
+
+            autoLayoutOnResize: true,
+
+
+            snapOnlyToAdjacentSlide: true,
+
+        };
+
+        for (let key in options) {
+            if (!options.hasOwnProperty(key)) { continue; }
+            this._options[key] = options[key];
+        }
 
         let swiper = new SimpleSwiper(
-            gesturesProvider,
+            new __WEBPACK_IMPORTED_MODULE_0__HammerGesturesProvider__["a" /* default */](AbstractSwiper.getSelectorForComponent('touch-space', options.name), this._options.gestures),
+            new __WEBPACK_IMPORTED_MODULE_1__AnimationsProvider__["a" /* default */](this._options.animation),
             options,
             document.querySelector(AbstractSwiper.getSelectorForComponent('container', options.name)),
             document.querySelector(AbstractSwiper.getSelectorForComponent('container', options.name)).querySelector('.swiper-items')
@@ -22015,13 +22049,16 @@ let VerticalScrollDetector = __webpack_require__(6);
 let Hammer = __webpack_require__(5);
 
 class HammerGesturesProvider {
-    constructor(selector, _options) {
-        // get selector for component
-        // this._mc = new Hammer(document.querySelector(selector), { domEvents: true });
+    constructor(selector, _options, animationsProvider) {
+
+        /** options = {direction, freefloat, infinite, onPanStart} */
+
+        this._mc = new Hammer(document.querySelector(selector), { domEvents: true });
         this._options = _options;
         this.hammerDirection = _options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
         this._enabled = false;
         this._isStill = false;
+        this.animationsProvider = animationsProvider;
         this.swiped = false;
     }
     blockScrolling() {
@@ -22032,20 +22069,6 @@ class HammerGesturesProvider {
         let hammerDirection = this._options.direction == AbstractSwiper.HORIZONTAL ? Hammer.DIRECTION_HORIZONTAL : Hammer.DIRECTION_VERTICAL;
         this._mc.get('pan').set({ direction: hammerDirection });
         this._mc.get('swipe').set({ direction: hammerDirection });
-    }
-
-    setStill(status) {
-        if (status == this._isStill) { return; }
-        this._isStill = status;
-
-        if (this._isStill) {
-            this.unblockScrolling();
-        }
-        else {
-            this.blockScrolling();
-        }
-
-        this._options.onStillChange(this._isStill);
     }
 
     enable(swiper) {
@@ -22131,25 +22154,74 @@ class HammerGesturesProvider {
         this._mc.off("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown");
     }
 
-    _killAnimations() {
-        for (var i = 0; i < this._animations.length; i++) {
-            this._animations[i].kill();
-        }
-        this._animations = [];
-    }
-
     _onPanStart() {
         if (!this._isTouched) {
             this._options.onPanStart();
             this._isTouched = true;
             this.swiped = false;
-            this._killAnimations();
+            this.animationsProvider.killAnimations();
             this._panStartPos = this._pos;
-            this.setStill(false);
+            this.animationsProvider.setStill(this, false);
         }
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = HammerGesturesProvider;
+
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+class AnimationsProvider {
+    constructor(options) {
+        this._animations = [];
+
+        /** options = {animationTime, onStillChange, animationEase}*/
+        this._options = options;
+    }
+
+    killAnimations() {
+        for (let i = 0; i < this._animations.length; i++) {
+            this._animations[i].kill();
+        }
+        this._animations = [];
+    }
+
+    moveTo(gesturesProvider, pos, updateCallback) {
+        this.setStill(gesturesProvider, false);
+        let _this = this;
+
+        let anim1 = TweenMax.to({pos: pos}, this._options.animationTime, {
+            pos: pos,
+            ease: this._options.animationEase,
+            onUpdate: updateCallback,
+            onComplete: function() {
+                _this._animations = [];
+                _this.setStill(gesturesProvider, true);
+            }
+        });
+
+        this._animations = [anim1];
+    }
+
+    setStill(gesturesProvider, status) {
+        if (status == this._isStill) { return; }
+        this._isStill = status;
+
+        if (this._isStill) {
+            gesturesProvider.unblockScrolling();
+        }
+        else {
+            gesturesProvider.blockScrolling();
+        }
+
+        // this._options.onStillChange(this._isStill);
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = AnimationsProvider;
 
 
 

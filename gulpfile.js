@@ -16,16 +16,6 @@ gulp.task('webpack', function() {
     .pipe(gulp.dest('./demo/dist/'));
 });
 
-gulp.task('webpack-test', function() {
-    return gulp.src('./test/tests.js')
-        .pipe(webpack({
-            output: {
-                filename: 'bundle.js',
-            }
-        }))
-        .pipe(gulp.dest('./test/'));
-});
-
 gulp.task('swiper', function() {
     return gulp.src('./new_swiper/scripts.js')
         .pipe(webpack({

@@ -2,13 +2,15 @@ var Hammer = require("hammerjs");
 require("gsap");
 var VerticalScrollDetector = require("./VerticalScrollDetector.js");
 
-var AbstractSwiper = function(gesturesProvider, optionsArg) {
+var AbstractSwiper = function(gesturesProvider, animationsProvider, optionsArg) {
   var _this = this;
 
   /**
    * Resolve options
    */
   if (typeof optionsArg === 'undefined') { optionsArg = {} };
+
+  this.animationsProvider = animationsProvider;
 
   this.gesturesProvider = gesturesProvider === 'undefined' ?
           new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: true }):
@@ -572,30 +574,10 @@ AbstractSwiper.prototype.moveTo = function(pos, animated) {
   var diff = Math.abs(pos - this._pos);
   if (diff < 1) {  return; }
 
-  this._killAnimations();
+  this.animationsProvider.killAnimations();
 
   if (animated) {
-
-    this.setStill(false);
-    var tmp = { pos: _this._pos }
-
-    var anim1 = TweenMax.to(tmp, this._options.animationTime, {
-      pos: pos,
-      ease: this._options.animationEase,
-      onUpdate: function() {
-
-        _this._updatePos(tmp.pos);
-
-      },
-      onComplete: function() {
-
-        _this._animations = [];
-        _this.setStill(true);
-
-      }
-    });
-
-    this._animations = [anim1];
+    this.animationsProvider.moveTo(_this.gesturesProvider, _this._pos, _this._updatePos.bind(_this, pos));
   }
   else {
     _this._updatePos(pos);
@@ -636,6 +618,7 @@ AbstractSwiper.prototype.goTo = function(slide, animated, side) {
 
   }
 
+  // @TODO: this.moveTo(pos, animated); ?
   if (animated) {
     _this.moveTo(pos);
   }
