@@ -392,7 +392,7 @@ AbstractSwiper.prototype.enable = function() {
   if (this._enabled) { return; }
   this._enabled = true;
 
-  this._mc = new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: true });
+  this._mc = new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: false });
 
   var swiped = false;
 
@@ -506,7 +506,9 @@ AbstractSwiper.prototype.enable = function() {
 AbstractSwiper.prototype.disable = function() {
   if (!this._enabled) { return; }
   this._enabled = false;
-  this._mc.off("pan panup panleft panright pandown panstart panend swipe swipeleft swiperight swipeup swipedown");
+
+  this._mc.destroy();
+  this._mc = undefined;
 }
 
 AbstractSwiper.prototype.goToNext = function(animated) {
