@@ -37,7 +37,7 @@ gulp.task('run', ['webpack', 'sass'], function() {
   });
 
   gulp.watch(SASS_FILES, ['sass']);
-  gulp.watch(JS_FILES, ['webpack']).on('change', browserSync.reload);
+  gulp.watch(JS_FILES, ['webpack']);
 
 });
 

@@ -158,8 +158,14 @@ AbstractSwiper.prototype.layout = function() {
   // There's a chance that number of items was changed, so let's normalize position.
   var newPos = this._relativePos * this._options.containerSize();
 
+  // For finite sliders, we can't exceed max position
   if (!this._options.infinite && newPos > this._getMaxPos()) {
     newPos = this._getMaxPos();
+  }
+
+  // For no freefloat, we must snap!
+  if (!this._options.freefloat) {
+    newPos = this._getClosestSnappedPosition(newPos);
   }
 
   this._updatePos(newPos);
@@ -667,7 +673,6 @@ AbstractSwiper.prototype._updatePos = function(pos) {
 
   this._relativePos = this._pos / this._options.containerSize();
 
-
   // Invoke callback if active slides changed
   var shouldUpdateComponents = false;
 
@@ -676,7 +681,6 @@ AbstractSwiper.prototype._updatePos = function(pos) {
   if (typeof this._activeSlides === 'undefined' || currentActiveSlides.join(",") != this._activeSlides.join(",")) {
 
     this._activeSlides = currentActiveSlides;
-
 
     // events
     this._options.onActiveSlidesChange(this._activeSlides); // deprecated

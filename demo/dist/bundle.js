@@ -18446,8 +18446,14 @@ AbstractSwiper.prototype.layout = function() {
   // There's a chance that number of items was changed, so let's normalize position.
   var newPos = this._relativePos * this._options.containerSize();
 
+  // For finite sliders, we can't exceed max position
   if (!this._options.infinite && newPos > this._getMaxPos()) {
     newPos = this._getMaxPos();
+  }
+
+  // For no freefloat, we must snap!
+  if (!this._options.freefloat) {
+    newPos = this._getClosestSnappedPosition(newPos);
   }
 
   this._updatePos(newPos);
@@ -18955,7 +18961,6 @@ AbstractSwiper.prototype._updatePos = function(pos) {
 
   this._relativePos = this._pos / this._options.containerSize();
 
-
   // Invoke callback if active slides changed
   var shouldUpdateComponents = false;
 
@@ -18964,7 +18969,6 @@ AbstractSwiper.prototype._updatePos = function(pos) {
   if (typeof this._activeSlides === 'undefined' || currentActiveSlides.join(",") != this._activeSlides.join(",")) {
 
     this._activeSlides = currentActiveSlides;
-
 
     // events
     this._options.onActiveSlidesChange(this._activeSlides); // deprecated
@@ -21974,14 +21978,13 @@ var SimpleSwiper = function(options) {
 
   this._container = document.querySelector(this._getSelectorForComponent('container'));
   this._containerInner = this._container.querySelector('.swiper-items');
+  this._containerWidth = 0;
 
   // By default slide has width of enclosing container. Slide margin by default is 0.
   if (typeof options.containerSize === 'undefined') {
 
     this._options.containerSize = function() {
-      return _this._options.direction == AbstractSwiper.HORIZONTAL ?
-      _this._container.offsetWidth :
-      _this._container.offsetHeight;
+      return _this._containerWidth;
     }
 
   }
@@ -21993,22 +21996,15 @@ var SimpleSwiper = function(options) {
   }
 
   // Add extra actions to onPanUp and onPanDown
-  var tmpOnPanStart = this._options.onPanStart;
-  var tmpOnPanEnd = this._options.onPanEnd;
-
-  this._options.onPanStart = function() {
+  this.on('touchdown', function() {
     _this._container.classList.add('panning');
-    tmpOnPanStart();
-  }
+  });
 
-  this._options.onPanEnd = function() {
+  this.on('touchup', function() {
     setTimeout(function() {
       _this._container.classList.remove('panning');
     }, 0);
-
-    tmpOnPanEnd();
-  }
-
+  });
 
   function init() {
     _this._items = _this._containerInner.children;
@@ -22016,7 +22012,6 @@ var SimpleSwiper = function(options) {
   }
 
   init();
-
 
   this._options.onMove = function(coords) {
 
@@ -22080,7 +22075,11 @@ var SimpleSwiper = function(options) {
     }
 
     init();
+
+    _this._containerWidth = _this._container.offsetWidth;
+
     this._positionElements();
+
     AbstractSwiper.prototype.layout.call(this);
     this.initComponents();
   }
