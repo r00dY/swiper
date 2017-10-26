@@ -26,13 +26,13 @@ var AbstractSwiper = function(optionsArg) {
     slideSize: function() { throw "AbstractSwiper: undefined slideSize function!"; }, // function!
     snapOffset: function() { return 0; },
 
-    // callbacks
+    // callbacks - all deprecated
+    // Use .on method instead
     onMove: function() {},
     onPanStart: function() {},
     onPanEnd: function() {},
     onStillChange: function() {},
     onActiveSlidesChange: function() {},
-    onSnapToEdgeChange: function() {},
 
     // miscellaneous
     numberOfItemsMovedAtOneAction: function() { return 1; },
@@ -85,6 +85,11 @@ var AbstractSwiper = function(optionsArg) {
 
   this._panStartPos = 0;
   this._enabled = false;
+
+  /**
+   * Listeners object
+   */
+  this.listeners = {};
 }
 
 AbstractSwiper.HORIZONTAL = 0;
@@ -368,7 +373,9 @@ AbstractSwiper.prototype.setStill = function(status) {
     this._blockScrolling();
   }
 
-  this._options.onStillChange(this._isStill);
+  // events
+  this._options.onStillChange(this._isStill); // deprecated
+  this._invokeListeners('equilibriumChange', this._isStill); // new way
 }
 
 AbstractSwiper.prototype._blockScrolling = function() {
@@ -405,7 +412,9 @@ AbstractSwiper.prototype.enable = function() {
 
     if (!_this._isTouched) {
 
+      // Events onPanStart
       _this._options.onPanStart();
+      _this._invokeListeners('touchdown');
 
       _this._isTouched = true;
       swiped = false;
@@ -478,7 +487,9 @@ AbstractSwiper.prototype.enable = function() {
 
         if (_this._isTouched) {
 
-          _this._options.onPanEnd();
+          // Events
+          _this._options.onPanEnd(); // deprecated
+          _this._invokeListeners('touchup'); // new way
 
           _this._isTouched = false;
 
@@ -665,7 +676,11 @@ AbstractSwiper.prototype._updatePos = function(pos) {
   if (typeof this._activeSlides === 'undefined' || currentActiveSlides.join(",") != this._activeSlides.join(",")) {
 
     this._activeSlides = currentActiveSlides;
-    this._options.onActiveSlidesChange(this._activeSlides);
+
+
+    // events
+    this._options.onActiveSlidesChange(this._activeSlides); // deprecated
+    this._invokeListeners('activeSlidesChange', this._activeSlides); // new way
 
     shouldUpdateComponents = true;
   }
@@ -674,10 +689,11 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     this._componentsUpdate();
   }
 
-  // Invoke onMove callback!
-  this._options.onMove({
-    positions: positions
-  });
+  // Callbacks
+  this._options.onMove({ positions: positions }); // deprecated
+  this._invokeListeners('move', { positions: positions }); // new way
+
+
 }
 
 AbstractSwiper.prototype.moveTo = function(pos, animated) {
@@ -761,6 +777,25 @@ AbstractSwiper.prototype.goTo = function(slide, animated, side) {
     _this._updatePos(pos);
   }
 
+}
+
+/**
+ * LISTENERS
+ */
+AbstractSwiper.prototype.on = function(event, listener) {
+  if (typeof this.listeners[event] === 'undefined') {
+    this.listeners[event] = [];
+  }
+
+  this.listeners[event].push(listener);
+}
+
+AbstractSwiper.prototype._invokeListeners = function(event, p1, p2, p3, p4) {
+  if (typeof this.listeners[event] === 'undefined') { return; }
+
+  this.listeners[event].forEach(function(listener) {
+    listener(p1, p2, p3, p4);
+  });
 }
 
 

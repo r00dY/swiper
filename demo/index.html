@@ -398,16 +398,25 @@
 			<script>
 				$(document).ready(function() {
 					var swiper5 = new SimpleSwiper({
-						name: 'demo-5',
-						onMove: function(coords) {
-							console.log('onMove: ', coords);
-							console.log('visibilities: ', swiper5.getSlidesVisibilityPercentages());
-              console.log('orientations: ', swiper5.getSlidesOrientations());
-						},
-						onActiveSlidesChange: function(activeSlides) {
-							console.log('onActiveSlidesChange: ', activeSlides)
-						}
+						name: 'demo-5'
 					});
+
+          // 3 callbacks to the same event
+          swiper5.on('move', function(coords) {
+              console.log('onMove: ', coords);
+          });
+
+          swiper5.on('move', function(coords) {
+              console.log('visibilities: ', swiper5.getSlidesVisibilityPercentages());
+          });
+
+          swiper5.on('move', function(coords) {
+              console.log('orientations: ', swiper5.getSlidesOrientations());
+          });
+
+          swiper5.on('activeSlidesChange', function(activeSlides) {
+              console.log('onActiveSlidesChange: ', activeSlides)
+          });
 
 					swiper5.init();
 				})
@@ -571,15 +580,14 @@
             },
             containerSize: function() {
               return width * 8 / 10;
-            },
-            onMove: function() {
-
-              var visibilities = swiperDemo71.getSlidesVisibilityPercentages();
-              slides.each(function(index) {
-                $(this).css('opacity', visibilities[index]);
-              });
-
             }
+          });
+
+          swiperDemo71.on('move', function() {
+            var visibilities = swiperDemo71.getSlidesVisibilityPercentages();
+            slides.each(function(index) {
+              $(this).css('opacity', visibilities[index]);
+            });
           });
 
           swiperDemo71.init();
