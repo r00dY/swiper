@@ -90,6 +90,8 @@ var AbstractSwiper = function(optionsArg) {
    * Listeners object
    */
   this.listeners = {};
+
+  this._resetCache();
 }
 
 AbstractSwiper.HORIZONTAL = 0;

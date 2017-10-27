@@ -8,15 +8,6 @@
   }
 
   > .swiper-items {
-    // display: flex;
-    // width: 1000000px;
-    // flex-flow: row nowrap;
-
-    // > * {
-    //   position: relative;
-    //   will-change: transform;
-    // }
-
     * {
       -webkit-user-drag: none;
       -khtml-user-drag: none;
@@ -27,11 +18,7 @@
 
 
     > * {
-
-      // Before JS loads, just show first-child.
-      // &:not(:first-child) {
-      //   display: none;
-      // }
+      display: none;
     }
 
   }

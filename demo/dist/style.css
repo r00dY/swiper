@@ -8,6 +8,9 @@
   -o-user-drag: none;
   user-drag: none; }
 
+.swiper-container > .swiper-items > * {
+  display: none; }
+
 html, body {
   -webkit-font-smoothing: antialiased;
   font-size: 18px; }
