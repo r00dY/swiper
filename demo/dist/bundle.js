@@ -18353,8 +18353,15 @@ var AbstractSwiper = function(optionsArg) {
   this._relativePos = 0; // this is kept only for the purpose of changing number of items. It's important to keep old relativePos to keep old position right in new layout.
   this._slideState = {} // 1 - normal, -1 moved to the back
 
+  var resizeTimeout;
+
   this._onResizeCallback = function() {
-    this.layout();
+    clearTimeout(resizeTimeout);
+
+    setTimeout(function() {
+      _this.layout();
+    }, 2000);
+    // this.layout();
   }
 
   window.addEventListener('resize', function() {
