@@ -25,6 +25,15 @@
       user-drag: none;
     }
 
+
+    > * {
+
+      // Before JS loads, just show first-child.
+      &:not(:first-child) {
+        display: none;
+      }
+    }
+
   }
 
 }

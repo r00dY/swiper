@@ -633,6 +633,7 @@ AbstractSwiper.prototype._pan = function(deltaX, startX) {
 
 AbstractSwiper.prototype._updatePos = function(pos) {
   var positions = {};
+  var absolutePositions = {};
 
   var normalizedPos = this._normalizePos(pos);
 
@@ -671,6 +672,11 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     }
   }
 
+  for(var i = 0; i < this._options.count; i++) {
+    absolutePositions[i] = positions[i] + this._getSlideInitPos(i);
+  }
+
+
   this._relativePos = this._pos / this._options.containerSize();
 
   // Invoke callback if active slides changed
@@ -693,9 +699,11 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     this._componentsUpdate();
   }
 
+  console.log(positions);
+
   // Callbacks
   this._options.onMove({ positions: positions }); // deprecated
-  this._invokeListeners('move', { positions: positions }); // new way
+  this._invokeListeners('move', { positions: positions, absolutePositions: absolutePositions }); // new way
 
 
 }

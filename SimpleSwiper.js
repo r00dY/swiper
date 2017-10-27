@@ -44,19 +44,26 @@ var SimpleSwiper = function(options) {
 
   init();
 
-  this._options.onMove = function(coords) {
+
+  this.on('move', function(coords) {
+
+    var visibilities = _this.getSlidesVisibilityPercentages();
+    // console.log(visibilities);
 
     for (var i = 0; i < _this._items.length; i++) {
       var item = _this._items[i];
 
-      var direction = _this._options.direction == AbstractSwiper.HORIZONTAL ? 'X' : 'Y';
-      item.style.transform = 'translate' + direction + '(' + coords.positions[i] + 'px)'
+      // if (visibilities[i] < 0.001) {
+      //   item.style.display = 'none';
+      // } else {
+      //   item.style.display = 'block';
+
+        var direction = _this._options.direction == AbstractSwiper.HORIZONTAL ? 'X' : 'Y';
+        item.style.transform = 'translate' + direction + '(' + coords.positions[i] + 'px)';
+      // }
     }
 
-    if (typeof options.onMove !== 'undefined') {
-      options.onMove(coords);
-    }
-  }
+  });
 
   this._positionElements = function() {
     var distance = 0;
@@ -91,6 +98,7 @@ var SimpleSwiper = function(options) {
       }
 
       item.style["will-change"] = "transform";
+      item.style["display"] = "block";
 
       distance += this._options.slideSize(i);
       distance += this._options.slideMarginSize(i);
@@ -126,6 +134,5 @@ var SimpleSwiper = function(options) {
 SimpleSwiper.prototype = Object.create(AbstractSwiper.prototype);
 
 
-// SimpleSwiper.
-
+// SimpleSwiper
 module.exports = SimpleSwiper;
