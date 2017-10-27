@@ -10,6 +10,8 @@ var SimpleSwiper = function(options) {
     this._container = document.querySelector(this._getSelectorForComponent('container'));
     this._containerInner = this._container.querySelector('.swiper-items');
 
+    this._realContainerWidth;
+
     // By default slide has width of enclosing container. Slide margin by default is 0.
     if (typeof options.containerSize === 'undefined') {
 
@@ -45,14 +47,14 @@ var SimpleSwiper = function(options) {
 
     this.on('move', function(coords) {
 
-        var visibilities = _this.getSlidesVisibilityPercentages();
-
         var oldHeight = Math.max.apply(this, _this._heights);
 
         for (var i = 0; i < _this._items.length; i++) {
             var item = _this._items[i];
 
-            if (visibilities[i] == 0) {
+            var visible = (coords.absolutePositions[i] < _this._realContainerWidth) && (coords.absolutePositions[i] + _this._getValueFromOptions('slideSize', i)) > 0;
+
+            if (!visible) {
                 item.style.display = 'none';
 
                 _this._heights[i] = 0;
@@ -92,6 +94,8 @@ var SimpleSwiper = function(options) {
         }
 
         init();
+
+        this._realContainerWidth = _this._container.offsetWidth;
 
         this._positionElements();
 
