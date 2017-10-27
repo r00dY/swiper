@@ -18383,6 +18383,34 @@ var AbstractSwiper = function(optionsArg) {
 AbstractSwiper.HORIZONTAL = 0;
 AbstractSwiper.VERTICAL = 1;
 
+/** CACHE MANAGEMENT */
+AbstractSwiper.prototype._getValueFromOptions = function(key, arg1) {
+
+  if (key == 'containerSize') { // no arguments
+    if (typeof this._CACHE[key] === 'undefined') {
+      this._CACHE[key] = (this._options[key])();
+    }
+    return this._CACHE[key];
+  }
+  else { // single argument
+
+    if (typeof this._CACHE[key][arg1] === 'undefined') {
+      this._CACHE[key][arg1] = (this._options[key])(arg1);
+    }
+    return this._CACHE[key][arg1];
+  }
+}
+
+AbstractSwiper.prototype._resetCache = function(key) {
+  this._CACHE = {
+    'containerSize': undefined,
+    'slideMarginSize': {},
+    'slideSize': {},
+    'snapOffset': {}
+  };
+}
+
+/** Helper methods */
 AbstractSwiper.prototype._getSelectorForComponent = function(component) {
   return '.swiper-' + component + '[data-swiper="' + this._options.name + '"]';
 }
@@ -18392,11 +18420,11 @@ AbstractSwiper.prototype._getSlideableWidth = function() {
   var result = 0;
   for (var i = 0; i < this._options.count; i++) { // get full _width and _snapPoints
 
-    result += this._options.slideSize(i);
+    result += this._getValueFromOptions('slideSize', i);
 
     if (i == this._options.count - 1 && !this._options.infinite) { break; } // total slideable width can't include right margin of last element unless we are at infinite scrolling!
 
-    result += this._options.slideMarginSize(i);
+    result += this._getValueFromOptions('slideMarginSize', i);
   }
 
   return result;
@@ -18405,8 +18433,8 @@ AbstractSwiper.prototype._getSlideableWidth = function() {
 AbstractSwiper.prototype._getSlideInitPos = function(slide) {
   var result = 0;
   for (var i = 0; i < slide; i++) { // get full _width and _snapPoints
-    result += this._options.slideSize(i);
-    result += this._options.slideMarginSize(i);
+    result += this._getValueFromOptions('slideSize', i);
+    result += this._getValueFromOptions('slideMarginSize', i);
   }
 
   return result;
@@ -18415,7 +18443,7 @@ AbstractSwiper.prototype._getSlideInitPos = function(slide) {
 AbstractSwiper.prototype._getMaxPos = function() {
   if (this._options.infinite) { throw "_getMaxPos method not available in infinite mode" };
 
-  return Math.max(0, this._getSlideableWidth() - this._options.containerSize());
+  return Math.max(0, this._getSlideableWidth() - this._getValueFromOptions('containerSize'));
 }
 
 AbstractSwiper.prototype._getSlideSnapPos = function(slide) {
@@ -18443,8 +18471,10 @@ AbstractSwiper.prototype.layout = function() {
 
   this._killAnimations(); // stop all ongoing animations after resize!
 
+  this._resetCache(); // Reset cache
+
   // There's a chance that number of items was changed, so let's normalize position.
-  var newPos = this._relativePos * this._options.containerSize();
+  var newPos = this._relativePos * this._getValueFromOptions('containerSize');
 
   // For finite sliders, we can't exceed max position
   if (!this._options.infinite && newPos > this._getMaxPos()) {
@@ -18464,10 +18494,10 @@ AbstractSwiper.prototype.layout = function() {
  */
 AbstractSwiper.prototype.getSlideOrientation = function(i) {
   var leftEdge = this.getSlidePosition(i);
-  var rightEdge = leftEdge + this._options.slideSize(i);
+  var rightEdge = leftEdge + this._getValueFromOptions('slideSize', i);
 
-  var leftContainerEdge = this._options.snapOffset();
-  var rightContainerEdge = this._options.snapOffset() + this._options.containerSize();
+  var leftContainerEdge = this._getValueFromOptions('snapOffset', i);
+  var rightContainerEdge = this._getValueFromOptions('snapOffset', i) + this._getValueFromOptions('containerSize');
 
   if (rightEdge < leftContainerEdge) {
     return -1;
@@ -18490,10 +18520,10 @@ AbstractSwiper.prototype.getSlideOrientation = function(i) {
 AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
 
   var leftEdge = this.getSlidePosition(i);
-  var rightEdge = leftEdge + this._options.slideSize(i);
+  var rightEdge = leftEdge + this._getValueFromOptions('slideSize', i);
 
-  var leftContainerEdge = this._options.snapOffset();
-  var rightContainerEdge = this._options.snapOffset() + this._options.containerSize();
+  var leftContainerEdge = this._getValueFromOptions('snapOffset', i);
+  var rightContainerEdge = this._getValueFromOptions('snapOffset', i) + this._getValueFromOptions('containerSize');
 
   if (rightEdge < leftContainerEdge) {
     return 0;
@@ -18504,14 +18534,14 @@ AbstractSwiper.prototype.getSlidePercentOfVisibility = function(i) {
   } else if (leftEdge >= leftContainerEdge && rightEdge <= rightContainerEdge) {
     return 1;
   } else if (leftEdge <= leftContainerEdge) {
-    return (rightEdge - leftContainerEdge) / this._options.slideSize(i);
+    return (rightEdge - leftContainerEdge) / this._getValueFromOptions('slideSize', i);
   } else if (rightEdge >= rightContainerEdge) {
-    return (rightContainerEdge - leftEdge) / this._options.slideSize(i);
+    return (rightContainerEdge - leftEdge) / this._getValueFromOptions('slideSize', i);
   }
 }
 
 AbstractSwiper.prototype.getSlidePosition = function(i) {
-  return -this._pos + this._options.snapOffset() + this._slideState[i] * this._getSlideableWidth() + this._getSlideInitPos(i);
+  return -this._pos + this._getValueFromOptions('snapOffset', i) + this._slideState[i] * this._getSlideableWidth() + this._getSlideInitPos(i);
 }
 
 
@@ -18891,12 +18921,12 @@ AbstractSwiper.prototype._normalizePos = function(position, overscroll) {
 
     if (overscroll) {
       if (position < 0) {
-        var rest = -position / this._options.containerSize();
-        position = -this._overscrollFunction(rest) * this._options.containerSize();
+        var rest = -position / this._getValueFromOptions('containerSize');
+        position = -this._overscrollFunction(rest) * this._getValueFromOptions('containerSize');
       }
       if (position > this._getMaxPos()) {
-        var rest = (position - this._getMaxPos()) / this._options.containerSize();
-        position = this._getMaxPos() + this._overscrollFunction(rest) * this._options.containerSize();
+        var rest = (position - this._getMaxPos()) / this._getValueFromOptions('containerSize');
+        position = this._getMaxPos() + this._overscrollFunction(rest) * this._getValueFromOptions('containerSize');
       }
     }
     else {
@@ -18932,7 +18962,7 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     // Wrap positions!
     for(var i = 0; i < this._options.count; i++) {
 
-      var rightEdge = this._getSlideInitPos(i) - this._pos + this._options.snapOffset() + this._options.slideSize(i);
+      var rightEdge = this._getSlideInitPos(i) - this._pos + this._getValueFromOptions('snapOffset', i) + this._getValueFromOptions('slideSize', i);
 
       // Every element which is totally hidden on the left hand side of container gets transferred to the right
       if (rightEdge < 0) {
@@ -18946,7 +18976,7 @@ AbstractSwiper.prototype._updatePos = function(pos) {
         this._slideState[i] = 0;
       }
 
-      positions[i] = -this._pos + this._options.snapOffset() + this._slideState[i] * this._getSlideableWidth();
+      positions[i] = -this._pos + this._getValueFromOptions('snapOffset', i) + this._slideState[i] * this._getSlideableWidth();
     }
   }
   else {
@@ -18956,7 +18986,7 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     for(var i = 0; i < this._options.count; i++) {
       this._slideState[i] = 0;
 
-      positions[i] = -normalizedPos + this._options.snapOffset();
+      positions[i] = -normalizedPos + this._getValueFromOptions('snapOffset', i);
     }
   }
 
@@ -18965,7 +18995,7 @@ AbstractSwiper.prototype._updatePos = function(pos) {
   }
 
 
-  this._relativePos = this._pos / this._options.containerSize();
+  this._relativePos = this._pos / this._getValueFromOptions('containerSize');
 
   // Invoke callback if active slides changed
   var shouldUpdateComponents = false;
@@ -21984,13 +22014,12 @@ var SimpleSwiper = function(options) {
 
   this._container = document.querySelector(this._getSelectorForComponent('container'));
   this._containerInner = this._container.querySelector('.swiper-items');
-  this._containerWidth = 0;
 
   // By default slide has width of enclosing container. Slide margin by default is 0.
   if (typeof options.containerSize === 'undefined') {
 
     this._options.containerSize = function() {
-      return _this._containerWidth;
+      return _this._container.offsetWidth;
     }
 
   }
@@ -22061,21 +22090,21 @@ var SimpleSwiper = function(options) {
 
       if (_this._options.direction == AbstractSwiper.HORIZONTAL) {
         item.style["position"] = "relative";
-        item.style["width"] = this._options.slideSize(i) + 'px';
-        item.style["margin-right"] = this._options.slideMarginSize(i) + 'px';
+        item.style["width"] = this._getValueFromOptions('slideSize', i) + 'px';
+        item.style["margin-right"] = this._getValueFromOptions('slideMarginSize', i) + 'px';
 
       } else {
 
         item.style["position"] = "relative";
-        item.style["height"] = this._options.slideSize(i) + 'px';
-        item.style["margin-bottom"] = this._options.slideMarginSize(i) + 'px';
+        item.style["height"] = this._getValueFromOptions('slideSize', i) + 'px';
+        item.style["margin-bottom"] = this._getValueFromOptions('slideMarginSize', i) + 'px';
       }
 
-      item.style["will-change"] = "transform";
-      item.style["display"] = "block";
+      // item.style["will-change"] = "transform";
+      // item.style["display"] = "block";
 
-      distance += this._options.slideSize(i);
-      distance += this._options.slideMarginSize(i);
+      distance += this._getValueFromOptions('slideSize', i);
+      distance += this._getValueFromOptions('slideMarginSize', i);
     }
   }
 
@@ -22089,11 +22118,9 @@ var SimpleSwiper = function(options) {
 
     init();
 
-    _this._containerWidth = _this._container.offsetWidth;
-
+    AbstractSwiper.prototype.layout.call(this);
     this._positionElements();
 
-    AbstractSwiper.prototype.layout.call(this);
     this.initComponents();
   }
 

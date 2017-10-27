@@ -29,9 +29,9 @@
     > * {
 
       // Before JS loads, just show first-child.
-      &:not(:first-child) {
-        display: none;
-      }
+      // &:not(:first-child) {
+      //   display: none;
+      // }
     }
 
   }

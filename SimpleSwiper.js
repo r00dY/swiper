@@ -9,13 +9,12 @@ var SimpleSwiper = function(options) {
 
   this._container = document.querySelector(this._getSelectorForComponent('container'));
   this._containerInner = this._container.querySelector('.swiper-items');
-  this._containerWidth = 0;
 
   // By default slide has width of enclosing container. Slide margin by default is 0.
   if (typeof options.containerSize === 'undefined') {
 
     this._options.containerSize = function() {
-      return _this._containerWidth;
+      return _this._container.offsetWidth;
     }
 
   }
@@ -86,21 +85,21 @@ var SimpleSwiper = function(options) {
 
       if (_this._options.direction == AbstractSwiper.HORIZONTAL) {
         item.style["position"] = "relative";
-        item.style["width"] = this._options.slideSize(i) + 'px';
-        item.style["margin-right"] = this._options.slideMarginSize(i) + 'px';
+        item.style["width"] = this._getValueFromOptions('slideSize', i) + 'px';
+        item.style["margin-right"] = this._getValueFromOptions('slideMarginSize', i) + 'px';
 
       } else {
 
         item.style["position"] = "relative";
-        item.style["height"] = this._options.slideSize(i) + 'px';
-        item.style["margin-bottom"] = this._options.slideMarginSize(i) + 'px';
+        item.style["height"] = this._getValueFromOptions('slideSize', i) + 'px';
+        item.style["margin-bottom"] = this._getValueFromOptions('slideMarginSize', i) + 'px';
       }
 
-      item.style["will-change"] = "transform";
-      item.style["display"] = "block";
+      // item.style["will-change"] = "transform";
+      // item.style["display"] = "block";
 
-      distance += this._options.slideSize(i);
-      distance += this._options.slideMarginSize(i);
+      distance += this._getValueFromOptions('slideSize', i);
+      distance += this._getValueFromOptions('slideMarginSize', i);
     }
   }
 
@@ -114,11 +113,9 @@ var SimpleSwiper = function(options) {
 
     init();
 
-    _this._containerWidth = _this._container.offsetWidth;
-
+    AbstractSwiper.prototype.layout.call(this);
     this._positionElements();
 
-    AbstractSwiper.prototype.layout.call(this);
     this.initComponents();
   }
 
