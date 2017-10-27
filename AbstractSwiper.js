@@ -699,8 +699,6 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     this._componentsUpdate();
   }
 
-  console.log(positions);
-
   // Callbacks
   this._options.onMove({ positions: positions }); // deprecated
   this._invokeListeners('move', { positions: positions, absolutePositions: absolutePositions }); // new way

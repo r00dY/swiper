@@ -18987,8 +18987,6 @@ AbstractSwiper.prototype._updatePos = function(pos) {
     this._componentsUpdate();
   }
 
-  console.log(positions);
-
   // Callbacks
   this._options.onMove({ positions: positions }); // deprecated
   this._invokeListeners('move', { positions: positions, absolutePositions: absolutePositions }); // new way
@@ -22025,19 +22023,18 @@ var SimpleSwiper = function(options) {
   this.on('move', function(coords) {
 
     var visibilities = _this.getSlidesVisibilityPercentages();
-    // console.log(visibilities);
 
     for (var i = 0; i < _this._items.length; i++) {
       var item = _this._items[i];
 
-      // if (visibilities[i] < 0.001) {
-      //   item.style.display = 'none';
-      // } else {
-      //   item.style.display = 'block';
-
+    //   if (visibilities[i] == 0) {
+    //     item.style.visibility = 'hidden';
+    //   }
+    //   else {
+    //     item.style.visibility = 'visible';
         var direction = _this._options.direction == AbstractSwiper.HORIZONTAL ? 'X' : 'Y';
         item.style.transform = 'translate' + direction + '(' + coords.positions[i] + 'px)';
-      // }
+    //   }
     }
 
   });
