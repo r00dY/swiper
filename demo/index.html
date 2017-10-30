@@ -723,6 +723,68 @@
       </script>
 
 
+      <h2>10. A lot of narrow elemenets</h2>
+
+      <!--
+        Below we show an example of simplest possible swiper. Every slide is 100% width of the container. We enabled all controls (arrows, pager and counter). Make sure to check it out on touch device!
+      -->
+
+      <!-- HTML STRUCTURE -->
+
+      <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-10">
+          <div class="swiper-items">
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+              <div class="slide"></div>
+            </div>
+        </div>
+
+        <button class="swiper-click-space-previous" data-swiper="demo-10">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-10">NEXT</button>
+
+        <div class="pager">
+          <button class="swiper-pager-item" data-swiper="demo-10">X</button>
+        </div>
+
+        <div class="counter">
+          <span class="swiper-counter-current" data-swiper="demo-10"></span> / <span class="swiper-counter-all" data-swiper="demo-10"></span>
+        </div>
+      </div>
+
+      <script>
+        $(document).ready(function() {
+
+          var swiper10 = new SimpleSwiper({
+            name: 'demo-10',
+            slideSize: function() {
+              return window.innerWidth / 10;
+            },
+          });
+
+          swiper10.init();
+        })
+      </script>
+
+
 			<h3>onMove event -> key to customization</h3>
 			<p>[To do]</p>
 

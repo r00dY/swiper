@@ -35,7 +35,7 @@ var AbstractSwiper = function(optionsArg) {
     onActiveSlidesChange: function() {},
 
     // miscellaneous
-    numberOfItemsMovedAtOneAction: function() { return 1; },
+    numberOfItemsMovedAtOneAction: null,//function() { return 1; },
     // numberOfActiveSlides: 1,
     // shouldShowSingleDot: false,
 
@@ -72,7 +72,7 @@ var AbstractSwiper = function(optionsArg) {
 
     setTimeout(function() {
       _this.layout();
-    }, 2000);
+    }, 1000);
     // this.layout();
   }
 
@@ -568,11 +568,23 @@ AbstractSwiper.prototype.disable = function() {
 }
 
 AbstractSwiper.prototype.goToNext = function(animated) {
+
+    if (this._options.numberOfItemsMovedAtOneAction == null) {
+        this.moveTo(this._getClosestSnappedPosition(this._pos + this._getValueFromOptions('containerSize')));
+        return;
+    }
+
   this.goTo(this._getSlideFromOffset((this._options.numberOfItemsMovedAtOneAction)()), animated, 1);
 }
 
 AbstractSwiper.prototype.goToPrevious = function(animated) {
-  this.goTo(this._getSlideFromOffset(-(this._options.numberOfItemsMovedAtOneAction)()), animated, -1);
+
+    if (this._options.numberOfItemsMovedAtOneAction == null) {
+        this.moveTo(this._getClosestSnappedPosition(this._pos - this._getValueFromOptions('containerSize')));
+        return;
+    }
+
+    this.goTo(this._getSlideFromOffset(-(this._options.numberOfItemsMovedAtOneAction)()), animated, -1);
 }
 
 AbstractSwiper.prototype._getSlideFromOffset = function(offset) {
@@ -662,7 +674,7 @@ AbstractSwiper.prototype._normalizePos = function(position, overscroll) {
 
 // Overfscroll function for noninfinite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
 AbstractSwiper.prototype._overscrollFunction = function(val) {
-  return 0.6 * Math.log(1 + val);
+  return 0.3 * Math.log(1 + val);
 }
 
 
