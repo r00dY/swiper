@@ -68,12 +68,13 @@ var AbstractSwiper = function(optionsArg) {
   var resizeTimeout;
 
   this._onResizeCallback = function() {
-    clearTimeout(resizeTimeout);
+    // clearTimeout(resizeTimeout);
 
-    setTimeout(function() {
-      _this.layout();
-    }, 1000);
-    // this.layout();
+    // setTimeout(function() {
+    //   _this.layout();
+    // }, 1000);
+
+    this.layout();
   }
 
   window.addEventListener('resize', function() {
