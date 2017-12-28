@@ -458,6 +458,10 @@ AbstractSwiper.prototype.enable = function() {
 
     if (!_this._isTouched) {
 
+      // Add 'panning' class
+
+      document.querySelector(_this._getSelectorForComponent('touch-space')).classList.add('panning');
+
       // Events onPanStart
       _this._options.onPanStart();
       _this._invokeListeners('touchdown');
@@ -533,7 +537,12 @@ AbstractSwiper.prototype.enable = function() {
 
         if (_this._isTouched) {
 
-          // Events
+          // Remove panning class when we're not touching slider
+          setTimeout(function() {
+              document.querySelector(_this._getSelectorForComponent('touch-space')).classList.remove('panning');
+          }, 0);
+
+          // Events touchup.
           _this._options.onPanEnd(); // deprecated
           _this._invokeListeners('touchup'); // new way
 

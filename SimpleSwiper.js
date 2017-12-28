@@ -27,17 +27,6 @@ var SimpleSwiper = function(options) {
         }
     }
 
-    // Add extra actions to onPanUp and onPanDown
-    this.on('touchdown', function() {
-        _this._container.classList.add('panning');
-    });
-
-    this.on('touchup', function() {
-        setTimeout(function() {
-            _this._container.classList.remove('panning');
-        }, 0);
-    });
-
     function init() {
         _this._items = _this._containerInner.children;
         _this._options.count = _this._items.length;

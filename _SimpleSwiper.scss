@@ -1,26 +1,25 @@
-.swiper-container  {
+/* This is generic CSS which works also for AbstarctSwiper. All containers with class ".swiper-items" will prevent drag / click errors on touch up */
 
-  // Let's disable pointer-events while panning, this prevents unwanted click events when it's not really a click but pan up.
+.swiper-touch-space {
+
   &.panning {
-    > .swiper-items * {
-      pointer-events: none;
+    .swiper-items * {
+        pointer-events: none;
     }
   }
 
-  > .swiper-items {
-    * {
-      -webkit-user-drag: none;
-      -khtml-user-drag: none;
-      -moz-user-drag: none;
-      -o-user-drag: none;
-      user-drag: none;
-    }
-
-
-    > * {
-      display: none;
-    }
-
+  .swiper-items * {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
   }
+}
 
+// For SimpleSwiper only
+.swiper-container {
+  > .swiper-items > * {
+    display: none;
+  }
 }

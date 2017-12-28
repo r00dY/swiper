@@ -1,7 +1,8 @@
-.swiper-container.panning > .swiper-items * {
+/* This is generic CSS which works also for AbstarctSwiper. All containers with class ".swiper-items" will prevent drag / click errors on touch up */
+.swiper-touch-space.panning .swiper-items * {
   pointer-events: none; }
 
-.swiper-container > .swiper-items * {
+.swiper-touch-space .swiper-items * {
   -webkit-user-drag: none;
   -khtml-user-drag: none;
   -moz-user-drag: none;
