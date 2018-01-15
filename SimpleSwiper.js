@@ -84,6 +84,8 @@ var SimpleSwiper = function(options) {
 
         init();
 
+        AbstractSwiper.prototype._resetCache.call(this);
+
         this._realContainerWidth = _this._container.offsetWidth;
 
         this._positionElements();
