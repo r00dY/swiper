@@ -1,5 +1,7 @@
 var Hammer = require("hammerjs");
-require("gsap");
+require("gsap/EasePack");
+require("gsap/TweenLite");
+
 var VerticalScrollDetector = require("./VerticalScrollDetector.js");
 
 var AbstractSwiper = function(optionsArg) {
@@ -784,7 +786,7 @@ AbstractSwiper.prototype.moveTo = function(pos, animated) {
     this.setStill(false);
     var tmp = { pos: _this._pos }
 
-    var anim1 = TweenMax.to(tmp, this._options.animationTime, {
+    var anim1 = TweenLite.to(tmp, this._options.animationTime, {
       pos: pos,
       ease: this._options.animationEase,
       onUpdate: function() {

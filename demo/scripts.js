@@ -1,6 +1,3 @@
-var $ = require("jquery");
-require("gsap");
-
 var SimpleSwiper = require("../index.js").SimpleSwiper;
 
 /**
@@ -10,4 +7,4 @@ var SimpleSwiper = require("../index.js").SimpleSwiper;
  */
 
 global.SimpleSwiper = SimpleSwiper;
-global.$ = $;
+
