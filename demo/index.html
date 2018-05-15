@@ -226,6 +226,19 @@
 						name: 'demo-1'
 					});
 
+					// We can add simple events to components
+                    swiperBasic.on('clickSpaceNextClicked', function() {
+                        console.log('click space next clicked');
+                    });
+
+                    swiperBasic.on('clickSpacePreviousClicked', function() {
+                        console.log('click space previous clicked');
+                    });
+
+                    swiperBasic.on('pagerItemClicked', function(i) {
+                        console.log('pager item clicked', i);
+                    });
+
 					swiperBasic.init();
 				})
 			</script>
