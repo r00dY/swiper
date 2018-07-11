@@ -467,14 +467,14 @@ AbstractSwiper.prototype.setStill = function (status) {
     // events
     this._options.onStillChange(this._isStill); // deprecated
     this._invokeListeners('equilibriumChange', this._isStill); // new way
-}
+};
 
 AbstractSwiper.prototype._blockScrolling = function () {
     if (this._mc) {
         this._mc.get('pan').set({direction: Hammer.DIRECTION_ALL});
         this._mc.get('swipe').set({direction: Hammer.DIRECTION_ALL});
     }
-}
+};
 
 AbstractSwiper.prototype._unblockScrolling = function () {
     if (this._mc) {
@@ -482,7 +482,7 @@ AbstractSwiper.prototype._unblockScrolling = function () {
         this._mc.get('pan').set({direction: hammerDirection});
         this._mc.get('swipe').set({direction: hammerDirection});
     }
-}
+};
 
 AbstractSwiper.prototype.enable = function () {
     var _this = this;
@@ -578,6 +578,8 @@ AbstractSwiper.prototype.enable = function () {
                 if (VerticalScrollDetector.isScrolling()) {
                     break;
                 } // if body is scrolling then not allow for horizontal movement
+
+
                 onPanStart(ev); // onPanStart is on first panleft / panright, because its deferred until treshold is achieved
 
                 if (_this._isTouched && !swiped) {

@@ -1,17 +1,16 @@
-var $ = require("jquery");
-
 var VerticalScrollDetector = new function() {
 
 	var initScroll;
 	var isScrolling = false;
 
-	$(window).on("touchstart", function(ev) {
-		initScroll = $(window).scrollTop();
+	window.addEventListener('touchstart', function(ev) {
+
+        initScroll = window.pageYOffset || document.documentElement.scrollTop;
 	});
 
-	$(window).on("touchmove", function(ev) {
+	window.addEventListener('touchmove', function(ev) {
 		if (!isScrolling) {
-			var scroll = $(window).scrollTop();
+			var scroll = window.pageYOffset || document.documentElement.scrollTop;
 
 			if (scroll != initScroll) {
 				isScrolling = true;
@@ -19,7 +18,7 @@ var VerticalScrollDetector = new function() {
 		}
 	});
 
-	$(window).on("touchend", function(ev) {
+	window.addEventListener("touchend", function(ev) {
 		isScrolling = false;
 	});
 
@@ -27,6 +26,6 @@ var VerticalScrollDetector = new function() {
 		return isScrolling;
 	}
 
-}
+};
 
 module.exports = VerticalScrollDetector;
