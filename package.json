@@ -12,7 +12,9 @@
     "devDependencies": {
         "gulp": "^3.9.1",
         "gulp-sass": "*",
+        "jasmine": "^3.1.0",
         "jquery": "*",
         "webpack-stream": "^4.0.0"
-    }
+    },
+    "scripts": { "test": "jasmine" }
 }

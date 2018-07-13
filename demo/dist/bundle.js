@@ -2058,7 +2058,7 @@ var AbstractSwiper = function (optionsArg) {
     if (typeof optionsArg === 'undefined') {
         optionsArg = {}
     }
-    ;
+
 
     var defaultOptions = {
         name: undefined, // must be unique
@@ -3024,6 +3024,12 @@ AbstractSwiper.prototype.deinitComponents = function () {
     }
 
 }
+
+
+
+
+
+
 
 
 AbstractSwiper.prototype.initComponents = function () {
