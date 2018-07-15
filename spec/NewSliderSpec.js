@@ -17,7 +17,7 @@ describe("NewSwiper (no animations / finite mode)", function() {
             return (n + 1) * 10 + 300;
         };
 
-        swiper.slideMargin = function(n) {
+        swiper.slideMarginFunction = function(n) {
             return (n + 1) * 10;
         };
         swiper.slideSnapOffset = function(n) {

@@ -18,20 +18,18 @@ class SimpleSwiper2 {
         this._swiper = new NewSwiper();
         this._swiper.containerSize = this._container.offsetWidth;
         this._swiper.count = this._items.length;
+        this._swiper.slideSizeFunction = this.slideSizeFunction;
 
-        this._swiper.leftOffset = 100;
-        this._swiper.rightOffset = 100;
-
-        this._swiper.slideSizeFunction = (n) => {
-            return this._container.offsetWidth / 2;
-        };
-
-        this._swiper.slideMargin = (n) => {
-            return 20;
-        };
-        this._swiper.slideSnapOffset = (n) => {
-            return 20;
-        };
+        if (typeof this.slideMarginFunction !== "undefined") { this._swiper.slideMarginFunction = this.slideMarginFunction; }
+        if (typeof this.slideSnapOffsetFunction !== "undefined") { this._swiper.slideSnapOffsetFunction = this.slideSnapOffsetFunction; }
+        if (typeof this.leftOffset !== "undefined") { this._swiper.leftOffset = this.leftOffset; }
+        if (typeof this.rightOffset !== "undefined") { this._swiper.rightOffset = this.rightOffset; }
+        if (typeof this.overscrollFunction !== "undefined") { this._swiper.overscrollFunction = this.overscrollFunction; }
+        if (typeof this.infinite !== "undefined") { this._swiper.infinite = this.infinite; }
+        if (typeof this.overscrollFunction !== "undefined") { this._swiper.overscrollFunction = this.overscrollFunction; }
+        if (typeof this.animationEase !== "undefined") { this._swiper.animationEase = this.animationEase; }
+        if (typeof this.animationTime !== "undefined") { this._swiper.animationTime = this.animationTime; }
+        if (typeof this.snapOnlyToAdjacentSlide !== "undefined") { this._swiper.snapOnlyToAdjacentSlide = this.snapOnlyToAdjacentSlide; }
 
         this._swiper.init();
 

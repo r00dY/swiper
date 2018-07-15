@@ -5,8 +5,8 @@ class NewSwiper {
 
     constructor() {
 
-        this._slideMargin = () => { return 0; };
-        this._slideSnapOffset = () => { return 0; };
+        this._slideMarginFunction = () => { return 0; };
+        this._slideSnapOffsetFunction = () => { return 0; };
         this._leftOffset = 0;
         this._rightOffset = 0;
 
@@ -30,6 +30,102 @@ class NewSwiper {
         };
     }
 
+    set containerSize(containerSize) {
+        this._containerSize = containerSize;
+    }
+
+    get containerSize() {
+        return this._containerSize;
+    }
+
+    set count(newCount) {
+        this._count = newCount;
+    }
+
+    get count() {
+        return this._count;
+    }
+
+    set slideSizeFunction(slideSizeFunction) {
+        this._slideSizeFunction = slideSizeFunction;
+    }
+
+    get slideSizeFunction() {
+        return this._slideSize;
+    }
+
+    set slideMarginFunction(slideMarginFunction) {
+        this._slideMarginFunction = slideMarginFunction;
+    }
+
+    get slideMarginFunction() {
+        return this._slideMarginFunction;
+    }
+
+
+    set slideSnapOffsetFunction(slideSnapOffsetFunction) {
+        this._slideSnapOffsetFunction = slideSnapOffsetFunction;
+    }
+
+    get slideSnapOffsetFunction() {
+        return this._slideSnapOffsetFunction;
+    }
+
+
+    set leftOffset(leftOffset) {
+        this._leftOffset = leftOffset;
+    }
+
+    get leftOffset() {
+        return this._leftOffset;
+    }
+
+    set rightOffset(rightOffset) {
+        this._rightOffset = rightOffset;
+    }
+
+    get rightOffset() {
+        return this._rightOffset;
+    }
+
+    set overscrollFunction(overscrollFunction) {
+        this._overscrollFunction = overscrollFunction;
+    }
+
+    set infinite(infinite) {
+        this._infinite = infinite;
+    }
+
+    get infinite() {
+        return this._infinite;
+    }
+
+    set animationEase(animationEase) {
+        this._animationEase = animationEase;
+    }
+
+    get animationEase() {
+        return this._animationEase;
+    }
+
+    set animationTime(animationTime) {
+        this._animationTime = animationTime;
+    }
+
+    get animationTime() {
+        return this._animationTime;
+    }
+
+    set snapOnlyToAdjacentSlide(snapOnlyToAdjacentSlide) {
+        this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide;
+    }
+
+    get snapOnlyToAdjacentSlide() {
+        return this._snapOnlyToAdjacentSlide;
+    }
+
+
+
     /**
      *
      */
@@ -37,7 +133,7 @@ class NewSwiper {
         this._CACHE = {
             slideSize: {},
             slideMargin: {},
-            snapOffset: {}
+            slideSnapOffset: {}
         };
 
         this._animations = [];
@@ -46,7 +142,7 @@ class NewSwiper {
         if (typeof this._containerSize !== "number") { throw "'containerSize' is not defined or is not a number"; }
 
         // slideSize validation
-        if (typeof this._slideSize !== "function") { throw "'slideSize' is not defined or is not a function"; }
+        if (typeof this._slideSizeFunction !== "function") { throw "'slideSize' is not defined or is not a function"; }
 
         // count validation
         if (typeof this._count !== "number") { throw "'count' is not defined or is not a number"; }
@@ -236,93 +332,29 @@ class NewSwiper {
         });
     }
 
-    set containerSize(containerSize) {
-        this._containerSize = containerSize;
-    }
-
-    get containerSize() {
-        return this._containerSize;
-    }
-
-    set count(newCount) {
-        this._count = newCount;
-    }
-
-    get count() {
-        return this._count;
-    }
-
-    set slideSizeFunction(slideSize) {
-        this._slideSize = slideSize;
-    }
-
     slideSize(n) {
         if (this._CACHE["slideSize"][n]) { return this._CACHE["slideSize"][n]; }
 
-        this._CACHE["slideSize"][n] = this._slideSize(n);
+        this._CACHE["slideSize"][n] = this._slideSizeFunction(n);
 
         return this._CACHE["slideSize"][n];
     }
 
-    set slideMargin(slideMargin) {
-        this._slideMargin = slideMargin;
-    }
 
     slideMargin(n) {
         if (this._CACHE["slideMargin"][n]) { return this._CACHE["slideMargin"][n]; }
 
-        this._CACHE["slideMargin"][n] = this._slideMargin(n);
+        this._CACHE["slideMargin"][n] = this._slideMarginFunction(n);
 
         return this._CACHE["slideMargin"][n];
-    }
-
-    set slideSnapOffset(slideSnapOffset) {
-        this._slideSnapOffset = slideSnapOffset;
     }
 
     slideSnapOffset(n) {
         if (this._CACHE["slideSnapOffset"][n]) { return this._CACHE["slideSnapOffset"][n]; }
 
-        this._CACHE["slideSnapOffset"][n] = this._slideSnapOffset(n);
+        this._CACHE["slideSnapOffset"][n] = this._slideSnapOffsetFunction(n);
 
         return this._CACHE["slideSnapOffset"][n];
-    }
-
-
-    set leftOffset(leftOffset) {
-        this._leftOffset = leftOffset;
-    }
-
-    get leftOffset() {
-        return this._leftOffset;
-    }
-
-    set rightOffset(rightOffset) {
-        this._rightOffset = rightOffset;
-    }
-
-    get rightOffset() {
-        return this._rightOffset;
-    }
-
-    set overscrollFunction(overscrollFunction) {
-       this._overscrollFunction = overscrollFunction;
-    }
-
-    set infinite(infinite) {
-        this._infinite = infinite;
-    }
-
-    get infinite() {
-        return this._infinite;
-    }
-
-    set animationEase(animationEase) {
-        this._animationEase = animationEase;
-    }
-
-    set animationTime(animationTime) {
-        this._animationTime = animationTime;
     }
 
 
@@ -369,7 +401,6 @@ class NewSwiper {
         if (coord > this.containerSize) { return false; }
         return true;
     }
-
 
     _normalizePos(position) {
 

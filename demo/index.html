@@ -843,6 +843,7 @@
         <!--})-->
     <!--</script>-->
 
+    <h1>New slider</h1>
 
     <div class="wrapper">
 
@@ -868,13 +869,70 @@
         document.addEventListener("DOMContentLoaded", function () {
 
             var swiperNew1 = new SimpleSwiper2('demo-new-1');
+            swiperNew1.slideSizeFunction = function(n) {
+                return 200 + n * 30;
+            };
+            swiperNew1.slideMarginFunction = function(n) {
+                return n * 10;
+            };
+            swiperNew1.slideSnapOffsetFunction = function(n) {
+                return n * 10;
+            };
+            swiperNew1.leftOffset = 100;
+            swiperNew1.rightOffset = 100;
+
             swiperNew1.layout();
             swiperNew1.enableTouch();
-        })
-
+        });
 
     </script>
 
+    <h1>New slider infinite</h1>
+
+    <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-new-2">
+            <div class="swiper-items">
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var swiperNew2 = new SimpleSwiper2('demo-new-2');
+            swiperNew2.slideSizeFunction = function(n) {
+                return 200 + n * 30;
+            };
+            swiperNew2.slideMarginFunction = function(n) {
+                return n * 10;
+            };
+            swiperNew2.slideSnapOffsetFunction = function(n) {
+                return 150 + n * 10;
+            };
+            swiperNew2.leftOffset = 100;
+            swiperNew2.rightOffset = 100;
+
+            swiperNew2.infinite = true;
+
+            swiperNew2.layout();
+            swiperNew2.enableTouch();
+
+        });
+
+    </script>
 
 
     <h3>onMove event -> key to customization</h3>
