@@ -15,7 +15,7 @@ class NewSwiper {
 
         // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
         this._overscrollFunction = (x) => {
-            return 0.3 * Math.log(1 + x);
+            return 0.5 * Math.log(1 + x);
         };
 
         this._animationEase = Expo.easeOut;
@@ -24,6 +24,10 @@ class NewSwiper {
         this._scrollingAnimationTime = 0.8;
 
         this._pos = 0;
+
+        this._eventListeners = {
+            'move': []
+        };
     }
 
     /**
@@ -216,10 +220,21 @@ class NewSwiper {
     //     return 0;
     // }
     //
-    // // onMove, onStill, etc etc.
-    // addEventListener(event, callback) {
-    //
-    // }
+
+    // onMove, onStill, etc etc.
+    addEventListener(event, callback) {
+        if (!this._eventListeners.hasOwnProperty(event)) {
+            throw `Unknown event listener name: ${event}`;
+        }
+
+        this._eventListeners[event].push(callback);
+    }
+
+    _runEventListeners(event) {
+        this._eventListeners[event].forEach((callback) => {
+           callback();
+        });
+    }
 
     set containerSize(containerSize) {
         this._containerSize = containerSize;
@@ -348,6 +363,13 @@ class NewSwiper {
         return Math.max(0, this.slideableWidth - this._containerSize);
     }
 
+    isSlideVisible(n) {
+        let coord = this.slideCoord(n);
+        if (coord + this.slideSize(n) < 0) { return false; }
+        if (coord > this.containerSize) { return false; }
+        return true;
+    }
+
 
     _normalizePos(position) {
 
@@ -413,7 +435,7 @@ class NewSwiper {
             let posCapped = pos;
 
             if (posCapped < 0) { posCapped = 0 }
-            else if (posCapped > pos.maxPos) { posCapped = pos.maxPos }
+            else if (posCapped > this.maxPos) { posCapped = this.maxPos }
 
             let coord = this._leftOffset - posCapped;
 
@@ -430,11 +452,11 @@ class NewSwiper {
 
             if (pos < 0) {
                 let rest = -pos / this.containerSize;
-                extraTranslation = -this._overscrollFunction(rest) * this.containerSize;
+                extraTranslation = this._overscrollFunction(rest) * this.containerSize;
             }
             else if (pos > this.maxPos) {
                 let rest = (pos - this.maxPos) / this.containerSize;
-                extraTranslation = this._overscrollFunction(rest) * this.containerSize;
+                extraTranslation = -this._overscrollFunction(rest) * this.containerSize;
             }
 
             coord += extraTranslation;
@@ -465,6 +487,8 @@ class NewSwiper {
     _updatePos(pos) {
 
         this._pos = this._normalizePos(pos);
+
+        this._runEventListeners('move');
 
         // let positions = {};
         //

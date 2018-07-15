@@ -59,9 +59,9 @@ describe("NewSwiper (no animations / finite mode)", function() {
 
     it("moves properly with overscroll on the left", function() {
         swiper.moveTo(-100, false);
-        expect(swiper.slideCoord(0)).toBe(-50 + 100);
-        expect(swiper.slideCoord(1)).toBe(-50 + 100 + 310 + 10);
-        expect(swiper.slideCoord(4)).toBe(-50 + 100 + 310 + 10 + 320 + 20 + 330 + 30 + 340 + 40);
+        expect(swiper.slideCoord(0)).toBe(50 + 100);
+        expect(swiper.slideCoord(1)).toBe(50 + 100 + 310 + 10);
+        expect(swiper.slideCoord(4)).toBe(50 + 100 + 310 + 10 + 320 + 20 + 330 + 30 + 340 + 40);
         expect(swiper.pos).toBe(-100); // pos should stay untouched by overscroll function
     });
 
