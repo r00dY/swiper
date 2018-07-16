@@ -927,6 +927,10 @@
 
             swiperNew2.infinite = true;
 
+            swiperNew2.addEventListener('move', function() {
+                console.log('move');
+            });
+
             swiperNew2.layout();
             swiperNew2.enableTouch();
 

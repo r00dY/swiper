@@ -25,8 +25,17 @@ class NewSwiper {
 
         this._pos = 0;
 
+        this._isTouched = false;
+        this._isStill = true;
+        this._isAnimating = false;
+
         this._eventListeners = {
-            'move': []
+            'move': [],
+            'animationStart': [],
+            'animationEnd': [],
+            'stillnessChange': [],
+            'touchdown': [],
+            'touchup': []
         };
     }
 
@@ -155,10 +164,44 @@ class NewSwiper {
     }
 
     /**
+     * Mock method not doing anything except for being helper for touchdown, touchup, and stillness events.
+     */
+    touchdown() {
+        if (this._isTouched) { return; }
+
+        this._isTouched = true;
+
+        this._runEventListeners('touchdown');
+
+        this._updateStillness();
+    }
+
+    touchup() {
+        if (!this._isTouched) { return; }
+
+        this._isTouched = false;
+        this._runEventListeners('touchup');
+
+        this._updateStillness();
+    }
+
+    _updateStillness() {
+        if (!this._isStill && !this.isAnimating() && !this.isTouched()) {
+            this._isStill = true;
+            this._runEventListeners('stillnessChange');
+        }
+        else if (this._isStill && (this.isAnimating() || this.isTouched())) {
+            this._isStill = false;
+            this._runEventListeners('stillnessChange');
+        }
+    };
+
+
+    /**
      * This method stops movement of current animations. If there are no animations, this method doesn't do anything. Usually should be called on touch down gesture.
      */
     stopMovement() {
-        this._killAnimations();
+        this._finishAnimation();
     }
 
     /**
@@ -178,7 +221,7 @@ class NewSwiper {
             return;
         }
 
-        this._killAnimations();
+        this._finishAnimation();
 
         if (animated) {
 
@@ -216,12 +259,13 @@ class NewSwiper {
                 },
 
                 onComplete: () => {
-                    this._animations = [];
-                    // this.setStill(true);
+                    this._finishAnimation();
                 }
             });
 
             this._animations = [anim];
+
+            this._startAnimation();
         }
         else {
             this._updatePos(pos);
@@ -393,6 +437,18 @@ class NewSwiper {
         }
 
         return Math.max(0, this.slideableWidth - this._containerSize);
+    }
+
+    isAnimating() {
+        return this._isAnimating;
+    }
+
+    isTouched() {
+        return this._isTouched;
+    }
+
+    isStill() {
+        return this._isStill;
     }
 
     isSlideVisible(n) {
@@ -604,12 +660,25 @@ class NewSwiper {
         return closestSnapPosition;
     }
 
+    _startAnimation() {
+        if (this._isAnimating) { return; }
 
-    _killAnimations() {
+        this._runEventListeners('animationStart');
+        this._isAnimating = true;
+        this._updateStillness();
+    }
+
+    _finishAnimation() {
+        if (!this._isAnimating) { return; }
+
         for (let i = 0; i < this._animations.length; i++) {
             this._animations[i].kill();
         }
         this._animations = [];
+
+        this._runEventListeners('animationEnd');
+        this._isAnimating = false;
+        this._updateStillness();
     }
 
 }
