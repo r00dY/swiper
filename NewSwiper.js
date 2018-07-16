@@ -133,12 +133,10 @@ class NewSwiper {
         return this._snapOnlyToAdjacentSlide;
     }
 
-
-
     /**
      *
      */
-    init() {
+    layout() {
         this._CACHE = {
             slideSize: {},
             slideMargin: {},
@@ -158,7 +156,7 @@ class NewSwiper {
 
         // set initial pos for infinite as snap position of first slide
         if (this._infinite) {
-            this._updatePos(this._getSlideSnapPos(0));
+            this._updatePos(this._getSlideSnapPos(0), false);
         }
 
     }
@@ -571,11 +569,15 @@ class NewSwiper {
         }
     }
 
-    _updatePos(pos) {
+    _updatePos(pos, sendEvents) {
+
+        if (typeof sendEvents === 'undefined') { sendEvents = true; }
 
         this._pos = this._normalizePos(pos);
 
-        this._runEventListeners('move');
+        if (sendEvents) {
+            this._runEventListeners('move');
+        }
 
         // let positions = {};
         //

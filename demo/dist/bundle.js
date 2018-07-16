@@ -6409,7 +6409,6 @@ class SimpleSwiper2 extends AbstractSwiper2 {
     layout() {
         this.containerSize = this._container.offsetWidth;
         this.count = this._items.length;
-        this.slideSizeFunction = this.slideSizeFunction;
 
         super.layout();
 
@@ -6434,9 +6433,9 @@ class SimpleSwiper2 extends AbstractSwiper2 {
         for (let i = 0; i < this._items.length; i++) {
             let item = this._items[i];
 
-            let coord = this._swiper.slideCoord(i);
+            let coord = this.slideCoord(i);
 
-            if (!this._swiper.isSlideVisible(i)) {
+            if (!this.isSlideVisible(i)) {
                 item.style.display = 'none';
                 this._heights[i] = 0;
             } else {
@@ -6460,202 +6459,10 @@ class SimpleSwiper2 extends AbstractSwiper2 {
             let item = this._items[n];
 
             item.style["position"] = "absolute";
-            item.style["width"] = this._swiper.slideSize(n) + 'px';
+            item.style["width"] = this.slideSize(n) + 'px';
         }
     }
 }
-
-
-//
-// class SimpleSwiper2 {
-//
-//     constructor(name) {
-//         this._name = name;
-//
-//         this._container = document.querySelector(this._getSelectorForComponent('container'));
-//         this._containerInner = this._container.querySelector('.swiper-items');
-//         this._items = this._containerInner.children;
-//     }
-//
-//     layout() {
-//         this._swiper = new NewSwiper();
-//         this._swiper.containerSize = this._container.offsetWidth;
-//         this._swiper.count = this._items.length;
-//         this._swiper.slideSizeFunction = this.slideSizeFunction;
-//
-//         if (typeof this.slideMarginFunction !== "undefined") { this._swiper.slideMarginFunction = this.slideMarginFunction; }
-//         if (typeof this.slideSnapOffsetFunction !== "undefined") { this._swiper.slideSnapOffsetFunction = this.slideSnapOffsetFunction; }
-//         if (typeof this.leftOffset !== "undefined") { this._swiper.leftOffset = this.leftOffset; }
-//         if (typeof this.rightOffset !== "undefined") { this._swiper.rightOffset = this.rightOffset; }
-//         if (typeof this.overscrollFunction !== "undefined") { this._swiper.overscrollFunction = this.overscrollFunction; }
-//         if (typeof this.infinite !== "undefined") { this._swiper.infinite = this.infinite; }
-//         if (typeof this.overscrollFunction !== "undefined") { this._swiper.overscrollFunction = this.overscrollFunction; }
-//         if (typeof this.animationEase !== "undefined") { this._swiper.animationEase = this.animationEase; }
-//         if (typeof this.animationTime !== "undefined") { this._swiper.animationTime = this.animationTime; }
-//         if (typeof this.snapOnlyToAdjacentSlide !== "undefined") { this._swiper.snapOnlyToAdjacentSlide = this.snapOnlyToAdjacentSlide; }
-//
-//         this._swiper.init();
-//
-//         // Reset heights
-//         this._heights = [];
-//         for(let i = 0; i < this._items.length; i++) {
-//             this._heights.push(0);
-//         }
-//
-//         this._positionElements();
-//         this._onMove();
-//
-//         this._swiper.addEventListener('move', () => {
-//             // console.log('move');
-//             this._onMove();
-//         });
-//     }
-//
-//     enableTouch() {
-//         if (this._enabled) { return; }
-//         this._enabled = true;
-//
-//         this._mc = new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: false });
-//         this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
-//         this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
-//
-//         let swiped = false;
-//
-//         this._mc.on("pan panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown", (ev) => {
-//
-//             // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
-//             // https://github.com/hammerjs/hammer.js/issues/1050
-//             if (ev.srcEvent.type == "pointercancel") {
-//                 return;
-//             }
-//
-//             let delta = ev.deltaX;
-//
-//             switch (ev.type) {
-//                 case "swipeleft":
-//                 case "swipeup":
-//
-//                     if (this._isTouched) {
-//                         this._swiper.snap(Math.abs(ev.velocityX) * 1000, true);
-//                         swiped = true;
-//                     }
-//
-//                     break;
-//
-//                 case "swiperight":
-//                 case "swipedown":
-//
-//                     if (this._isTouched) {
-//                         this._swiper.snap(-Math.abs(ev.velocityX) * 1000, true);
-//                         swiped = true;
-//                     }
-//
-//                     break;
-//
-//                 case "panstart":
-//                     break;
-//
-//                 case "panup":
-//                 case "pandown":
-//                     // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
-//                     // However, if we gave up returning when _this._isTouched is false, Android would too eagerly start "panning" instead of waiting for scroll.
-//                     if (!this._isTouched) {
-//                         return;
-//                     }
-//
-//                 case "panleft":
-//                 case "panright":
-//                     if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
-//
-//                     if (!this._isTouched) {
-//
-//                         document.querySelector(this._getSelectorForComponent('touch-space')).classList.add('panning'); // adds 'panning' class which prevents links from being clicked.
-//
-//                         // Events onPanStart
-//                         // _this._invokeListeners('touchdown');
-//
-//                         this._isTouched = true;
-//                         swiped = false;
-//
-//                         this._swiper.stopMovement();
-//                         this._panStartPos = this._swiper.pos;
-//                     }
-//
-//                     if (this._isTouched && !swiped) {
-//                         this._swiper.moveTo(this._panStartPos - delta, false);
-//                     }
-//
-//                     break;
-//
-//                 case "panend":
-//
-//                     if (this._isTouched) {
-//
-//                         // Remove panning class when we're not touching slider
-//                         setTimeout(() => {
-//                             document.querySelector(this._getSelectorForComponent('touch-space')).classList.remove('panning');
-//                         }, 0);
-//
-//                         // Events touchup.
-//                         // _this._invokeListeners('touchup'); // new way
-//
-//                         this._isTouched = false;
-//
-//                         if (!swiped) {
-//                             this._swiper.snap(0, true);
-//                         }
-//
-//                         swiped = false;
-//                     }
-//                     break;
-//             }
-//         });
-//
-//     }
-//
-//     _onMove() {
-//
-//         let oldHeight = Math.max.apply(this, this._heights);
-//
-//         for (let i = 0; i < this._items.length; i++) {
-//             let item = this._items[i];
-//
-//             let coord = this._swiper.slideCoord(i);
-//
-//             if (!this._swiper.isSlideVisible(i)) {
-//                 item.style.display = 'none';
-//                 this._heights[i] = 0;
-//             } else {
-//                 item.style.display = 'block';
-//                 item.style.transform = 'translate3d(' + coord + 'px, 0px, 0px)';
-//
-//                 if (this._heights[i] == 0) { this._heights[i] = item.offsetHeight; }
-//             }
-//         }
-//
-//         let newHeight = Math.max.apply(this, this._heights);
-//         if (newHeight != oldHeight) {
-//             this._containerInner.style.height = newHeight + 'px';
-//         }
-//     }
-//
-//     _getSelectorForComponent(component) {
-//         return '.swiper-' + component + '[data-swiper="' + this._name + '"]';
-//     }
-//
-//     _positionElements() {
-//         this._containerInner.style["position"] = "relative";
-//
-//         for (let n = 0; n < this._items.length; n++) {
-//             let item = this._items[n];
-//
-//             item.style["position"] = "absolute";
-//             item.style["width"] = this._swiper.slideSize(n) + 'px';
-//         }
-//     }
-//
-//
-// }
 
 
 module.exports = SimpleSwiper2;
@@ -6670,51 +6477,12 @@ let VerticalScrollDetector = __webpack_require__(3);
 
 let NewSwiper = __webpack_require__(11);
 
-class AbstractSwiper2 {
+class AbstractSwiper2 extends NewSwiper {
 
     constructor(name) {
+        super();
+
         this._name = name;
-
-        this._eventListeners = {
-            'move': [],
-            'animationStart': [],
-            'animationEnd': [],
-            'stillnessChange': [],
-            'touchup': [],
-            'touchdown': [],
-        };
-
-        this._isTouched = false;
-        this._isStill = true;
-    }
-
-    layout() {
-        this._swiper = new NewSwiper();
-        if (typeof this.containerSize !== "undefined") { this._swiper.containerSize = this.containerSize; }
-        if (typeof this.count !== "undefined") { this._swiper.count = this.count; }
-        if (typeof this.slideSizeFunction !== "undefined") { this._swiper.slideSizeFunction = this.slideSizeFunction; }
-        if (typeof this.slideMarginFunction !== "undefined") { this._swiper.slideMarginFunction = this.slideMarginFunction; }
-        if (typeof this.slideSnapOffsetFunction !== "undefined") { this._swiper.slideSnapOffsetFunction = this.slideSnapOffsetFunction; }
-        if (typeof this.leftOffset !== "undefined") { this._swiper.leftOffset = this.leftOffset; }
-        if (typeof this.rightOffset !== "undefined") { this._swiper.rightOffset = this.rightOffset; }
-        if (typeof this.overscrollFunction !== "undefined") { this._swiper.overscrollFunction = this.overscrollFunction; }
-        if (typeof this.infinite !== "undefined") { this._swiper.infinite = this.infinite; }
-        if (typeof this.animationEase !== "undefined") { this._swiper.animationEase = this.animationEase; }
-        if (typeof this.animationTime !== "undefined") { this._swiper.animationTime = this.animationTime; }
-        if (typeof this.snapOnlyToAdjacentSlide !== "undefined") { this._swiper.snapOnlyToAdjacentSlide = this.snapOnlyToAdjacentSlide; }
-
-        this._swiper.addEventListener('move', () => { this._runEventListeners('move'); });
-        this._swiper.addEventListener('animationStart', () => { this._runEventListeners('animationStart'); });
-        this._swiper.addEventListener('animationEnd', () => { this._runEventListeners('animationEnd'); });
-        this._swiper.addEventListener('stillnessChange', () => { this._runEventListeners('stillnessChange'); });
-        this._swiper.addEventListener('touchup', () => { this._runEventListeners('touchup'); });
-        this._swiper.addEventListener('touchdown', () => { this._runEventListeners('touchdown'); });
-
-        this._swiper.init();
-    }
-
-    addEventListener(event, callback) {
-        this._eventListeners[event].push(callback);
     }
 
     enableTouch() {
@@ -6726,6 +6494,8 @@ class AbstractSwiper2 {
         this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
 
         let swiped = false;
+
+        let isTouched = false;
 
         this._mc.on("pan panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown", (ev) => {
 
@@ -6741,8 +6511,8 @@ class AbstractSwiper2 {
                 case "swipeleft":
                 case "swipeup":
 
-                    if (this._isTouched) {
-                        this._swiper.snap(Math.abs(ev.velocityX) * 1000, true);
+                    if (isTouched) {
+                        this.snap(Math.abs(ev.velocityX) * 1000, true);
                         swiped = true;
                     }
 
@@ -6751,8 +6521,8 @@ class AbstractSwiper2 {
                 case "swiperight":
                 case "swipedown":
 
-                    if (this._isTouched) {
-                        this._swiper.snap(-Math.abs(ev.velocityX) * 1000, true);
+                    if (isTouched) {
+                        this.snap(-Math.abs(ev.velocityX) * 1000, true);
                         swiped = true;
                     }
 
@@ -6764,8 +6534,8 @@ class AbstractSwiper2 {
                 case "panup":
                 case "pandown":
                     // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
-                    // However, if we gave up returning when _this._isTouched is false, Android would too eagerly start "panning" instead of waiting for scroll.
-                    if (!this._isTouched) {
+                    // However, if we gave up returning when _isTouched is false, Android would too eagerly start "panning" instead of waiting for scroll.
+                    if (!isTouched) {
                         return;
                     }
 
@@ -6773,32 +6543,30 @@ class AbstractSwiper2 {
                 case "panright":
                     if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
 
-                    if (!this._isTouched) {
+                    if (!isTouched) {
 
-                        this._swiper.touchdown();
+                        this.touchdown();
 
                         document.querySelector(this._getSelectorForComponent('touch-space')).classList.add('panning'); // adds 'panning' class which prevents links from being clicked.
 
                         this._blockScrolling();
 
-                        this._isTouched = true;
+                        isTouched = true;
                         swiped = false;
 
-                        this._swiper.stopMovement();
-                        this._panStartPos = this._swiper.pos;
+                        this.stopMovement();
+                        this._panStartPos = this.pos;
                     }
 
-                    if (this._isTouched && !swiped) {
-                        this._swiper.moveTo(this._panStartPos - delta, false);
+                    if (isTouched && !swiped) {
+                        this.moveTo(this._panStartPos - delta, false);
                     }
 
                     break;
 
                 case "panend":
 
-                    if (this._isTouched) {
-
-                        this._swiper.touchup();
+                    if (isTouched) {
 
                         // Remove panning class when we're not touching slider
                         setTimeout(() => {
@@ -6807,13 +6575,15 @@ class AbstractSwiper2 {
 
                         this._unblockScrolling();
 
-                        this._isTouched = false;
+                        isTouched = false;
 
                         if (!swiped) {
-                            this._swiper.snap(0, true);
+                            this.snap(0, true);
                         }
 
                         swiped = false;
+
+                        this.touchup();
                     }
                     break;
             }
@@ -6831,14 +6601,6 @@ class AbstractSwiper2 {
         this._mc = undefined;
     }
 
-    isTouched() {
-        return this._swiper.isTouched();
-    }
-
-    isStill() {
-        return this._swiper.isStill();
-    }
-
     _blockScrolling() {
         if (this._mc) {
             this._mc.get('pan').set({direction: Hammer.DIRECTION_ALL});
@@ -6852,12 +6614,6 @@ class AbstractSwiper2 {
             this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL});
         }
     };
-
-    _runEventListeners(event) {
-        this._eventListeners[event].forEach((callback) => {
-            callback();
-        });
-    }
 
     _getSelectorForComponent(component) {
         return '.swiper-' + component + '[data-swiper="' + this._name + '"]';
@@ -7007,12 +6763,10 @@ class NewSwiper {
         return this._snapOnlyToAdjacentSlide;
     }
 
-
-
     /**
      *
      */
-    init() {
+    layout() {
         this._CACHE = {
             slideSize: {},
             slideMargin: {},
@@ -7032,7 +6786,7 @@ class NewSwiper {
 
         // set initial pos for infinite as snap position of first slide
         if (this._infinite) {
-            this._updatePos(this._getSlideSnapPos(0));
+            this._updatePos(this._getSlideSnapPos(0), false);
         }
 
     }
@@ -7445,11 +7199,15 @@ class NewSwiper {
         }
     }
 
-    _updatePos(pos) {
+    _updatePos(pos, sendEvents) {
+
+        if (typeof sendEvents === 'undefined') { sendEvents = true; }
 
         this._pos = this._normalizePos(pos);
 
-        this._runEventListeners('move');
+        if (sendEvents) {
+            this._runEventListeners('move');
+        }
 
         // let positions = {};
         //

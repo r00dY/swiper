@@ -28,7 +28,7 @@ describe("NewSwiper (no animations / finite mode)", function() {
             return x / 2;
         };
 
-        swiper.init();
+        swiper.layout();
     });
 
     it("returns correct slideable width", function() {
@@ -196,7 +196,7 @@ describe("NewSwiper (no animations / infinite mode)", function() {
             return (n + 1) * 10;
         };
 
-        swiper.init();
+        swiper.layout();
     });
 
     it("returns correct slideable width", function() {
