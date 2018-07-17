@@ -6483,19 +6483,29 @@ class AbstractSwiper2 extends NewSwiper {
         super();
 
         this._name = name;
+        this._touchSpace = document.querySelector(this._getSelectorForComponent('touch-space'));
     }
 
     enableTouch() {
         if (this._enabled) { return; }
         this._enabled = true;
 
-        this._mc = new Hammer(document.querySelector(this._getSelectorForComponent('touch-space')), { domEvents: false });
+        this._mc = new Hammer(this._touchSpace, { domEvents: false });
         this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
         this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
 
         let swiped = false;
 
         let isTouched = false;
+        let stopPropagationCallback = (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+        };
+
+        // Preventing dragging of links and img might be "wanted effect"!!! That's why we don't set user-drag on all children of slider.
+        // Maybe on desktop we want items in slider to be draggable? And we want to disable touch? It should be done by slider developer.
+        // maybe we should make this user-drag on all children
+        // Users can easily do this in CSS for only touch devices. Easy.
 
         this._mc.on("pan panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown", (ev) => {
 
@@ -6547,8 +6557,6 @@ class AbstractSwiper2 extends NewSwiper {
 
                         this.touchdown();
 
-                        document.querySelector(this._getSelectorForComponent('touch-space')).classList.add('panning'); // adds 'panning' class which prevents links from being clicked.
-
                         this._blockScrolling();
 
                         isTouched = true;
@@ -6556,6 +6564,8 @@ class AbstractSwiper2 extends NewSwiper {
 
                         this.stopMovement();
                         this._panStartPos = this.pos;
+
+                        this._touchSpace.addEventListener('click', stopPropagationCallback);
                     }
 
                     if (isTouched && !swiped) {
@@ -6570,7 +6580,7 @@ class AbstractSwiper2 extends NewSwiper {
 
                         // Remove panning class when we're not touching slider
                         setTimeout(() => {
-                            document.querySelector(this._getSelectorForComponent('touch-space')).classList.remove('panning');
+                            this._touchSpace.removeEventListener('click', stopPropagationCallback);
                         }, 0);
 
                         this._unblockScrolling();

@@ -2,24 +2,25 @@
 
 .swiper-touch-space {
 
-  &.panning {
-    .swiper-items * {
-        pointer-events: none;
-    }
-  }
-
-  .swiper-items * {
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none;
-  }
+  //&.panning {
+  //  .swiper-items * {
+  //      pointer-events: none;
+  //  }
+  //}
+  //
+  //.swiper-items * {
+  //  -webkit-user-drag: none;
+  //  -khtml-user-drag: none;
+  //  -moz-user-drag: none;
+  //  -o-user-drag: none;
+  //  user-drag: none;
+  //}
 }
+
 
 // For SimpleSwiper only
-.swiper-container {
-  > .swiper-items > * {
-    display: none;
-  }
-}
+//.swiper-container {
+//  > .swiper-items > * {
+//    display: none;
+//  }
+//}
