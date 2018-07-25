@@ -24,3 +24,22 @@ That's it.
 # Docs
 
 Run demo and read source code of demo/index.html - all knowledge is in comments mixed with code.
+
+# To do
+
+
+
+1. No GSAP
+2. Components
+3. Active / visibility events
+4. Components (dots / arrows).
+
+
+SimpleSwiper stuff:
+1. Resize
+2. New items
+3. Removal from DOM.
+4. Again inserting to DOM.
+5. Initial position
+6. Responsiveness.
+

@@ -162,11 +162,77 @@ describe("NewSwiper (no animations / finite mode)", function() {
         expect(swiper.slideCoord(1)).toBe(20);
     });
 
+    // initial position
 
+    it ("has good initial position without setting initialPos and initialSlide", function() {
+        expect(swiper.pos).toBe(0);
+    });
 
+    it ("has good initial position with setting initialPos", function() {
+        swiper.initialPos = 100;
+        swiper.layout();
+        expect(swiper.pos).toBe(100);
+    });
 
+    it ("has good initial position with setting initialSlide", function() {
+        swiper.initialSlide = 1;
+        swiper.layout();
+        expect(swiper.pos).toBe(100 + 310 + 10 - 20);
+    });
 
+    // move listener
 
+    it ("properly adds and removes 'move' event listeners", function() {
+        let event1counter = 0;
+        let event1 = () => { event1counter++; };
+
+        let event2counter = 0;
+        let event2 = () => { event2counter++; };
+
+        swiper.moveTo(300, false);
+        expect(event1counter).toBe(0);
+        expect(event2counter).toBe(0);
+
+        swiper.addEventListener('move', event1);
+        swiper.moveTo(400, false);
+        expect(event1counter).toBe(1);
+        expect(event2counter).toBe(0);
+
+        swiper.addEventListener('move', event2);
+        swiper.moveTo(500, false);
+        expect(event1counter).toBe(2);
+        expect(event2counter).toBe(1);
+
+        swiper.removeEventListener('move', event1);
+        swiper.moveTo(600, false);
+        expect(event1counter).toBe(2);
+        expect(event2counter).toBe(2);
+
+        swiper.removeEventListener('move', event2);
+        swiper.moveTo(700, false);
+        expect(event1counter).toBe(2);
+        expect(event2counter).toBe(2);
+    });
+
+    it ("runs single 'move' event after layout", function() {
+
+        let eventCounter = 0;
+        let event = () => { eventCounter++; };
+
+        swiper.addEventListener('move', event);
+
+        swiper.layout();
+        expect(eventCounter).toBe(1);
+
+        swiper.initialSlide = 3;
+        swiper.layout();
+        expect(eventCounter).toBe(2);
+
+        swiper.initialPos = 100;
+        swiper.layout();
+        expect(eventCounter).toBe(3);
+
+    });
 
 });
 
@@ -369,7 +435,41 @@ describe("NewSwiper (no animations / infinite mode)", function() {
         expect(swiper.slideCoord(0)).toBe(10);
     });
 
+    it ("has good initial position without setting initialPos and initialSlide", function() {
+        expect(swiper.pos).toBe(swiper.slideableWidth-10);
+    });
 
+    it ("has good initial position with setting initialPos", function() {
+        swiper.initialPos = 100;
+        swiper.layout();
+        expect(swiper.pos).toBe(100);
+    });
+
+    it ("has good initial position with setting initialSlide", function() {
+        swiper.initialSlide = 1;
+        swiper.layout();
+        expect(swiper.pos).toBe(310 + 10 - 20);
+    });
+
+    it ("runs single 'move' event after layout", function() {
+
+        let eventCounter = 0;
+        let event = () => { eventCounter++; };
+
+        swiper.addEventListener('move', event);
+
+        swiper.layout();
+        expect(eventCounter).toBe(1);
+
+        swiper.initialSlide = 3;
+        swiper.layout();
+        expect(eventCounter).toBe(2);
+
+        swiper.initialPos = 100;
+        swiper.layout();
+        expect(eventCounter).toBe(3);
+
+    });
 
 
 });

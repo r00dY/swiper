@@ -910,51 +910,51 @@
 
     <script>
 
-        document.addEventListener("DOMContentLoaded", function () {
+       document.addEventListener("DOMContentLoaded", function () {
 
-            var swiperNew2 = new SimpleSwiper2('demo-new-2');
-            swiperNew2.slideSizeFunction = function(n) {
-                return 200 + n * 30;
-            };
-            swiperNew2.slideMarginFunction = function(n) {
-                return n * 10;
-            };
-            swiperNew2.slideSnapOffsetFunction = function(n) {
-                return 150 + n * 10;
-            };
-            swiperNew2.leftOffset = 100;
-            swiperNew2.rightOffset = 100;
+           var swiperNew2 = new SimpleSwiper2('demo-new-2');
+           swiperNew2.slideSizeFunction = function(n) {
+               return 200 + n * 30;
+           };
+           swiperNew2.slideMarginFunction = function(n) {
+               return n * 10;
+           };
+           swiperNew2.slideSnapOffsetFunction = function(n) {
+               return 150 + n * 10;
+           };
+           swiperNew2.leftOffset = 100;
+           swiperNew2.rightOffset = 100;
 
-            swiperNew2.infinite = true;
+           swiperNew2.infinite = true;
 
-            swiperNew2.addEventListener('move', function() {
-                console.log('move');
-            });
+           swiperNew2.addEventListener('move', function() {
+               console.log('move');
+           });
 
-            swiperNew2.addEventListener('stillnessChange', function() {
-                console.log('stillnessChange', swiperNew2.isStill());
-            });
+           swiperNew2.addEventListener('stillnessChange', function() {
+               console.log('stillnessChange', swiperNew2.isStill());
+           });
 
-            swiperNew2.addEventListener('animationStart', function() {
-                console.log('animationStart');
-            });
+           swiperNew2.addEventListener('animationStart', function() {
+               console.log('animationStart');
+           });
 
-            swiperNew2.addEventListener('animationEnd', function() {
-                console.log('animationEnd');
-            });
+           swiperNew2.addEventListener('animationEnd', function() {
+               console.log('animationEnd');
+           });
 
-            swiperNew2.addEventListener('touchdown', function() {
-                console.log('touchdown');
-            });
+           swiperNew2.addEventListener('touchdown', function() {
+               console.log('touchdown');
+           });
 
-            swiperNew2.addEventListener('touchup', function() {
-                console.log('touchup');
-            });
+           swiperNew2.addEventListener('touchup', function() {
+               console.log('touchup');
+           });
 
-            swiperNew2.layout();
-            swiperNew2.enableTouch();
+           swiperNew2.layout();
+           swiperNew2.enableTouch();
 
-        });
+       });
 
     </script>
 

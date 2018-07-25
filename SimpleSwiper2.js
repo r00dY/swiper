@@ -13,11 +13,31 @@ class SimpleSwiper2 extends AbstractSwiper2 {
         this._container = document.querySelector(this._getSelectorForComponent('container'));
         this._containerInner = this._container.querySelector('.swiper-items');
         this._items = this._containerInner.children;
+
+        this.addEventListener('move', () => {
+            this._onMove();
+        });
+
+        this.onResizeListener = () => {
+            this.layout();
+        };
+
+        // Default resize.
+        window.addEventListener('resize', () => {
+            this.onResizeListener();
+        });
+
+        this._wasLaidOut = false;
     }
 
     layout() {
+        this.eventsBlocked = true;
+
         this.containerSize = this._container.offsetWidth;
         this.count = this._items.length;
+
+        // previousRelativePosition must be read before super.layout!
+        let previousRelativePosition = this._wasLaidOut ? this.pos / this.slideableWidth : undefined;
 
         super.layout();
 
@@ -27,16 +47,21 @@ class SimpleSwiper2 extends AbstractSwiper2 {
             this._heights.push(0);
         }
 
-        this._positionElements();
-        this._onMove();
+        if (this._wasLaidOut) {
+            this.moveTo(this.slideableWidth * previousRelativePosition, false);
+            this.snap(0, false);
+        }
 
-        this.addEventListener('move', () => {
-            this._onMove();
-        });
+        this._positionElements();
+
+        this.eventsBlocked = false;
+
+        this._runEventListeners('move');
+
+        this._wasLaidOut = true;
     }
 
     _onMove() {
-
         let oldHeight = Math.max.apply(this, this._heights);
 
         for (let i = 0; i < this._items.length; i++) {
@@ -71,6 +96,7 @@ class SimpleSwiper2 extends AbstractSwiper2 {
             item.style["width"] = this.slideSize(n) + 'px';
         }
     }
+
 }
 
 

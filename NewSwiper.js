@@ -29,6 +29,8 @@ class NewSwiper {
         this._isStill = true;
         this._isAnimating = false;
 
+        this._eventsBlocked = false;
+
         this._eventListeners = {
             'move': [],
             'animationStart': [],
@@ -133,6 +135,32 @@ class NewSwiper {
         return this._snapOnlyToAdjacentSlide;
     }
 
+    set initialSlide(n) {
+        this._initialSlide = n;
+        this._initialPos = undefined;
+    }
+
+    get initialSlide() {
+        return this._initialSlide;
+    }
+
+    set initialPos(pos) {
+        this._initialPos = pos;
+        this._initialSlide = undefined;
+    }
+
+    get initialPos() {
+        return this._initialPos;
+    }
+
+    set eventsBlocked(blocked) {
+        this._eventsBlocked = blocked;
+    }
+
+    get eventsBlocked() {
+        return this._eventsBlocked;
+    }
+
     /**
      *
      */
@@ -154,11 +182,18 @@ class NewSwiper {
         // count validation
         if (typeof this._count !== "number") { throw "'count' is not defined or is not a number"; }
 
-        // set initial pos for infinite as snap position of first slide
-        if (this._infinite) {
-            this._updatePos(this._getSlideSnapPos(0), false);
+        // if user didn't set initialSlide and initialPos, then by default we take pos 0 for finite and first slide snap point for infinite.
+        if (typeof this._initialSlide === 'undefined' && typeof this._initialPos === 'undefined') {
+            if (this._infinite) {
+                this._updatePos(this._getSlideSnapPos(0));
+            } else {
+                this._updatePos(0); // just to run event listener -> layout should invoke 'move' once
+            }
+        } else if (typeof this._initialSlide !== 'undefined') {
+            this._updatePos(this._getSlideSnapPos(this.initialSlide));
+        } else if (typeof this._initialPos !== 'undefined') {
+            this._updatePos(this.initialPos);
         }
-
     }
 
     /**
@@ -353,22 +388,27 @@ class NewSwiper {
         return this._pos;
     }
 
-    //
-    // currentPosition() {
-    //     return 0;
-    // }
-    //
-
     // onMove, onStill, etc etc.
     addEventListener(event, callback) {
-        if (!this._eventListeners.hasOwnProperty(event)) {
-            throw `Unknown event listener name: ${event}`;
-        }
+        if (!this._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
 
         this._eventListeners[event].push(callback);
     }
 
+    removeEventListener(event, callback) {
+        if (!this._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
+
+        let index = this._eventListeners[event].indexOf(callback);
+        if (index > -1) {
+            this._eventListeners[event].splice(index, 1);
+        }
+    }
+
     _runEventListeners(event) {
+        if (this._eventsBlocked) {
+            return;
+        }
+
         this._eventListeners[event].forEach((callback) => {
            callback();
         });
@@ -569,15 +609,10 @@ class NewSwiper {
         }
     }
 
-    _updatePos(pos, sendEvents) {
-
-        if (typeof sendEvents === 'undefined') { sendEvents = true; }
+    _updatePos(pos) {
 
         this._pos = this._normalizePos(pos);
-
-        if (sendEvents) {
-            this._runEventListeners('move');
-        }
+        this._runEventListeners('move');
 
         // let positions = {};
         //
@@ -682,6 +717,7 @@ class NewSwiper {
         this._isAnimating = false;
         this._updateStillness();
     }
+
 
 }
 
