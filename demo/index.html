@@ -883,6 +883,10 @@
 
             swiperNew1.layout();
             swiperNew1.enableTouch();
+
+            window.addEventListener('resize', () => {
+               swiperNew1.layout();
+            });
         });
 
     </script>
@@ -953,6 +957,10 @@
 
            swiperNew2.layout();
            swiperNew2.enableTouch();
+
+           window.addEventListener('resize', () => {
+               swiperNew2.layout();
+           });
 
        });
 

@@ -6409,15 +6409,6 @@ class SimpleSwiper2 extends AbstractSwiper2 {
             this._onMove();
         });
 
-        this.onResizeListener = () => {
-            this.layout();
-        };
-
-        // Default resize.
-        window.addEventListener('resize', () => {
-            this.onResizeListener();
-        });
-
         this._wasLaidOut = false;
     }
 
