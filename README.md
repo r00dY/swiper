@@ -27,12 +27,13 @@ Run demo and read source code of demo/index.html - all knowledge is in comments 
 
 # To do
 
-
-
 1. No GSAP
-2. Components
-3. Active / visibility events
-4. Components (dots / arrows).
+2. Active / visibility events
+3. Components (dots / arrows).
+
+
+
+
 
 
 SimpleSwiper stuff:
@@ -43,3 +44,11 @@ SimpleSwiper stuff:
 5. Initial position
 6. Responsiveness.
 
+
+SimpleSwiper won't do:
+1. Adding new items.
+2. Removal from DOM.
+3. Inserting to DOM again.
+4. Resize
+
+This should be implemented by user.

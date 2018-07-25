@@ -1,9 +1,4 @@
-let Hammer = require("hammerjs");
-
-let VerticalScrollDetector = require("./VerticalScrollDetector.js");
-
 let AbstractSwiper2 = require("./AbstractSwiper2");
-
 
 class SimpleSwiper2 extends AbstractSwiper2 {
 
