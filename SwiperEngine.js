@@ -3,7 +3,7 @@ require("gsap/TweenLite");
 
 let EventSystem = require("./EventSystem");
 
-class NewSwiper {
+class SwiperEngine {
 
     constructor() {
 
@@ -794,4 +794,4 @@ class NewSwiper {
 
 }
 
-module.exports = NewSwiper;
+module.exports = SwiperEngine;

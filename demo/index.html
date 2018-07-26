@@ -868,7 +868,7 @@
 
         document.addEventListener("DOMContentLoaded", function () {
 
-            var swiperNew1 = new SimpleSwiper2('demo-new-1');
+            var swiperNew1 = new SimpleSwiper('demo-new-1');
             swiperNew1.slideSizeFunction = function(n) {
                 return 200 + n * 30;
             };
@@ -919,7 +919,7 @@
 
        document.addEventListener("DOMContentLoaded", function () {
 
-           var swiperNew2 = new SimpleSwiper2('demo-new-2');
+           var swiperNew2 = new SimpleSwiper('demo-new-2');
            swiperNew2.slideSizeFunction = function(n) {
                return 200 + n * 30;
            };
@@ -972,9 +972,10 @@
            window.addEventListener('resize', () => {
                swiperNew2.layout();
            });
-
-           var arrows = new SwiperArrows(swiperNew2);
-           arrows.init();
+           
+           //
+           // var arrows = new SwiperArrows(swiperNew2);
+           // arrows.init();
        });
 
     </script>

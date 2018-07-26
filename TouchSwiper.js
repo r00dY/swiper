@@ -2,9 +2,9 @@ let Hammer = require("hammerjs");
 
 let VerticalScrollDetector = require("./VerticalScrollDetector.js");
 
-let NewSwiper = require("./NewSwiper");
+let SwiperEngine = require("./SwiperEngine");
 
-class AbstractSwiper2 extends NewSwiper {
+class TouchSwiper extends SwiperEngine {
 
     constructor(name) {
         super();
@@ -159,4 +159,4 @@ class AbstractSwiper2 extends NewSwiper {
 }
 
 
-module.exports = AbstractSwiper2;
+module.exports = TouchSwiper;

@@ -1,116 +1,89 @@
-var AbstractSwiper = require("./AbstractSwiper.js");
+let TouchSwiper = require("./TouchSwiper");
 
-// Argument is id of container with slides
-var SimpleSwiper = function(options) {
+class SimpleSwiper extends TouchSwiper {
 
-    var _this = this;
+    constructor(name) {
+        super(name);
 
-    AbstractSwiper.call(this, options);
+        this._container = document.querySelector(this._getSelectorForComponent('container'));
+        this._containerInner = this._container.querySelector('.swiper-items');
+        this._items = this._containerInner.children;
 
-    this._container = document.querySelector(this._getSelectorForComponent('container'));
-    this._containerInner = this._container.querySelector('.swiper-items');
+        this.addEventListener('move', () => {
+            this._onMove();
+        });
 
-    this._realContainerWidth;
-
-    // By default slide has width of enclosing container. Slide margin by default is 0.
-    if (typeof options.containerSize === 'undefined') {
-
-        this._options.containerSize = function() {
-            return _this._container.offsetWidth;
-        }
-
+        this._wasLaidOut = false;
     }
 
-    if (typeof options.slideSize === 'undefined') {
-        this._options.slideSize = function() {
-            return _this._options.containerSize();
-        }
-    }
+    layout() {
+        this.blockEvents();
 
-    function init() {
-        _this._items = _this._containerInner.children;
-        _this._options.count = _this._items.length;
-    }
+        this.containerSize = this._container.offsetWidth;
+        this.count = this._items.length;
 
-    init();
+        // previousRelativePosition must be read before super.layout!
+        let previousRelativePosition = this._wasLaidOut ? this.pos / this.slideableWidth : undefined;
 
-    this.on('move', function(coords) {
+        super.layout();
 
-        var oldHeight = Math.max.apply(this, _this._heights);
-
-        for (var i = 0; i < _this._items.length; i++) {
-            var item = _this._items[i];
-
-            var visible = (coords.absolutePositions[i] < _this._realContainerWidth) && (coords.absolutePositions[i] + _this._getValueFromOptions('slideSize', i)) > 0;
-
-            if (!visible) {
-                item.style.display = 'none';
-
-                _this._heights[i] = 0;
-            } else {
-                item.style.display = 'block';
-                item.style.transform = 'translate3d(' + coords.absolutePositions[i] + 'px, 0px, 0px)';
-
-                if (_this._heights[i] == 0) { _this._heights[i] = item.offsetHeight; }
-            }
+        // Reset heights
+        this._heights = [];
+        for(let i = 0; i < this._items.length; i++) {
+            this._heights.push(0);
         }
 
-        var newHeight = Math.max.apply(this, _this._heights);
-        if (newHeight != oldHeight) {
-            _this._containerInner.style.height = newHeight + 'px';
+        if (this._wasLaidOut) {
+            this.moveTo(this.slideableWidth * previousRelativePosition, false);
+            this.snap(0, false);
         }
-
-    });
-
-    this._positionElements = function() {
-        _this._containerInner.style["position"] = "relative";
-
-        for (var i = 0; i < this._items.length; i++) {
-            var item = this._items[i];
-
-            item.style["position"] = "absolute";
-            item.style["width"] = this._getValueFromOptions('slideSize', i) + 'px';
-        }
-    }
-
-
-    // SimpleSwiper has its own layout!
-    this.layout = function() {
-
-        // If container is already removed from DOM do not do anything.
-        if (!document.body.contains(this._container)) {
-            return;
-        }
-
-        init();
-
-        AbstractSwiper.prototype._resetCache.call(this);
-
-        this._realContainerWidth = _this._container.offsetWidth;
 
         this._positionElements();
 
-        // Reset heights
-        _this._heights = [];
-        for(var i = 0; i < this._items.length; i++) {
-            _this._heights.push(0);
+        this.unblockEvents();
+
+        this._runEventListeners('move');
+        this._runEventListeners('activeSlidesChange');
+        this._runEventListeners('visibleSlidesChange');
+
+        this._wasLaidOut = true;
+    }
+
+    _onMove() {
+        let oldHeight = Math.max.apply(this, this._heights);
+
+        for (let i = 0; i < this._items.length; i++) {
+            let item = this._items[i];
+
+            let coord = this.slideCoord(i);
+
+            if (!this.isSlideVisible(i)) {
+                item.style.display = 'none';
+                this._heights[i] = 0;
+            } else {
+                item.style.display = 'block';
+                item.style.transform = 'translate3d(' + coord + 'px, 0px, 0px)';
+
+                if (this._heights[i] == 0) { this._heights[i] = item.offsetHeight; }
+            }
         }
 
-        AbstractSwiper.prototype.layout.call(this);
-
-        this.initComponents();
+        let newHeight = Math.max.apply(this, this._heights);
+        if (newHeight != oldHeight) {
+            this._containerInner.style.height = newHeight + 'px';
+        }
     }
 
-    this.init = function() {
-        this.layout();
-        this.enable();
-    }
+    _positionElements() {
+        this._containerInner.style["position"] = "relative";
 
+        for (let n = 0; n < this._items.length; n++) {
+            let item = this._items[n];
+
+            item.style["position"] = "absolute";
+            item.style["width"] = this.slideSize(n) + 'px';
+        }
+    }
 }
 
-// Javascript inheritance of prototype
-SimpleSwiper.prototype = Object.create(AbstractSwiper.prototype);
-
-
-// SimpleSwiper
 module.exports = SimpleSwiper;
