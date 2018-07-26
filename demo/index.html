@@ -955,6 +955,14 @@
                console.log('touchup');
            });
 
+           swiperNew2.addEventListener('visibleSlidesChange', function() {
+               console.log('visible slides', swiperNew2.visibleSlides());
+           });
+
+           swiperNew2.addEventListener('activeSlidesChange', function() {
+               console.log('active slides', swiperNew2.activeSlides());
+           });
+
            swiperNew2.layout();
            swiperNew2.enableTouch();
 

@@ -6434,6 +6434,8 @@ class SimpleSwiper2 extends AbstractSwiper2 {
         this.eventsBlocked = false;
 
         this._runEventListeners('move');
+        this._runEventListeners('activeSlidesChange');
+        this._runEventListeners('visibleSlidesChange');
 
         this._wasLaidOut = true;
     }
@@ -6681,6 +6683,9 @@ class NewSwiper {
         this._isStill = true;
         this._isAnimating = false;
 
+        this._activeSlidesString = undefined; // comma separated list of active slides indexes
+        this._visibleSlidesString = undefined; // comma separated list of active slides indexes
+
         this._eventsBlocked = false;
 
         this._eventListeners = {
@@ -6689,7 +6694,9 @@ class NewSwiper {
             'animationEnd': [],
             'stillnessChange': [],
             'touchdown': [],
-            'touchup': []
+            'touchup': [],
+            'activeSlidesChange': [],
+            'visibleSlidesChange': []
         };
     }
 
@@ -6823,6 +6830,8 @@ class NewSwiper {
             slideSnapOffset: {}
         };
 
+        this._activeSlidesString = undefined;
+        this._visibleSlidesString = undefined;
         this._animations = [];
 
         // containerSize validation
@@ -7057,6 +7066,7 @@ class NewSwiper {
     }
 
     _runEventListeners(event) {
+
         if (this._eventsBlocked) {
             return;
         }
@@ -7141,11 +7151,85 @@ class NewSwiper {
         return this._isStill;
     }
 
+    slideVisibility (n) {
+        let leftEdge = this.slideCoord(n);
+        let rightEdge = leftEdge + this.slideSize(n);
+
+        if (rightEdge < 0) {
+            return 0;
+        }
+        else if (leftEdge > this.containerSize) {
+            return 0;
+        }
+        else if (leftEdge < 0 && rightEdge > this.containerSize) {
+            return 1;
+        }
+        else if (leftEdge >= 0 && rightEdge <= this.containerSize) {
+            return 1;
+        }
+        else if (leftEdge < 0 && rightEdge <= this.containerSize) {
+            return rightEdge / this.slideSize(n);
+        }
+        else if (leftEdge >= 0 && rightEdge > this.containerSize) {
+            return (this.containerSize - leftEdge) / this.slideSize(n);
+        }
+    }
+
     isSlideVisible(n) {
-        let coord = this.slideCoord(n);
-        if (coord + this.slideSize(n) < 0) { return false; }
-        if (coord > this.containerSize) { return false; }
-        return true;
+        return this.slideVisibility(n) > 0;
+    }
+
+    visibleSlides() {
+        let visibleSlides = [];
+
+        for (let n = 0; n < this.count; n++) {
+            if (this.isSlideVisible(n)) {
+                visibleSlides.push(n);
+            }
+        }
+
+        return visibleSlides;
+    }
+
+    activeSlides() {
+
+        let activeSlides = [];
+
+        for (let n = 0; n < this.count; n++) {
+            if (this.slideVisibility(n) > 0.5) {
+                activeSlides.push({
+                    index: n,
+                    pos: this.slideCoord(n)
+                });
+            }
+        }
+
+        if (activeSlides.length == 0) { // There must be at least 1 active slide. If none, then most visible one is picked.
+
+            let maxVisibility = 0, maxIndex = 0;
+            for (let n = 0; n < this.count; n++) {
+                if (this.slideVisibility(n) > maxVisibility) {
+                    maxIndex = n;
+                    maxVisibility = this.slideVisibility(n);
+                }
+            }
+
+            return [maxIndex];
+        }
+
+        // Sort by position
+        activeSlides.sort(function (a, b) {
+            return a.pos > b.pos;
+        });
+
+        // return only indexes
+        return activeSlides.map(function (x) {
+            return x.index
+        });
+    }
+
+    isSlideActive(n) {
+        return this.activeSlides().indexOf(n) >= -1;
     }
 
     _normalizePos(position) {
@@ -7266,11 +7350,24 @@ class NewSwiper {
         this._pos = this._normalizePos(pos);
         this._runEventListeners('move');
 
-        // let positions = {};
-        //
-        // for (let n = 0; n < this._count; n++) {
-        //     positions[n] = this._getSlideCoordForPos(n, this._pos);
-        // }
+        // Active slides event
+        let activeSlides = this.activeSlides();
+        let activeSlidesString = activeSlides.join(",");
+
+        if (activeSlidesString !== this._activeSlidesString) {
+            this._runEventListeners('activeSlidesChange');
+            this._activeSlidesString = activeSlidesString;
+        }
+
+        // Visible slides event
+        let visibleSlides = this.visibleSlides();
+        let visibleSlidesString = visibleSlides.join(",");
+
+        if (visibleSlidesString !== this._visibleSlidesString) {
+            this._runEventListeners('visibleSlidesChange');
+            this._visibleSlidesString = visibleSlidesString;
+        }
+
     }
 
     _minPositionDistance(pos1, pos2) {

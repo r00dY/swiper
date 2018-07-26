@@ -43,6 +43,8 @@ class SimpleSwiper2 extends AbstractSwiper2 {
         this.eventsBlocked = false;
 
         this._runEventListeners('move');
+        this._runEventListeners('activeSlidesChange');
+        this._runEventListeners('visibleSlidesChange');
 
         this._wasLaidOut = true;
     }
