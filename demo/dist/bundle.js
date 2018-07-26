@@ -2210,7 +2210,7 @@ class TouchSwiper extends SwiperEngine {
                 case "swipeup":
 
                     if (isTouched) {
-                        this.snap(Math.abs(ev.velocityX) * 1000, true);
+                        this.snap(Math.abs(ev.velocityX) * 1000, true, 1);
                         swiped = true;
                     }
 
@@ -2220,7 +2220,7 @@ class TouchSwiper extends SwiperEngine {
                 case "swipedown":
 
                     if (isTouched) {
-                        this.snap(-Math.abs(ev.velocityX) * 1000, true);
+                        this.snap(-Math.abs(ev.velocityX) * 1000, true, -1);
                         swiped = true;
                     }
 
@@ -5365,14 +5365,14 @@ class SwiperEngine {
      * This method moves 1 container width to the right (with snap)
      */
     moveRight(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated);
+        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated, -1);
     }
 
     /**
      * This method moves 1 container width to the left (with snap)
      */
     moveLeft(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated);
+        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated, 1);
     }
 
     /**
@@ -5381,7 +5381,7 @@ class SwiperEngine {
      * @param velocity
      * @param animated
      */
-    snap(velocity, animated) {
+    snap(velocity, animated, side) {
 
         if (velocity === 0) {
             this.moveTo(this._getClosestSnapPosition(this._pos), animated);
@@ -5399,7 +5399,7 @@ class SwiperEngine {
             targetPos = velocity < 0 ? this._pos - 1 : this._pos + 1;
         }
 
-        this.moveTo(this._getClosestSnapPosition(targetPos, velocity < 0 ? -1 : 1), animated);
+        this.moveTo(this._getClosestSnapPosition(targetPos, velocity < 0 ? -1 : 1), animated, side);
     }
 
     /**

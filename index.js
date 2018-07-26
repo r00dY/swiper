@@ -2,8 +2,10 @@ var AbstractSwiper = require("./AbstractSwiper.js");
 var SimpleSwiper = require("./SimpleSwiper.js");
 
 module.exports = {
-	AbstractSwiper: AbstractSwiper,
-	SimpleSwiper: SimpleSwiper
+	TouchSwiper: TouchSwiper,
+	SimpleSwiper: SimpleSwiper,
+	SwiperEngine: SwiperEngine,
+
 };
 
 
