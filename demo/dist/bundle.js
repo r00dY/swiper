@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -6230,12 +6230,67 @@ module.exports = VerticalScrollDetector;
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports) {
+
+let EventSystem = {
+
+    register: function(object) {
+
+        // Init events
+        object._eventListeners = {};
+        object._eventsBlocked = false;
+
+        object.addEventListener = function(event, callback) {
+            if (!object._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
+
+            object._eventListeners[event].push(callback);
+        };
+
+        object.removeEventListener = function(event, callback) {
+            if (!object._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
+
+            let index = object._eventListeners[event].indexOf(callback);
+            if (index > -1) {
+                object._eventListeners[event].splice(index, 1);
+            }
+        };
+
+        object._runEventListeners = function(event) {
+            if (object._eventsBlocked) {
+                return;
+            }
+
+            object._eventListeners[event].forEach((callback) => {
+                callback();
+            });
+        };
+
+        object.blockEvents = function() {
+            object._eventsBlocked = true;
+        };
+
+        object.unblockEvents = function() {
+            object._eventsBlocked = false;
+        };
+
+    },
+
+    addEvent: function(object, event) {
+        object._eventListeners[event] = [];
+    }
+};
+
+module.exports = EventSystem;
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {var SimpleSwiper = __webpack_require__(7).SimpleSwiper;
+/* WEBPACK VAR INJECTION */(function(global) {var SimpleSwiper = __webpack_require__(8).SimpleSwiper;
 
-var SimpleSwiper2 = __webpack_require__(9);
+var SimpleSwiper2 = __webpack_require__(10);
 
+var SwiperArrows = __webpack_require__(13);
 
 /**
  * Normally of course all the JS code would go here 
@@ -6245,15 +6300,17 @@ var SimpleSwiper2 = __webpack_require__(9);
 
 global.SimpleSwiper = SimpleSwiper;
 global.SimpleSwiper2 = SimpleSwiper2;
+global.SwiperArrows = SwiperArrows;
+
 
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var AbstractSwiper = __webpack_require__(2);
-var SimpleSwiper = __webpack_require__(8);
+var SimpleSwiper = __webpack_require__(9);
 
 module.exports = {
 	AbstractSwiper: AbstractSwiper,
@@ -6264,7 +6321,7 @@ module.exports = {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var AbstractSwiper = __webpack_require__(2);
@@ -6386,10 +6443,10 @@ module.exports = SimpleSwiper;
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let AbstractSwiper2 = __webpack_require__(10);
+let AbstractSwiper2 = __webpack_require__(11);
 
 class SimpleSwiper2 extends AbstractSwiper2 {
 
@@ -6408,7 +6465,7 @@ class SimpleSwiper2 extends AbstractSwiper2 {
     }
 
     layout() {
-        this.eventsBlocked = true;
+        this.blockEvents();
 
         this.containerSize = this._container.offsetWidth;
         this.count = this._items.length;
@@ -6431,7 +6488,7 @@ class SimpleSwiper2 extends AbstractSwiper2 {
 
         this._positionElements();
 
-        this.eventsBlocked = false;
+        this.unblockEvents();
 
         this._runEventListeners('move');
         this._runEventListeners('activeSlidesChange');
@@ -6475,21 +6532,19 @@ class SimpleSwiper2 extends AbstractSwiper2 {
             item.style["width"] = this.slideSize(n) + 'px';
         }
     }
-
 }
-
 
 module.exports = SimpleSwiper2;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 let Hammer = __webpack_require__(3);
 
 let VerticalScrollDetector = __webpack_require__(5);
 
-let NewSwiper = __webpack_require__(11);
+let NewSwiper = __webpack_require__(12);
 
 class AbstractSwiper2 extends NewSwiper {
 
@@ -6649,11 +6704,13 @@ class AbstractSwiper2 extends NewSwiper {
 module.exports = AbstractSwiper2;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(4);
 __webpack_require__(0);
+
+let EventSystem = __webpack_require__(6);
 
 class NewSwiper {
 
@@ -6686,18 +6743,15 @@ class NewSwiper {
         this._activeSlidesString = undefined; // comma separated list of active slides indexes
         this._visibleSlidesString = undefined; // comma separated list of active slides indexes
 
-        this._eventsBlocked = false;
-
-        this._eventListeners = {
-            'move': [],
-            'animationStart': [],
-            'animationEnd': [],
-            'stillnessChange': [],
-            'touchdown': [],
-            'touchup': [],
-            'activeSlidesChange': [],
-            'visibleSlidesChange': []
-        };
+        EventSystem.register(this);
+        EventSystem.addEvent(this, 'move');
+        EventSystem.addEvent(this, 'animationStart');
+        EventSystem.addEvent(this, 'animationEnd');
+        EventSystem.addEvent(this, 'stillnessChange');
+        EventSystem.addEvent(this, 'touchdown');
+        EventSystem.addEvent(this, 'touchup');
+        EventSystem.addEvent(this, 'activeSlidesChange');
+        EventSystem.addEvent(this, 'visibleSlidesChange');
     }
 
     set containerSize(containerSize) {
@@ -6810,14 +6864,6 @@ class NewSwiper {
 
     get initialPos() {
         return this._initialPos;
-    }
-
-    set eventsBlocked(blocked) {
-        this._eventsBlocked = blocked;
-    }
-
-    get eventsBlocked() {
-        return this._eventsBlocked;
     }
 
     /**
@@ -7010,6 +7056,20 @@ class NewSwiper {
     }
 
     /**
+     * This method moves 1 container width to the right (with snap)
+     */
+    moveRight(animated) {
+        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated);
+    }
+
+    /**
+     * This method moves 1 container width to the left (with snap)
+     */
+    moveLeft(animated) {
+        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated);
+    }
+
+    /**
      * This method snaps to closest slide's snap position.
      *
      * @param velocity
@@ -7047,33 +7107,6 @@ class NewSwiper {
 
     get pos() {
         return this._pos;
-    }
-
-    // onMove, onStill, etc etc.
-    addEventListener(event, callback) {
-        if (!this._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
-
-        this._eventListeners[event].push(callback);
-    }
-
-    removeEventListener(event, callback) {
-        if (!this._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
-
-        let index = this._eventListeners[event].indexOf(callback);
-        if (index > -1) {
-            this._eventListeners[event].splice(index, 1);
-        }
-    }
-
-    _runEventListeners(event) {
-
-        if (this._eventsBlocked) {
-            return;
-        }
-
-        this._eventListeners[event].forEach((callback) => {
-           callback();
-        });
     }
 
     slideSize(n) {
@@ -7472,6 +7505,76 @@ class NewSwiper {
 
 module.exports = NewSwiper;
 
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+let EventSystem = __webpack_require__(6);
+
+class SwiperArrows {
+
+    constructor(swiper) {
+        this.swiper = swiper;
+
+        EventSystem.register(this);
+        EventSystem.addEvent(this, 'clickSpaceNextClicked');
+        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
+    }
+
+    init() {
+        this._clickSpacePrevious = document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
+        this._clickSpaceNext = document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
+
+        if (this._clickSpaceNext) {
+
+            this._clickSpaceNextOnClickListener = (e) => {
+                e.preventDefault();
+
+                if (this._clickSpaceNext.classList.contains('active')) {
+                    this.swiper.moveLeft(true);
+                }
+
+                this._runEventListeners('clickSpaceNextClicked');
+            };
+
+            this._clickSpaceNext.addEventListener('click', this._clickSpaceNextOnClickListener);
+        }
+
+        if (this._clickSpacePrevious) {
+
+            this._clickSpacePreviousOnClickListener = (e) => {
+                e.preventDefault();
+
+                if (this._clickSpacePrevious.classList.contains("active")) {
+                    this.swiper.moveRight(true);
+                }
+
+                this._runEventListeners('clickSpacePreviousClicked');
+            };
+
+            this._clickSpacePrevious.addEventListener('click', this._clickSpacePreviousOnClickListener);
+        }
+    }
+
+    _onUpdate() {
+        //!!! TODO
+    }
+
+    deinit() {
+        // Unbind clicks on next / previous
+        if (this._clickSpaceNext) {
+            this._clickSpaceNext.removeEventListener('click', this._clickSpaceNextOnClickListener);
+        }
+
+        if (this._clickSpacePrevious) {
+            this._clickSpacePrevious.removeEventListener('click', this._clickSpacePreviousOnClickListener);
+        }
+    }
+
+}
+
+module.exports = SwiperArrows;
 
 /***/ })
 /******/ ]);

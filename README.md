@@ -28,7 +28,6 @@ Run demo and read source code of demo/index.html - all knowledge is in comments 
 # To do
 
 1. No GSAP
-2. Active / visibility events
 3. Components (dots / arrows).
 
 

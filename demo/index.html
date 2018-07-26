@@ -910,6 +910,9 @@
             </div>
         </div>
 
+        <button class="swiper-click-space-previous" data-swiper="demo-new-2">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-new-2">NEXT</button>
+
     </div>
 
     <script>
@@ -970,6 +973,8 @@
                swiperNew2.layout();
            });
 
+           var arrows = new SwiperArrows(swiperNew2);
+           arrows.init();
        });
 
     </script>

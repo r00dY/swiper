@@ -1,6 +1,8 @@
 require("gsap/EasePack");
 require("gsap/TweenLite");
 
+let EventSystem = require("./EventSystem");
+
 class NewSwiper {
 
     constructor() {
@@ -32,18 +34,15 @@ class NewSwiper {
         this._activeSlidesString = undefined; // comma separated list of active slides indexes
         this._visibleSlidesString = undefined; // comma separated list of active slides indexes
 
-        this._eventsBlocked = false;
-
-        this._eventListeners = {
-            'move': [],
-            'animationStart': [],
-            'animationEnd': [],
-            'stillnessChange': [],
-            'touchdown': [],
-            'touchup': [],
-            'activeSlidesChange': [],
-            'visibleSlidesChange': []
-        };
+        EventSystem.register(this);
+        EventSystem.addEvent(this, 'move');
+        EventSystem.addEvent(this, 'animationStart');
+        EventSystem.addEvent(this, 'animationEnd');
+        EventSystem.addEvent(this, 'stillnessChange');
+        EventSystem.addEvent(this, 'touchdown');
+        EventSystem.addEvent(this, 'touchup');
+        EventSystem.addEvent(this, 'activeSlidesChange');
+        EventSystem.addEvent(this, 'visibleSlidesChange');
     }
 
     set containerSize(containerSize) {
@@ -156,14 +155,6 @@ class NewSwiper {
 
     get initialPos() {
         return this._initialPos;
-    }
-
-    set eventsBlocked(blocked) {
-        this._eventsBlocked = blocked;
-    }
-
-    get eventsBlocked() {
-        return this._eventsBlocked;
     }
 
     /**
@@ -356,6 +347,20 @@ class NewSwiper {
     }
 
     /**
+     * This method moves 1 container width to the right (with snap)
+     */
+    moveRight(animated) {
+        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated);
+    }
+
+    /**
+     * This method moves 1 container width to the left (with snap)
+     */
+    moveLeft(animated) {
+        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated);
+    }
+
+    /**
      * This method snaps to closest slide's snap position.
      *
      * @param velocity
@@ -393,33 +398,6 @@ class NewSwiper {
 
     get pos() {
         return this._pos;
-    }
-
-    // onMove, onStill, etc etc.
-    addEventListener(event, callback) {
-        if (!this._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
-
-        this._eventListeners[event].push(callback);
-    }
-
-    removeEventListener(event, callback) {
-        if (!this._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
-
-        let index = this._eventListeners[event].indexOf(callback);
-        if (index > -1) {
-            this._eventListeners[event].splice(index, 1);
-        }
-    }
-
-    _runEventListeners(event) {
-
-        if (this._eventsBlocked) {
-            return;
-        }
-
-        this._eventListeners[event].forEach((callback) => {
-           callback();
-        });
     }
 
     slideSize(n) {

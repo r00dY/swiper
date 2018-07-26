@@ -17,7 +17,7 @@ class SimpleSwiper2 extends AbstractSwiper2 {
     }
 
     layout() {
-        this.eventsBlocked = true;
+        this.blockEvents();
 
         this.containerSize = this._container.offsetWidth;
         this.count = this._items.length;
@@ -40,7 +40,7 @@ class SimpleSwiper2 extends AbstractSwiper2 {
 
         this._positionElements();
 
-        this.eventsBlocked = false;
+        this.unblockEvents();
 
         this._runEventListeners('move');
         this._runEventListeners('activeSlidesChange');
@@ -84,8 +84,6 @@ class SimpleSwiper2 extends AbstractSwiper2 {
             item.style["width"] = this.slideSize(n) + 'px';
         }
     }
-
 }
-
 
 module.exports = SimpleSwiper2;
