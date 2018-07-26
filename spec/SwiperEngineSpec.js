@@ -1,12 +1,12 @@
-let NewSwiper = require("../NewSwiper");
+let SwiperEngine = require("../SwiperEngine");
 
-describe("NewSwiper (no animations / finite mode)", function() {
+describe("SwiperEngine (no animations / finite mode)", function() {
 
     let swiper;
 
     beforeEach(function() {
 
-        swiper = new NewSwiper();
+        swiper = new SwiperEngine();
 
         swiper.containerSize = 500;
         swiper.count = 5;
@@ -237,13 +237,13 @@ describe("NewSwiper (no animations / finite mode)", function() {
 });
 
 
-describe("NewSwiper (no animations / infinite mode)", function() {
+describe("SwiperEngine (no animations / infinite mode)", function() {
 
     let swiper;
 
     beforeEach(function() {
 
-        swiper = new NewSwiper();
+        swiper = new SwiperEngine();
 
         swiper.containerSize = 500;
         swiper.count = 5;
