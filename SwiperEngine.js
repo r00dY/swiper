@@ -350,14 +350,14 @@ class SwiperEngine {
      * This method moves 1 container width to the right (with snap)
      */
     moveRight(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated, -1);
+        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated, 1);
     }
 
     /**
      * This method moves 1 container width to the left (with snap)
      */
     moveLeft(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated, 1);
+        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated, -1);
     }
 
     /**
@@ -366,7 +366,7 @@ class SwiperEngine {
      * @param velocity
      * @param animated
      */
-    snap(velocity, animated, side) {
+    snap(velocity, animated) {
 
         if (velocity === 0) {
             this.moveTo(this._getClosestSnapPosition(this._pos), animated);
@@ -384,7 +384,9 @@ class SwiperEngine {
             targetPos = velocity < 0 ? this._pos - 1 : this._pos + 1;
         }
 
-        this.moveTo(this._getClosestSnapPosition(targetPos, velocity < 0 ? -1 : 1), animated, side);
+        let direction = velocity < 0 ? -1 : 1;
+
+        this.moveTo(this._getClosestSnapPosition(targetPos, direction), animated, direction);
     }
 
     /**
@@ -739,11 +741,8 @@ class SwiperEngine {
             }
 
             if (side === -1 || side === 1) {
-                snapPositions = snapPositions.concat(snapPositions);
-
-                for(let i = 0; i < snapPositions.length; i++) {
+                for(let i = 0; i < snapPositions.length-1; i++) {
                     if (snapPositions[i] < pos && pos < snapPositions[i + 1]) {
-
                         if (side === -1) {
                             return snapPositions[i];
                         }
@@ -751,6 +750,13 @@ class SwiperEngine {
                             return snapPositions[i + 1];
                         }
                     }
+                }
+
+                if (side === -1) {
+                    return snapPositions[this._count - 1];
+                }
+                else if (side === 1) {
+                    return snapPositions[0];
                 }
             }
 

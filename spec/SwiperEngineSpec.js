@@ -1,5 +1,54 @@
 let SwiperEngine = require("../SwiperEngine");
 
+let swiper;
+
+function sliderIrregular(infinite) {
+    swiper = new SwiperEngine();
+
+    swiper.containerSize = 500;
+    swiper.count = 5;
+    swiper.leftOffset = 100;
+    swiper.rightOffset = 200;
+    swiper.infinite = infinite;
+
+    swiper.slideSizeFunction = function(n) {
+        return (n + 1) * 10 + 300;
+    };
+
+    swiper.slideMargin = function(n) {
+        return (n + 1) * 10;
+    };
+    swiper.slideSnapOffset = function(n) {
+        return (n + 1) * 10;
+    };
+
+    swiper.layout();
+}
+
+function sliderRegular(infinite) {
+    swiper = new SwiperEngine();
+
+    swiper.containerSize = 500;
+    swiper.count = 5;
+    swiper.leftOffset = 100;
+    swiper.rightOffset = 200;
+    swiper.infinite = infinite;
+
+    swiper.slideSizeFunction = function(n) {
+        return 500;
+    };
+
+    swiper.slideMargin = function(n) {
+        return 0;
+    };
+    swiper.slideSnapOffset = function(n) {
+        return 0;
+    };
+
+    swiper.layout();
+}
+
+
 describe("SwiperEngine (no animations / finite mode)", function() {
 
     let swiper;
@@ -234,48 +283,50 @@ describe("SwiperEngine (no animations / finite mode)", function() {
 
     });
 
+    // move right move left
+
+    it ("moves properly to the right with moveRight method", function() {
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(1)).toBe(20);
+
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(2)).toBe(30);
+    });
+
+    it ("moves properly to the left with moveLeft method", function() {
+
+        swiper.moveTo(swiper.maxPos, false);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(3)).toBe(40);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(2)).toBe(30);
+    });
+
 });
 
 
 describe("SwiperEngine (no animations / infinite mode)", function() {
 
-    let swiper;
-
-    beforeEach(function() {
-
-        swiper = new SwiperEngine();
-
-        swiper.containerSize = 500;
-        swiper.count = 5;
-        swiper.leftOffset = 100;
-        swiper.rightOffset = 200;
-        swiper.infinite = true;
-
-        swiper.slideSizeFunction = function(n) {
-            return (n + 1) * 10 + 300;
-        };
-
-        swiper.slideMargin = function(n) {
-            return (n + 1) * 10;
-        };
-        swiper.slideSnapOffset = function(n) {
-            return (n + 1) * 10;
-        };
-
-        swiper.layout();
-    });
 
     it("returns correct slideable width", function() {
+        sliderIrregular(true);
+
         expect(swiper.slideableWidth).toBe(310 + 10 + 320 + 20 + 330 + 30 + 340 + 40 + 350 + 50);
     });
 
     it("has properly set initial positions", function() {
+        sliderIrregular(true);
+
         expect(swiper.slideCoord(0)).toBe(10);
         expect(swiper.slideCoord(1)).toBe(10 + 310 + 10);
         // expect(swiper.slideCoord(4)).toBe(undefined);
     });
 
     it("moves properly to the position from 0 to SW", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(0, false);
         expect(swiper.slideCoord(0)).toBe(0);
         // expect(swiper.slideCoord(1)).toBe(310 + 10);
@@ -313,6 +364,8 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
     });
 
     it("moves properly to the position from any position (wrapping)", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(0 - swiper.slideableWidth, false);
         expect(swiper.slideCoord(0)).toBe(0);
         expect(swiper.slideCoord(1)).toBe(310 + 10);
@@ -350,36 +403,48 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
     });
 
     it("snaps properly", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(0, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(0)).toBe(10);
     });
 
     it("snaps properly to the left slide when distance identical", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(145, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(0)).toBe(10);
     });
 
     it("snaps properly to the right slide if distance is minimally bigger than to the left", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(146, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(1)).toBe(20);
     });
 
     it("snaps properly to 4th slide", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(1000, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(3)).toBe(40);
     });
 
     it("snaps properly with wrapping to the left", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(1550, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(4)).toBe(50);
     });
 
     it("snaps properly with wrapping to the right", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(1650, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(0)).toBe(10);
@@ -388,70 +453,119 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
     // VELOCITY 1
 
     it("snaps properly with negative velocity and closer to left item", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(350 + 10, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(1)).toBe(20);
     });
 
     it("snaps properly with positive velocity and closer to left item", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(350 + 10, false);
         swiper.snap(1, false);
         expect(swiper.slideCoord(2)).toBe(30);
     });
 
     it("snaps properly with negative velocity and closer to right item", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(550, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(1)).toBe(20);
     });
 
     it("snaps properly with positive velocity and closer to right item", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(550, false);
         swiper.snap(1, false);
         expect(swiper.slideCoord(2)).toBe(30);
     });
 
     it("snaps properly with negative velocity and closer to left item + wrapping", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(-350, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(4)).toBe(50);
+
+        sliderRegular(true);
+
+        swiper.moveTo(2100, false);
+        swiper.snap(-1, false);
+        expect(swiper.slideCoord(4)).toBe(0);
     });
 
     it("snaps properly with positive velocity and closer to left item + wrapping", function() {
-        swiper.moveTo(-350, false);
+        sliderIrregular(true);
+
+        swiper.moveTo(-300, false);
         swiper.snap(1, false);
         expect(swiper.slideCoord(0)).toBe(10);
+
+        sliderRegular(true);
+
+        swiper.moveTo(2100, false);
+        swiper.snap(1, false);
+        expect(swiper.slideCoord(0)).toBe(0);
     });
 
     it("snaps properly with negative velocity and closer to right item + wrapping", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(-50, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(4)).toBe(50);
+
+        sliderRegular(true);
+
+        swiper.moveTo(2400, false);
+        swiper.snap(-1, false);
+        expect(swiper.slideCoord(4)).toBe(0);
     });
 
     it("snaps properly with positive velocity and closer to right item + wrapping", function() {
+        sliderIrregular(true);
+
         swiper.moveTo(-50, false);
         swiper.snap(1, false);
         expect(swiper.slideCoord(0)).toBe(10);
+
+        sliderRegular(true);
+
+        swiper.moveTo(2400, false);
+        swiper.snap(1, false);
+        expect(swiper.slideCoord(0)).toBe(0);
     });
 
+    // initial position
+
     it ("has good initial position without setting initialPos and initialSlide", function() {
+        sliderIrregular(true);
+
         expect(swiper.pos).toBe(swiper.slideableWidth-10);
     });
 
     it ("has good initial position with setting initialPos", function() {
+        sliderIrregular(true);
+
         swiper.initialPos = 100;
         swiper.layout();
         expect(swiper.pos).toBe(100);
     });
 
     it ("has good initial position with setting initialSlide", function() {
+        sliderIrregular(true);
+
         swiper.initialSlide = 1;
         swiper.layout();
         expect(swiper.pos).toBe(310 + 10 - 20);
     });
 
     it ("runs single 'move' event after layout", function() {
+        sliderIrregular(true);
 
         let eventCounter = 0;
         let event = () => { eventCounter++; };
@@ -469,6 +583,52 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
         swiper.layout();
         expect(eventCounter).toBe(3);
 
+    });
+
+    // move left / move right
+
+    it ("moves properly to the right with moveRight method", function() {
+        sliderRegular(true);
+
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(1)).toBe(0);
+
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(2)).toBe(0);
+
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(3)).toBe(0);
+
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(4)).toBe(0);
+
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(0)).toBe(0);
+
+        swiper.moveRight(false);
+        expect(swiper.slideCoord(1)).toBe(0);
+    });
+
+    it ("moves properly to the left with moveLeft method", function() {
+        sliderRegular(true);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(4)).toBe(0);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(3)).toBe(0);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(2)).toBe(0);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(1)).toBe(0);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(0)).toBe(0);
+
+        swiper.moveLeft(false);
+        expect(swiper.slideCoord(4)).toBe(0);
     });
 
 

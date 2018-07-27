@@ -980,15 +980,57 @@
 
     </script>
 
+    <h1>New slider 3</h1>
 
-    <h3>onMove event -> key to customization</h3>
-    <p>[To do]</p>
+    <div class="wrapper">
 
-    <h3>Vertical slider</h3>
-    <p>[To do]</p>
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-new-3">
+            <div class="swiper-items">
+                <div class="slide"><a href="#">Link</a><h1>1</h1></div>
+                <div class="slide"><a href="#">Link</a><h1>2</h1></div>
+                <div class="slide"><a href="#">Link</a><h1>3</h1></div>
+                <div class="slide"><a href="#">Link</a><h1>4</h1></div>
+            </div>
+        </div>
 
-    <h3>Available options and API methods</h3>
-    <p>[To do]</p>
+        <button id="arrow-left">Left</button>
+        <button id="arrow-right">Right</button>
+
+    </div>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var swiperNew3 = new SimpleSwiper('demo-new-3');
+
+            console.log('width', document.querySelector('[data-swiper="demo-new-3"]').offsetWidth);
+
+            swiperNew3.slideSizeFunction = function(n) {
+                return document.querySelector('[data-swiper="demo-new-3"]').offsetWidth;
+            };
+            swiperNew3.snapOnlyToAdjacentSlide = true;
+
+            swiperNew3.infinite = true;
+
+            swiperNew3.layout();
+            swiperNew3.enableTouch();
+
+            window.addEventListener('resize', () => {
+                swiperNew3.layout();
+            });
+
+            document.getElementById('arrow-left').addEventListener('click', function() {
+                swiperNew3.moveLeft(true);
+            });
+
+            document.getElementById('arrow-right').addEventListener('click', function() {
+                swiperNew3.moveRight(true);
+            });
+
+        });
+
+    </script>
 
 </div>
 </body>

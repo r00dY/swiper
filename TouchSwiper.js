@@ -49,7 +49,7 @@ class TouchSwiper extends SwiperEngine {
                 case "swipeup":
 
                     if (isTouched) {
-                        this.snap(Math.abs(ev.velocityX) * 1000, true, 1);
+                        this.snap(Math.abs(ev.velocityX) * 1000, true);
                         swiped = true;
                     }
 
@@ -59,7 +59,7 @@ class TouchSwiper extends SwiperEngine {
                 case "swipedown":
 
                     if (isTouched) {
-                        this.snap(-Math.abs(ev.velocityX) * 1000, true, -1);
+                        this.snap(-Math.abs(ev.velocityX) * 1000, true);
                         swiped = true;
                     }
 
