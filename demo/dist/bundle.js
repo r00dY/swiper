@@ -2081,6 +2081,8 @@ class SimpleSwiper extends TouchSwiper {
         });
 
         this._wasLaidOut = false;
+
+        this.displayNoneAutomatically = true;
     }
 
     layout() {
@@ -2124,31 +2126,60 @@ class SimpleSwiper extends TouchSwiper {
 
             let coord = this.slideCoord(i);
 
-            if (!this.isSlideVisible(i)) {
-                item.style.display = 'none';
-                this._heights[i] = 0;
-            } else {
-                item.style.display = 'block';
-                item.style.transform = 'translate3d(' + coord + 'px, 0px, 0px)';
+            if (this.displayNoneAutomatically) {
 
-                if (this._heights[i] == 0) { this._heights[i] = item.offsetHeight; }
+                if (!this.isSlideVisible(i)) {
+                    item.style.display = 'none';
+                    this._heights[i] = 0;
+                } else {
+                    item.style.display = 'block';
+                    item.style.transform = 'translate3d(' + coord + 'px, 0px, 0px)';
+
+                    if (this._heights[i] == 0) { this._heights[i] = item.offsetHeight; }
+                }
+
+            }
+            else {
+                item.style.transform = 'translate3d(' + coord + 'px, 0px, 0px)';
             }
         }
 
-        let newHeight = Math.max.apply(this, this._heights);
-        if (newHeight != oldHeight) {
-            this._containerInner.style.height = newHeight + 'px';
+        if (this.displayNoneAutomatically) {
+            let newHeight = Math.max.apply(this, this._heights);
+            if (newHeight != oldHeight) {
+                this._containerInner.style.height = newHeight + 'px';
+            }
         }
     }
 
     _positionElements() {
         this._containerInner.style["position"] = "relative";
 
+        let maxHeight = 0;
+
         for (let n = 0; n < this._items.length; n++) {
             let item = this._items[n];
 
             item.style["position"] = "absolute";
             item.style["width"] = this.slideSize(n) + 'px';
+
+            // All items should be visible
+            if (!this.displayNoneAutomatically) {
+                item.style["display"] = "block";
+            }
+        }
+
+        // Set slider height based on highest item.
+        if (!this.displayNoneAutomatically) {
+            let maxHeight = 0;
+
+            for (let n = 0; n < this._items.length; n++) {
+                let item = this._items[n];
+                maxHeight = Math.max(item.offsetHeight, maxHeight);
+            }
+
+            this._containerInner.style.height = maxHeight + 'px';
+
         }
     }
 }

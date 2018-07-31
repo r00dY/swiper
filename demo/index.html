@@ -168,46 +168,57 @@
 
         .slide:nth-child(6n) {
             background-color: red;
+            height: 41vh;
         }
 
         .slide:nth-child(6n+1) {
             background-color: blue;
+            height: 42vh;
         }
 
         .slide:nth-child(6n+2) {
             background-color: yellow;
+            height: 43vh;
         }
 
         .slide:nth-child(6n+3) {
             background-color: green;
+            height: 44vh;
         }
 
         .slide:nth-child(6n+4) {
             background-color: black;
+            height: 45vh;
         }
 
         .slide:nth-child(6n+5) {
             background-color: lightgrey;
+            height: 46vh;
         }
 
         .slide:nth-child(6n+6) {
             background-color: pink;
+            height: 47vh;
         }
 
         .slide:nth-child(6n+7) {
             background-color: magenta;
+            height: 48vh;
         }
 
         .slide:nth-child(6n+8) {
             background-color: orange;
+            height: 49vh;
         }
 
         .slide:nth-child(6n+9) {
             background-color: darkgrey;
+            height: 50vh;
         }
 
         .slide:nth-child(6n+10) {
             background-color: cyan;
+            height: 51vh;
         }
     </style>
 
@@ -1028,6 +1039,55 @@
                 swiperNew3.moveRight(true);
             });
 
+        });
+
+    </script>
+
+    <h1>New slider infinite, displayNoneAutomatically = false.</h1>
+
+    <div class="wrapper">
+
+        <div class="swiper swiper-touch-space swiper-container" data-swiper="demo-new-4">
+            <div class="swiper-items">
+                <div class="slide"><a href="#">Link</a></div>
+                <div class="slide"><a href="#">Link</a></div>
+                <div class="slide"><a href="#">Link</a></div>
+                <div class="slide"><a href="#">Link</a></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+                <div class="slide"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            var swiperNew4 = new SimpleSwiper('demo-new-4');
+            swiperNew4.slideSizeFunction = function(n) {
+                return 200 + n * 30;
+            };
+            swiperNew4.slideMarginFunction = function(n) {
+                return n * 10;
+            };
+            swiperNew4.slideSnapOffsetFunction = function(n) {
+                return n * 10;
+            };
+            swiperNew4.leftOffset = 100;
+            swiperNew4.rightOffset = 100;
+            swiperNew4.displayNoneAutomatically = false;
+
+            swiperNew4.layout();
+            swiperNew4.enableTouch();
+
+            window.addEventListener('resize', () => {
+                swiperNew4.layout();
+            });
         });
 
     </script>
