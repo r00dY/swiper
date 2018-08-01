@@ -1,7 +1,8 @@
 
 var SimpleSwiper = require("../SimpleSwiper.js");
 
-// var SwiperArrows = require("../SwiperArrows.js");
+var SwiperArrows = require("../SwiperArrows.js");
+var SwiperPager = require("../SwiperPager.js");
 
 /**
  * Normally of course all the JS code would go here 
@@ -11,5 +12,7 @@ var SimpleSwiper = require("../SimpleSwiper.js");
 
 global.SimpleSwiper = SimpleSwiper;
 
-// global.SwiperArrows = SwiperArrows;
+global.SwiperArrows = SwiperArrows;
+
+global.SwiperPager = SwiperPager;
 

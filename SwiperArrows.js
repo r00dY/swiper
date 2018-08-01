@@ -20,7 +20,7 @@ class SwiperArrows {
                 e.preventDefault();
 
                 if (this._clickSpaceNext.classList.contains('active')) {
-                    this.swiper.moveLeft(true);
+                    this.swiper.moveRight(true);
                 }
 
                 this._runEventListeners('clickSpaceNextClicked');
@@ -35,7 +35,7 @@ class SwiperArrows {
                 e.preventDefault();
 
                 if (this._clickSpacePrevious.classList.contains("active")) {
-                    this.swiper.moveRight(true);
+                    this.swiper.moveLeft(true);
                 }
 
                 this._runEventListeners('clickSpacePreviousClicked');
@@ -43,10 +43,28 @@ class SwiperArrows {
 
             this._clickSpacePrevious.addEventListener('click', this._clickSpacePreviousOnClickListener);
         }
+
+        this.swiper.addEventListener('move', () => {
+            this._setUpActiveClassOnArrowElements();
+        });
+        
+        this._setUpActiveClassOnArrowElements();
     }
 
-    _onUpdate() {
-        //!!! TODO
+    _setUpActiveClassOnArrowElements() {
+        let activeSlides = this.swiper.activeSlides();
+
+        if (!this.swiper.infinite && activeSlides[0] === 0) {
+            this._clickSpacePrevious.classList.remove('active');
+        } else {
+            this._clickSpacePrevious.classList.add('active');
+        }
+
+        if (!this.swiper.infinite && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
+            this._clickSpaceNext.classList.remove('active');
+        } else {
+            this._clickSpaceNext.classList.add('active');
+        }
     }
 
     deinit() {

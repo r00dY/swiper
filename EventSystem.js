@@ -26,8 +26,10 @@ let EventSystem = {
                 return;
             }
 
+            let args = Array.prototype.slice.call(arguments).slice(1);
+
             object._eventListeners[event].forEach((callback) => {
-                callback();
+                callback(...args);
             });
         };
 
