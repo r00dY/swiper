@@ -26,15 +26,19 @@ function sliderRegular(infinite) {
     swiper.layout();
 }
 
-describe("SwiperPager (no animations / finite mode)", function() {
+describe("SwiperPagerController (no animations / finite mode)", function() {
 
-    it("moves properly", function() {
+    it("changes properly active elements", function() {
         sliderRegular(true);
-        let pagerController = new SwiperPagerController(swiper);
+
+        let pagerController = new SwiperPagerController(swiper, false);
+
+        pagerController.init();
+
+        expect(pagerController.activeElements).toEqual([0]);
+
         pagerController.elementClicked(2);
 
-        setTimeout(() => {
-            expect(swiper.activeSlides()).toEqual([2]);
-        }, 100)
+        expect(pagerController.activeElements).toEqual([2]);
     });
 });

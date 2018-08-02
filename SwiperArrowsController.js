@@ -2,7 +2,7 @@ let EventSystem = require("./EventSystem");
 
 class SwiperArrowsController {
 
-    constructor(swiper) {
+    constructor(swiper, animated) {
         EventSystem.register(this);
         EventSystem.addEvent(this, 'clickSpaceNextClicked');
         EventSystem.addEvent(this, 'clickSpacePreviousClicked');
@@ -10,12 +10,13 @@ class SwiperArrowsController {
         EventSystem.addEvent(this, 'arrowPreviousActiveStatusChanged');
 
         this.swiper = swiper;
+        this.animated = animated;
 
         this.clickNext.bind(this);
         this.clickPrevious.bind(this);
 
-        this._arrowNextIsActive = false;
-        this._arrowPreviousIsActive = false;
+        this.arrowNextIsActive = false;
+        this.arrowPreviousIsActive = false;
     }
 
     init() {
@@ -31,12 +32,12 @@ class SwiperArrowsController {
     }
 
     clickNext() {
-        this.swiper.moveRight(true);
+        this.swiper.moveRight(this.animated);
         this._runEventListeners('clickSpaceNextClicked');
     }
 
     clickPrevious() {
-        this.swiper.moveLeft(true);
+        this.swiper.moveLeft(this.animated);
         this._runEventListeners('clickSpacePreviousClicked');
     }
 
@@ -45,24 +46,24 @@ class SwiperArrowsController {
         let activeSlides = this.swiper.activeSlides();
 
         // previous arrow
-        if (this._arrowPreviousIsActive && activeSlides[0] === 0) {
-            this._arrowPreviousIsActive = false;
+        if (this.arrowPreviousIsActive && activeSlides[0] === 0) {
+            this.arrowPreviousIsActive = false;
             this._runEventListeners('arrowPreviousActiveStatusChanged', false);
         }
 
-        if(!this._arrowPreviousIsActive && activeSlides[0] !== 0) {
-            this._arrowPreviousIsActive = true;
+        if(!this.arrowPreviousIsActive && activeSlides[0] !== 0) {
+            this.arrowPreviousIsActive = true;
             this._runEventListeners('arrowPreviousActiveStatusChanged', true);
         }
 
         // next arrow
-        if (this._arrowNextIsActive && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
-            this._arrowNextIsActive = false;
+        if (this.arrowNextIsActive && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
+            this.arrowNextIsActive = false;
             this._runEventListeners('arrowNextActiveStatusChanged', false);
         }
 
-        if(!this._arrowNextIsActive && activeSlides[activeSlides.length - 1] !== this.swiper.count - 1) {
-            this._arrowNextIsActive = true;
+        if(!this.arrowNextIsActive && activeSlides[activeSlides.length - 1] !== this.swiper.count - 1) {
+            this.arrowNextIsActive = true;
             this._runEventListeners('arrowNextActiveStatusChanged', true);
         }
     }

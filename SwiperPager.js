@@ -33,44 +33,38 @@ class SwiperPager {
             })(i);
         }
 
-        this._activeElements = [];
+        this._activeElements = {};
 
-        this._setElementsActive(this.swiper.activeSlides());
-        this.swiper.addEventListener('move', () => {
-            this._setElementsActive(this.swiper.activeSlides());
-        });
+        this.swiperPagerController.init();
+
+        this._setElementsActive(this.swiperPagerController.activeElements);
+
+        this.swiperPagerController.addEventListener('activeElementsChanged', (elementsIndexes) => {
+            this._setElementsActive(elementsIndexes);
+
+        })
     }
 
     pagerElementClickListener(index) {
         this.swiperPagerController.elementClicked(index);
-        this._setElementsActive([index]);
         this._runEventListeners('pagerItemClicked', index);
-
     }
 
     _setElementsActive(elementsIndexes) {
-
-        let newActiveElements = [];
+        Object.keys(this._activeElements).forEach(activeElementIndex => {
+            if (!elementsIndexes.includes(activeElementIndex)) {
+                this._activeElements[activeElementIndex].classList.remove('active');
+                delete this._activeElements[activeElementIndex];
+            }
+        });
 
         elementsIndexes.forEach(elementIndex => {
-            newActiveElements.push(this._pagerElements[elementIndex]);
-        });
-
-        newActiveElements.forEach(element => {
-            if (!this._activeElements.includes(element)) {
-                element.classList.add('active');
-                this._activeElements.push(element);
+            if (!this._activeElements.hasOwnProperty(elementIndex)) {
+                let newActiveElement = this._pagerElements[elementIndex];
+                newActiveElement.classList.add('active');
+                this._activeElements[elementIndex] = newActiveElement;
             }
-        });
-
-        this._activeElements = this._activeElements.filter(element => {
-            if (!newActiveElements.includes(element)) {
-                element.classList.remove('active');
-                return false;
-            }
-
-            return true;
-        });
+        })
     }
 
     deinit() {

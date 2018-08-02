@@ -6301,13 +6301,13 @@ var _gsScope = (typeof(module) !== "undefined" && module.exports && typeof(globa
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let EventSystem = __webpack_require__(0);
 let SwiperArrowsController = __webpack_require__(11);
 
 class SwiperArrows {
 
-    constructor(swiper) {
+    constructor(swiper, animated = true) {
         this.swiper = swiper;
+        this.animated = animated;
         this.swiperArrowsController = new SwiperArrowsController(this.swiper);
 
         this.clickNextListener = this.swiperArrowsController.clickNext.bind(this.swiperArrowsController);
@@ -6318,27 +6318,22 @@ class SwiperArrows {
         this._clickSpacePrevious = document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
         this._clickSpaceNext = document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
 
-        this.swiperArrowsController.addEventListener('arrowNextActiveStatusChanged', (active) => {
-            if (this._clickSpaceNext) {
+        if (this._clickSpaceNext) {
+            this.swiperArrowsController.addEventListener('arrowNextActiveStatusChanged', (active) => {
                 active ?
                     this._clickSpaceNext.classList.add('active') :
                     this._clickSpaceNext.classList.remove('active');
-            }
-        });
-
-        this.swiperArrowsController.addEventListener('arrowPreviousActiveStatusChanged', (active) => {
-            if (this._clickSpacePrevious) {
-                active ?
-                    this._clickSpacePrevious.classList.add('active') :
-                    this._clickSpacePrevious.classList.remove('active');
-            }
-        });
-
-        if (this._clickSpaceNext) {
+            });
             this._clickSpaceNext.addEventListener('click', this.clickNextListener);
         }
 
+
         if (this._clickSpacePrevious) {
+            this.swiperArrowsController.addEventListener('arrowPreviousActiveStatusChanged', (active) => {
+                active ?
+                    this._clickSpacePrevious.classList.add('active') :
+                    this._clickSpacePrevious.classList.remove('active');
+            });
             this._clickSpacePrevious.addEventListener('click', this.clickPreviousListener);
         }
 
@@ -6368,7 +6363,7 @@ let EventSystem = __webpack_require__(0);
 
 class SwiperArrowsController {
 
-    constructor(swiper) {
+    constructor(swiper, animated) {
         EventSystem.register(this);
         EventSystem.addEvent(this, 'clickSpaceNextClicked');
         EventSystem.addEvent(this, 'clickSpacePreviousClicked');
@@ -6376,12 +6371,13 @@ class SwiperArrowsController {
         EventSystem.addEvent(this, 'arrowPreviousActiveStatusChanged');
 
         this.swiper = swiper;
+        this.animated = animated;
 
         this.clickNext.bind(this);
         this.clickPrevious.bind(this);
 
-        this._arrowNextIsActive = false;
-        this._arrowPreviousIsActive = false;
+        this.arrowNextIsActive = false;
+        this.arrowPreviousIsActive = false;
     }
 
     init() {
@@ -6397,12 +6393,12 @@ class SwiperArrowsController {
     }
 
     clickNext() {
-        this.swiper.moveRight(true);
+        this.swiper.moveRight(this.animated);
         this._runEventListeners('clickSpaceNextClicked');
     }
 
     clickPrevious() {
-        this.swiper.moveLeft(true);
+        this.swiper.moveLeft(this.animated);
         this._runEventListeners('clickSpacePreviousClicked');
     }
 
@@ -6411,24 +6407,24 @@ class SwiperArrowsController {
         let activeSlides = this.swiper.activeSlides();
 
         // previous arrow
-        if (this._arrowPreviousIsActive && activeSlides[0] === 0) {
-            this._arrowPreviousIsActive = false;
+        if (this.arrowPreviousIsActive && activeSlides[0] === 0) {
+            this.arrowPreviousIsActive = false;
             this._runEventListeners('arrowPreviousActiveStatusChanged', false);
         }
 
-        if(!this._arrowPreviousIsActive && activeSlides[0] !== 0) {
-            this._arrowPreviousIsActive = true;
+        if(!this.arrowPreviousIsActive && activeSlides[0] !== 0) {
+            this.arrowPreviousIsActive = true;
             this._runEventListeners('arrowPreviousActiveStatusChanged', true);
         }
 
         // next arrow
-        if (this._arrowNextIsActive && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
-            this._arrowNextIsActive = false;
+        if (this.arrowNextIsActive && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
+            this.arrowNextIsActive = false;
             this._runEventListeners('arrowNextActiveStatusChanged', false);
         }
 
-        if(!this._arrowNextIsActive && activeSlides[activeSlides.length - 1] !== this.swiper.count - 1) {
-            this._arrowNextIsActive = true;
+        if(!this.arrowNextIsActive && activeSlides[activeSlides.length - 1] !== this.swiper.count - 1) {
+            this.arrowNextIsActive = true;
             this._runEventListeners('arrowNextActiveStatusChanged', true);
         }
     }
@@ -6475,44 +6471,38 @@ class SwiperPager {
             })(i);
         }
 
-        this._activeElements = [];
+        this._activeElements = {};
 
-        this._setElementsActive(this.swiper.activeSlides());
-        this.swiper.addEventListener('move', () => {
-            this._setElementsActive(this.swiper.activeSlides());
-        });
+        this.swiperPagerController.init();
+
+        this._setElementsActive(this.swiperPagerController.activeElements);
+
+        this.swiperPagerController.addEventListener('activeElementsChanged', (elementsIndexes) => {
+            this._setElementsActive(elementsIndexes);
+
+        })
     }
 
     pagerElementClickListener(index) {
         this.swiperPagerController.elementClicked(index);
-        this._setElementsActive([index]);
         this._runEventListeners('pagerItemClicked', index);
-
     }
 
     _setElementsActive(elementsIndexes) {
-
-        let newActiveElements = [];
+        Object.keys(this._activeElements).forEach(activeElementIndex => {
+            if (!elementsIndexes.includes(activeElementIndex)) {
+                this._activeElements[activeElementIndex].classList.remove('active');
+                delete this._activeElements[activeElementIndex];
+            }
+        });
 
         elementsIndexes.forEach(elementIndex => {
-            newActiveElements.push(this._pagerElements[elementIndex]);
-        });
-
-        newActiveElements.forEach(element => {
-            if (!this._activeElements.includes(element)) {
-                element.classList.add('active');
-                this._activeElements.push(element);
+            if (!this._activeElements.hasOwnProperty(elementIndex)) {
+                let newActiveElement = this._pagerElements[elementIndex];
+                newActiveElement.classList.add('active');
+                this._activeElements[elementIndex] = newActiveElement;
             }
-        });
-
-        this._activeElements = this._activeElements.filter(element => {
-            if (!newActiveElements.includes(element)) {
-                element.classList.remove('active');
-                return false;
-            }
-
-            return true;
-        });
+        })
     }
 
     deinit() {
@@ -6532,21 +6522,35 @@ module.exports = SwiperPager;
 
 /***/ }),
 /* 13 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
+let EventSystem = __webpack_require__(0);
 
 class SwiperPagerController {
-    constructor(swiper) {
+    constructor(swiper, animated) {
         this.swiper = swiper;
+        this.animated = animated;
         this.activeElements = [];
+        EventSystem.register(this);
+        EventSystem.addEvent(this, 'activeElementsChanged');
+
+        this.swiper.addEventListener('activeSlidesChange', () => {
+            this._activeElementsChanged();
+        });
     }
 
     init() {
-
+        this.activeElements = this.swiper.activeSlides();
     }
 
     elementClicked(elementIndex) {
-        this.swiper.moveToSlide(elementIndex);
+        this.swiper.moveToSlide(elementIndex, this.animated);
+        this._activeElementsChanged();
+    }
+
+    _activeElementsChanged() {
+        this.activeElements = this.swiper.activeSlides();
+        this._runEventListeners('activeElementsChanged', this.activeElements);
     }
 }
 
