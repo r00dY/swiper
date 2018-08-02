@@ -22,6 +22,10 @@ function sliderIrregular(infinite) {
         return (n + 1) * 10;
     };
 
+    swiper.overscrollFunction = (x) => {
+        return x / 2;
+    };
+
     swiper.layout();
 }
 
@@ -51,50 +55,54 @@ function sliderRegular(infinite) {
 
 describe("SwiperEngine (no animations / finite mode)", function() {
 
-    let swiper;
-
-    beforeEach(function() {
-
-        swiper = new SwiperEngine();
-
-        swiper.containerSize = 500;
-        swiper.count = 5;
-        swiper.leftOffset = 100;
-        swiper.rightOffset = 200;
-
-        swiper.slideSizeFunction = function(n) {
-            return (n + 1) * 10 + 300;
-        };
-
-        swiper.slideMarginFunction = function(n) {
-            return (n + 1) * 10;
-        };
-        swiper.slideSnapOffset = function(n) {
-            return (n + 1) * 10;
-        };
-
-        swiper.overscrollFunction = (x) => {
-            return x / 2;
-        };
-
-        swiper.layout();
-    });
+    // let swiper;
+    //
+    // beforeEach(function() {
+    //
+    //     swiper = new SwiperEngine();
+    //
+    //     swiper.containerSize = 500;
+    //     swiper.count = 5;
+    //     swiper.leftOffset = 100;
+    //     swiper.rightOffset = 200;
+    //
+    //     swiper.slideSizeFunction = function(n) {
+    //         return (n + 1) * 10 + 300;
+    //     };
+    //
+    //     swiper.slideMarginFunction = function(n) {
+    //         return (n + 1) * 10;
+    //     };
+    //     swiper.slideSnapOffset = function(n) {
+    //         return (n + 1) * 10;
+    //     };
+    //
+    //     swiper.overscrollFunction = (x) => {
+    //         return x / 2;
+    //     };
+    //
+    //     swiper.layout();
+    // });
 
     it("returns correct slideable width", function() {
+        sliderIrregular(false);
         expect(swiper.slideableWidth).toBe(100 + 310 + 10 + 320 + 20 + 330 + 30 + 340 + 40 + 350 + 200);
     });
 
     it("returns correct max position", function() {
+        sliderIrregular(false);
         expect(swiper.maxPos).toBe(swiper.slideableWidth - 500);
     });
 
     it("has properly set initial positions", function() {
+        sliderIrregular(false);
         expect(swiper.slideCoord(0)).toBe(100);
         expect(swiper.slideCoord(1)).toBe(100 + 310 + 10);
         expect(swiper.slideCoord(4)).toBe(100 + 310 + 10 + 320 + 20 + 330 + 30 + 340 + 40);
     });
 
     it("moves properly to the position without going beyond edges", function() {
+        sliderIrregular(false);
         swiper.moveTo(500, false);
         expect(swiper.slideCoord(0)).toBe(-500 + 100);
         expect(swiper.slideCoord(1)).toBe(-500 + 100 + 310 + 10);
@@ -107,6 +115,7 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     });
 
     it("moves properly with overscroll on the left", function() {
+        sliderIrregular(false);
         swiper.moveTo(-100, false);
         expect(swiper.slideCoord(0)).toBe(50 + 100);
         expect(swiper.slideCoord(1)).toBe(50 + 100 + 310 + 10);
@@ -115,12 +124,14 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     });
 
     it("moves properly with overscroll on the right", function() {
+        sliderIrregular(false);
         swiper.moveTo(swiper.maxPos + 100, false);
         expect(swiper.slideCoord(0)).toBe(-swiper.maxPos - 50 + 100);
         expect(swiper.pos).toBe(swiper.maxPos + 100); // pos should stay untouched by overscroll function
     });
 
     it("moves properly to the specific slide (taking snap points into account)", function() {
+        sliderIrregular(false);
         swiper.moveToSlide(0, false);
         expect(swiper.slideCoord(0)).toBe(10);
 
@@ -132,30 +143,35 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     });
 
     it("snaps properly to the beginning", function() {
+        sliderIrregular(false);
         swiper.moveTo(-100, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(0)).toBe(100);
     });
 
     it("snaps properly to first slide", function() {
+        sliderIrregular(false);
         swiper.moveTo(100, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(0)).toBe(10);
     });
 
     it("snaps properly to the left slide when distance identical", function() {
+        sliderIrregular(false);
         swiper.moveTo(245, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(0)).toBe(10);
     });
 
     it("snaps properly to the right slide if distance is minimally bigger than to the left", function() {
+        sliderIrregular(false);
         swiper.moveTo(246, false);
         swiper.snap(0, false);
         expect(swiper.slideCoord(1)).toBe(20);
     });
 
     it("snaps properly to the end", function() {
+        sliderIrregular(false);
         swiper.moveTo(100000, false);
         swiper.snap(0, false);
         expect(swiper.pos).toBe(swiper.maxPos);
@@ -164,48 +180,56 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     // Minimum velocity (1)
 
     it("snaps properly with negative velocity and overscroll on the left", function() {
+        sliderIrregular(false);
         swiper.moveTo(-100, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(0)).toBe(100);
     });
 
     it("snaps properly with positive velocity and overscroll on the left", function() {
+        sliderIrregular(false);
         swiper.moveTo(-100, false);
         swiper.snap(1, false);
         expect(swiper.slideCoord(0)).toBe(100);
     });
 
     it("snaps properly with positive velocity and overscroll on the right", function() {
+        sliderIrregular(false);
         swiper.moveTo(100000, false);
         swiper.snap(1, false);
         expect(swiper.pos).toBe(swiper.maxPos);
     });
 
     it("snaps properly with negative velocity and overscroll on the right", function() {
+        sliderIrregular(false);
         swiper.moveTo(100000, false);
         swiper.snap(-1, false);
         expect(swiper.pos).toBe(swiper.maxPos);
     });
 
     it("snaps properly with negative velocity and closer to left item", function() {
+        sliderIrregular(false);
         swiper.moveTo(200, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(0)).toBe(10);
     });
 
     it("snaps properly with positive velocity and closer to left item", function() {
+        sliderIrregular(false);
         swiper.moveTo(200, false);
         swiper.snap(1, false);
         expect(swiper.slideCoord(1)).toBe(20);
     });
 
     it("snaps properly with negative velocity and closer to right item", function() {
+        sliderIrregular(false);
         swiper.moveTo(350, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(0)).toBe(10);
     });
 
     it("snaps properly with positive velocity and closer to right item", function() {
+        sliderIrregular(false);
         swiper.moveTo(350, false);
         swiper.snap(1, false);
         expect(swiper.slideCoord(1)).toBe(20);
@@ -214,16 +238,19 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     // initial position
 
     it ("has good initial position without setting initialPos and initialSlide", function() {
+        sliderIrregular(false);
         expect(swiper.pos).toBe(0);
     });
 
     it ("has good initial position with setting initialPos", function() {
+        sliderIrregular(false);
         swiper.initialPos = 100;
         swiper.layout();
         expect(swiper.pos).toBe(100);
     });
 
     it ("has good initial position with setting initialSlide", function() {
+        sliderIrregular(false);
         swiper.initialSlide = 1;
         swiper.layout();
         expect(swiper.pos).toBe(100 + 310 + 10 - 20);
@@ -232,6 +259,7 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     // move listener
 
     it ("properly adds and removes 'move' event listeners", function() {
+        sliderIrregular(false);
         let event1counter = 0;
         let event1 = () => { event1counter++; };
 
@@ -264,6 +292,7 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     });
 
     it ("runs single 'move' event after layout", function() {
+        sliderIrregular(false);
 
         let eventCounter = 0;
         let event = () => { eventCounter++; };
@@ -286,6 +315,7 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     // move right move left
 
     it ("moves properly to the right with moveRight method", function() {
+        sliderIrregular(false);
         swiper.moveRight(false);
         expect(swiper.slideCoord(1)).toBe(20);
 
@@ -294,6 +324,7 @@ describe("SwiperEngine (no animations / finite mode)", function() {
     });
 
     it ("moves properly to the left with moveLeft method", function() {
+        sliderIrregular(false);
 
         swiper.moveTo(swiper.maxPos, false);
 
