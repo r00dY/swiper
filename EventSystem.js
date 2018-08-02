@@ -26,8 +26,14 @@ let EventSystem = {
                 return;
             }
 
+            let args = Array.prototype.slice.call(arguments).slice(1);
+
+            if (!object._eventListeners[event]) {
+                console.log(object);
+                console.log(event);
+            }
             object._eventListeners[event].forEach((callback) => {
-                callback();
+                callback(...args);
             });
         };
 

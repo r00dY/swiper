@@ -249,6 +249,7 @@
 
     <!-- ...and some dummy styles for swiper components -->
     <style>
+
         .swiper-click-space-previous, .swiper-click-space-next {
             visibility: hidden; /* by default click spaces are hidde, should only be visible with .active class */
         }
@@ -257,8 +258,12 @@
             visibility: visible; /* let's show click spaces when active */
         }
 
+        .swiper-pager-item {
+            width: 10px; height: 10px; border-radius: 50%; border: 1px solid grey;
+        }
         .swiper-pager-item.active {
             color: red; /* let's show active pager item as red */
+            background: red; /* let's show active pager item as red */
         }
     </style>
 
@@ -873,6 +878,14 @@
             </div>
         </div>
 
+        <button class="swiper-click-space-previous" data-swiper="demo-new-1">PREV</button>
+        <button class="swiper-click-space-next" data-swiper="demo-new-1">NEXT</button>
+
+        <div class="pager" style="display: flex; justify-content: space-evenly; width: 50%; margin-top: 20px;">
+            <div class="swiper-pager-item" data-swiper="demo-new-1">
+                <div class="pager-dot"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -898,6 +911,12 @@
             window.addEventListener('resize', () => {
                swiperNew1.layout();
             });
+
+            let arrows = new SwiperArrows(swiperNew1);
+            arrows.init();
+
+            let pager = new SwiperPager(swiperNew1);
+            pager.init();
         });
 
     </script>
@@ -923,6 +942,12 @@
 
         <button class="swiper-click-space-previous" data-swiper="demo-new-2">PREV</button>
         <button class="swiper-click-space-next" data-swiper="demo-new-2">NEXT</button>
+
+        <div class="pager" style="display: flex; justify-content: space-evenly; width: 50%; margin-top: 20px;">
+            <div class="swiper-pager-item" data-swiper="demo-new-2">
+                <div class="pager-dot"></div>
+            </div>
+        </div>
 
     </div>
 
@@ -984,9 +1009,11 @@
                swiperNew2.layout();
            });
            
-           //
-           // var arrows = new SwiperArrows(swiperNew2);
-           // arrows.init();
+           var arrows = new SwiperArrows(swiperNew2);
+           arrows.init();
+
+           let pager = new SwiperPager(swiperNew2);
+           pager.init();
        });
 
     </script>
