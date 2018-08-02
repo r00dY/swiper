@@ -67,6 +67,62 @@
 /* 0 */
 /***/ (function(module, exports) {
 
+let EventSystem = {
+
+    register: function(object) {
+
+        // Init events
+        object._eventListeners = {};
+        object._eventsBlocked = false;
+
+        object.addEventListener = function(event, callback) {
+            if (!object._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
+
+            object._eventListeners[event].push(callback);
+        };
+
+        object.removeEventListener = function(event, callback) {
+            if (!object._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
+
+            let index = object._eventListeners[event].indexOf(callback);
+            if (index > -1) {
+                object._eventListeners[event].splice(index, 1);
+            }
+        };
+
+        object._runEventListeners = function(event) {
+            if (object._eventsBlocked) {
+                return;
+            }
+
+            let args = Array.prototype.slice.call(arguments).slice(1);
+
+            object._eventListeners[event].forEach((callback) => {
+                callback(...args);
+            });
+        };
+
+        object.blockEvents = function() {
+            object._eventsBlocked = true;
+        };
+
+        object.unblockEvents = function() {
+            object._eventsBlocked = false;
+        };
+
+    },
+
+    addEvent: function(object, event) {
+        object._eventListeners[event] = [];
+    }
+};
+
+module.exports = EventSystem;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
 var g;
 
 // This works in non-strict mode
@@ -91,7 +147,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -2037,63 +2093,7 @@ module.exports = g;
 		_tickerActive = false; //ensures that the first official animation forces a ticker.tick() to update the time when it is instantiated
 
 })((typeof(module) !== "undefined" && module.exports && typeof(global) !== "undefined") ? global : this || window, "TweenLite");
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-let EventSystem = {
-
-    register: function(object) {
-
-        // Init events
-        object._eventListeners = {};
-        object._eventsBlocked = false;
-
-        object.addEventListener = function(event, callback) {
-            if (!object._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
-
-            object._eventListeners[event].push(callback);
-        };
-
-        object.removeEventListener = function(event, callback) {
-            if (!object._eventListeners.hasOwnProperty(event)) { throw `Unknown event listener name: ${event}`; }
-
-            let index = object._eventListeners[event].indexOf(callback);
-            if (index > -1) {
-                object._eventListeners[event].splice(index, 1);
-            }
-        };
-
-        object._runEventListeners = function(event) {
-            if (object._eventsBlocked) {
-                return;
-            }
-
-            let args = Array.prototype.slice.call(arguments).slice(1);
-
-            object._eventListeners[event].forEach((callback) => {
-                callback(...args);
-            });
-        };
-
-        object.blockEvents = function() {
-            object._eventsBlocked = true;
-        };
-
-        object.unblockEvents = function() {
-            object._eventsBlocked = false;
-        };
-
-    },
-
-    addEvent: function(object, event) {
-        object._eventListeners[event] = [];
-    }
-};
-
-module.exports = EventSystem;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 3 */
@@ -2103,7 +2103,7 @@ module.exports = EventSystem;
 var SimpleSwiper = __webpack_require__(4);
 
 var SwiperArrows = __webpack_require__(10);
-var SwiperPager = __webpack_require__(11);
+var SwiperPager = __webpack_require__(12);
 
 /**
  * Normally of course all the JS code would go here 
@@ -2118,7 +2118,7 @@ global.SwiperArrows = SwiperArrows;
 global.SwiperPager = SwiperPager;
 
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 4 */
@@ -5104,9 +5104,9 @@ module.exports = VerticalScrollDetector;
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(9);
-__webpack_require__(1);
+__webpack_require__(2);
 
-let EventSystem = __webpack_require__(2);
+let EventSystem = __webpack_require__(0);
 
 class SwiperEngine {
 
@@ -6286,98 +6286,73 @@ var _gsScope = (typeof(module) !== "undefined" && module.exports && typeof(globa
 		return (_gsScope.GreenSockGlobals || _gsScope);
 	};
 	if (typeof(module) !== "undefined" && module.exports) { //node
-		__webpack_require__(1);
+		__webpack_require__(2);
 		module.exports = getGlobal();
 	} else if (true) { //AMD
-		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_FACTORY__ = (getGlobal),
+		!(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2)], __WEBPACK_AMD_DEFINE_FACTORY__ = (getGlobal),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 	}
 }());
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let EventSystem = __webpack_require__(2);
+let EventSystem = __webpack_require__(0);
+let SwiperArrowsController = __webpack_require__(11);
 
 class SwiperArrows {
 
     constructor(swiper) {
         this.swiper = swiper;
+        this.swiperArrowsController = new SwiperArrowsController(this.swiper);
 
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'clickSpaceNextClicked');
-        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
+        this.clickNextListener = this.swiperArrowsController.clickNext.bind(this.swiperArrowsController);
+        this.clickPreviousListener = this.swiperArrowsController.clickPrevious.bind(this.swiperArrowsController);
     }
 
     init() {
         this._clickSpacePrevious = document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
         this._clickSpaceNext = document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
 
+        this.swiperArrowsController.addEventListener('arrowNextActiveStatusChanged', (active) => {
+            if (this._clickSpaceNext) {
+                active ?
+                    this._clickSpaceNext.classList.add('active') :
+                    this._clickSpaceNext.classList.remove('active');
+            }
+        });
+
+        this.swiperArrowsController.addEventListener('arrowPreviousActiveStatusChanged', (active) => {
+            if (this._clickSpacePrevious) {
+                active ?
+                    this._clickSpacePrevious.classList.add('active') :
+                    this._clickSpacePrevious.classList.remove('active');
+            }
+        });
+
         if (this._clickSpaceNext) {
-
-            this._clickSpaceNextOnClickListener = (e) => {
-                e.preventDefault();
-
-                if (this._clickSpaceNext.classList.contains('active')) {
-                    this.swiper.moveRight(true);
-                }
-
-                this._runEventListeners('clickSpaceNextClicked');
-            };
-
-            this._clickSpaceNext.addEventListener('click', this._clickSpaceNextOnClickListener);
+            this._clickSpaceNext.addEventListener('click', this.clickNextListener);
         }
 
         if (this._clickSpacePrevious) {
-
-            this._clickSpacePreviousOnClickListener = (e) => {
-                e.preventDefault();
-
-                if (this._clickSpacePrevious.classList.contains("active")) {
-                    this.swiper.moveLeft(true);
-                }
-
-                this._runEventListeners('clickSpacePreviousClicked');
-            };
-
-            this._clickSpacePrevious.addEventListener('click', this._clickSpacePreviousOnClickListener);
+            this._clickSpacePrevious.addEventListener('click', this.clickPreviousListener);
         }
 
-        this.swiper.addEventListener('move', () => {
-            this._setUpActiveClassOnArrowElements();
-        });
-        
-        this._setUpActiveClassOnArrowElements();
-    }
-
-    _setUpActiveClassOnArrowElements() {
-        let activeSlides = this.swiper.activeSlides();
-
-        if (!this.swiper.infinite && activeSlides[0] === 0) {
-            this._clickSpacePrevious.classList.remove('active');
-        } else {
-            this._clickSpacePrevious.classList.add('active');
-        }
-
-        if (!this.swiper.infinite && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
-            this._clickSpaceNext.classList.remove('active');
-        } else {
-            this._clickSpaceNext.classList.add('active');
-        }
+        this.swiperArrowsController.init();
     }
 
     deinit() {
         // Unbind clicks on next / previous
         if (this._clickSpaceNext) {
-            this._clickSpaceNext.removeEventListener('click', this._clickSpaceNextOnClickListener);
+            this._clickSpaceNext.removeEventListener('click', this.clickNextListener);
         }
 
         if (this._clickSpacePrevious) {
-            this._clickSpacePrevious.removeEventListener('click', this._clickSpacePreviousOnClickListener);
+            this._clickSpacePrevious.removeEventListener('click', this.clickPreviousListener);
         }
     }
 
@@ -6389,15 +6364,93 @@ module.exports = SwiperArrows;
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-let EventSystem = __webpack_require__(2);
+let EventSystem = __webpack_require__(0);
+
+class SwiperArrowsController {
+
+    constructor(swiper) {
+        EventSystem.register(this);
+        EventSystem.addEvent(this, 'clickSpaceNextClicked');
+        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
+        EventSystem.addEvent(this, 'arrowNextActiveStatusChanged');
+        EventSystem.addEvent(this, 'arrowPreviousActiveStatusChanged');
+
+        this.swiper = swiper;
+
+        this.clickNext.bind(this);
+        this.clickPrevious.bind(this);
+
+        this._arrowNextIsActive = false;
+        this._arrowPreviousIsActive = false;
+    }
+
+    init() {
+        if (!this.swiper.infinite) {
+            this.swiper.addEventListener('move', () => {
+                this._setActiveState();
+            });
+            this._setActiveState();
+        } else {
+            this._runEventListeners('arrowNextActiveStatusChanged', true);
+            this._runEventListeners('arrowPreviousActiveStatusChanged', true);
+        }
+    }
+
+    clickNext() {
+        this.swiper.moveRight(true);
+        this._runEventListeners('clickSpaceNextClicked');
+    }
+
+    clickPrevious() {
+        this.swiper.moveLeft(true);
+        this._runEventListeners('clickSpacePreviousClicked');
+    }
+
+    _setActiveState() {
+
+        let activeSlides = this.swiper.activeSlides();
+
+        // previous arrow
+        if (this._arrowPreviousIsActive && activeSlides[0] === 0) {
+            this._arrowPreviousIsActive = false;
+            this._runEventListeners('arrowPreviousActiveStatusChanged', false);
+        }
+
+        if(!this._arrowPreviousIsActive && activeSlides[0] !== 0) {
+            this._arrowPreviousIsActive = true;
+            this._runEventListeners('arrowPreviousActiveStatusChanged', true);
+        }
+
+        // next arrow
+        if (this._arrowNextIsActive && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
+            this._arrowNextIsActive = false;
+            this._runEventListeners('arrowNextActiveStatusChanged', false);
+        }
+
+        if(!this._arrowNextIsActive && activeSlides[activeSlides.length - 1] !== this.swiper.count - 1) {
+            this._arrowNextIsActive = true;
+            this._runEventListeners('arrowNextActiveStatusChanged', true);
+        }
+    }
+}
+
+module.exports = SwiperArrowsController;
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+let EventSystem = __webpack_require__(0);
+let SwiperPagerController = __webpack_require__(13);
 
 class SwiperPager {
 
     constructor(swiper) {
         this.swiper = swiper;
-
         EventSystem.register(this);
         EventSystem.addEvent(this, 'pagerItemClicked');
+
+        this.swiperPagerController = new SwiperPagerController(this.swiper);
     }
 
 
@@ -6422,32 +6475,44 @@ class SwiperPager {
             })(i);
         }
 
-        let activeSlideIndex = this.swiper.activeSlides()[0];
+        this._activeElements = [];
 
-        this._pagerElements[activeSlideIndex].classList.add('active');
-
-
+        this._setElementsActive(this.swiper.activeSlides());
         this.swiper.addEventListener('move', () => {
-            this._setUpProperPagerElementsAsActive(this.swiper.activeSlides());
+            this._setElementsActive(this.swiper.activeSlides());
         });
     }
 
     pagerElementClickListener(index) {
-        this.swiper.moveToSlide(index);
-        this._setUpProperPagerElementsAsActive([index]);
+        this.swiperPagerController.elementClicked(index);
+        this._setElementsActive([index]);
+        this._runEventListeners('pagerItemClicked', index);
+
     }
 
-    _setUpProperPagerElementsAsActive(elementsIndexes) {
-        this._pagerElements.forEach(pagerElement => {
-            pagerElement.classList.remove('active');
-        });
+    _setElementsActive(elementsIndexes) {
+
+        let newActiveElements = [];
 
         elementsIndexes.forEach(elementIndex => {
-            this._pagerElements[elementIndex].classList.add('active');
+            newActiveElements.push(this._pagerElements[elementIndex]);
         });
 
-        this._runEventListeners('pagerItemClicked', elementsIndexes);
+        newActiveElements.forEach(element => {
+            if (!this._activeElements.includes(element)) {
+                element.classList.add('active');
+                this._activeElements.push(element);
+            }
+        });
 
+        this._activeElements = this._activeElements.filter(element => {
+            if (!newActiveElements.includes(element)) {
+                element.classList.remove('active');
+                return false;
+            }
+
+            return true;
+        });
     }
 
     deinit() {
@@ -6464,6 +6529,28 @@ class SwiperPager {
 }
 
 module.exports = SwiperPager;
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports) {
+
+
+class SwiperPagerController {
+    constructor(swiper) {
+        this.swiper = swiper;
+        this.activeElements = [];
+    }
+
+    init() {
+
+    }
+
+    elementClicked(elementIndex) {
+        this.swiper.moveToSlide(elementIndex);
+    }
+}
+
+module.exports = SwiperPagerController;
 
 /***/ })
 /******/ ]);

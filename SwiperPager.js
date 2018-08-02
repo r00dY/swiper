@@ -1,12 +1,14 @@
 let EventSystem = require("./EventSystem");
+let SwiperPagerController = require("./SwiperPagerController");
 
 class SwiperPager {
 
     constructor(swiper) {
         this.swiper = swiper;
-
         EventSystem.register(this);
         EventSystem.addEvent(this, 'pagerItemClicked');
+
+        this.swiperPagerController = new SwiperPagerController(this.swiper);
     }
 
 
@@ -31,32 +33,44 @@ class SwiperPager {
             })(i);
         }
 
-        let activeSlideIndex = this.swiper.activeSlides()[0];
+        this._activeElements = [];
 
-        this._pagerElements[activeSlideIndex].classList.add('active');
-
-
+        this._setElementsActive(this.swiper.activeSlides());
         this.swiper.addEventListener('move', () => {
-            this._setUpProperPagerElementsAsActive(this.swiper.activeSlides());
+            this._setElementsActive(this.swiper.activeSlides());
         });
     }
 
     pagerElementClickListener(index) {
-        this.swiper.moveToSlide(index);
-        this._setUpProperPagerElementsAsActive([index]);
+        this.swiperPagerController.elementClicked(index);
+        this._setElementsActive([index]);
+        this._runEventListeners('pagerItemClicked', index);
+
     }
 
-    _setUpProperPagerElementsAsActive(elementsIndexes) {
-        this._pagerElements.forEach(pagerElement => {
-            pagerElement.classList.remove('active');
-        });
+    _setElementsActive(elementsIndexes) {
+
+        let newActiveElements = [];
 
         elementsIndexes.forEach(elementIndex => {
-            this._pagerElements[elementIndex].classList.add('active');
+            newActiveElements.push(this._pagerElements[elementIndex]);
         });
 
-        this._runEventListeners('pagerItemClicked', elementsIndexes);
+        newActiveElements.forEach(element => {
+            if (!this._activeElements.includes(element)) {
+                element.classList.add('active');
+                this._activeElements.push(element);
+            }
+        });
 
+        this._activeElements = this._activeElements.filter(element => {
+            if (!newActiveElements.includes(element)) {
+                element.classList.remove('active');
+                return false;
+            }
+
+            return true;
+        });
     }
 
     deinit() {
