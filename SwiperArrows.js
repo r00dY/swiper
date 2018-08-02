@@ -1,14 +1,26 @@
 let SwiperArrowsController = require("./SwiperArrowsController");
+let EventSystem = require("./EventSystem");
 
 class SwiperArrows {
 
     constructor(swiper, animated = true) {
+        EventSystem.register(this);
+        EventSystem.addEvent(this, 'clickSpaceNextClicked');
+        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
+
         this.swiper = swiper;
         this.animated = animated;
         this.swiperArrowsController = new SwiperArrowsController(this.swiper);
 
-        this.clickNextListener = this.swiperArrowsController.clickNext.bind(this.swiperArrowsController);
-        this.clickPreviousListener = this.swiperArrowsController.clickPrevious.bind(this.swiperArrowsController);
+        this.clickNextListener = () => {
+            this.swiperArrowsController.clickNext();
+            this._runEventListeners('clickSpaceNextClicked');
+        };
+
+        this.clickPreviousListener = () => {
+            this.swiperArrowsController.clickPrevious();
+            this._runEventListeners('clickSpacePreviousClicked');
+        }
     }
 
     init() {
@@ -23,7 +35,6 @@ class SwiperArrows {
             });
             this._clickSpaceNext.addEventListener('click', this.clickNextListener);
         }
-
 
         if (this._clickSpacePrevious) {
             this.swiperArrowsController.addEventListener('arrowPreviousActiveStatusChanged', (active) => {

@@ -97,6 +97,10 @@ let EventSystem = {
 
             let args = Array.prototype.slice.call(arguments).slice(1);
 
+            if (!object._eventListeners[event]) {
+                console.log(object);
+                console.log(event);
+            }
             object._eventListeners[event].forEach((callback) => {
                 callback(...args);
             });
@@ -6302,16 +6306,28 @@ var _gsScope = (typeof(module) !== "undefined" && module.exports && typeof(globa
 /***/ (function(module, exports, __webpack_require__) {
 
 let SwiperArrowsController = __webpack_require__(11);
+let EventSystem = __webpack_require__(0);
 
 class SwiperArrows {
 
     constructor(swiper, animated = true) {
+        EventSystem.register(this);
+        EventSystem.addEvent(this, 'clickSpaceNextClicked');
+        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
+
         this.swiper = swiper;
         this.animated = animated;
         this.swiperArrowsController = new SwiperArrowsController(this.swiper);
 
-        this.clickNextListener = this.swiperArrowsController.clickNext.bind(this.swiperArrowsController);
-        this.clickPreviousListener = this.swiperArrowsController.clickPrevious.bind(this.swiperArrowsController);
+        this.clickNextListener = () => {
+            this.swiperArrowsController.clickNext();
+            this._runEventListeners('clickSpaceNextClicked');
+        };
+
+        this.clickPreviousListener = () => {
+            this.swiperArrowsController.clickPrevious();
+            this._runEventListeners('clickSpacePreviousClicked');
+        }
     }
 
     init() {
@@ -6326,7 +6342,6 @@ class SwiperArrows {
             });
             this._clickSpaceNext.addEventListener('click', this.clickNextListener);
         }
-
 
         if (this._clickSpacePrevious) {
             this.swiperArrowsController.addEventListener('arrowPreviousActiveStatusChanged', (active) => {
@@ -6365,8 +6380,6 @@ class SwiperArrowsController {
 
     constructor(swiper, animated) {
         EventSystem.register(this);
-        EventSystem.addEvent(this, 'clickSpaceNextClicked');
-        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
         EventSystem.addEvent(this, 'arrowNextActiveStatusChanged');
         EventSystem.addEvent(this, 'arrowPreviousActiveStatusChanged');
 
@@ -6394,12 +6407,10 @@ class SwiperArrowsController {
 
     clickNext() {
         this.swiper.moveRight(this.animated);
-        this._runEventListeners('clickSpaceNextClicked');
     }
 
     clickPrevious() {
         this.swiper.moveLeft(this.animated);
-        this._runEventListeners('clickSpacePreviousClicked');
     }
 
     _setActiveState() {

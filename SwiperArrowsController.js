@@ -4,8 +4,6 @@ class SwiperArrowsController {
 
     constructor(swiper, animated) {
         EventSystem.register(this);
-        EventSystem.addEvent(this, 'clickSpaceNextClicked');
-        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
         EventSystem.addEvent(this, 'arrowNextActiveStatusChanged');
         EventSystem.addEvent(this, 'arrowPreviousActiveStatusChanged');
 
@@ -33,12 +31,10 @@ class SwiperArrowsController {
 
     clickNext() {
         this.swiper.moveRight(this.animated);
-        this._runEventListeners('clickSpaceNextClicked');
     }
 
     clickPrevious() {
         this.swiper.moveLeft(this.animated);
-        this._runEventListeners('clickSpacePreviousClicked');
     }
 
     _setActiveState() {
