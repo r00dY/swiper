@@ -902,8 +902,8 @@
             swiperNew1.slideSnapOffsetFunction = function(n) {
                 return n * 10;
             };
-            swiperNew1.leftOffset = 100;
-            swiperNew1.rightOffset = 100;
+            swiperNew1.leftOffsetFunction = () => 100;
+            swiperNew1.rightOffsetFunction = () => 100;
 
             swiperNew1.layout();
             swiperNew1.enableTouch();
@@ -965,8 +965,8 @@
            swiperNew2.slideSnapOffsetFunction = function(n) {
                return 150 + n * 10;
            };
-           swiperNew2.leftOffset = 100;
-           swiperNew2.rightOffset = 100;
+           swiperNew2.leftOffsetFunction = () => 100;
+           swiperNew2.rightOffsetFunction = () => 100;
 
            swiperNew2.infinite = true;
 
@@ -1105,8 +1105,8 @@
             swiperNew4.slideSnapOffsetFunction = function(n) {
                 return n * 10;
             };
-            swiperNew4.leftOffset = 100;
-            swiperNew4.rightOffset = 100;
+            swiperNew4.leftOffsetFunction = () => 100;
+            swiperNew4.rightOffsetFunction = () => 100;
             swiperNew4.displayNoneAutomatically = false;
 
             swiperNew4.layout();

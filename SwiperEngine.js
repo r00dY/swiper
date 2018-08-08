@@ -9,6 +9,8 @@ class SwiperEngine {
 
         this._slideMarginFunction = () => { return 0; };
         this._slideSnapOffsetFunction = () => { return 0; };
+        this._leftOffsetFunction = () => 0;
+        this._rightOffsetFunction = () => 0;
         this._leftOffset = 0;
         this._rightOffset = 0;
 
@@ -86,6 +88,14 @@ class SwiperEngine {
         return this._slideSnapOffsetFunction;
     }
 
+
+    set rightOffsetFunction(rightOffsetFunction) {
+        this._rightOffsetFunction = rightOffsetFunction;
+    }
+
+    set leftOffsetFunction(leftOffsetFunction) {
+        this._leftOffsetFunction = leftOffsetFunction;
+    }
 
     set leftOffset(leftOffset) {
         this._leftOffset = leftOffset;
@@ -449,7 +459,7 @@ class SwiperEngine {
 
         // Finite scroll should take left and right offset into account.
         if (!this._infinite) {
-            result += (this._leftOffset + this._rightOffset);
+            result += (this._leftOffsetFunction() + this._rightOffsetFunction());
         }
 
         this._CACHE["slideableWidth"] = result;
@@ -624,7 +634,7 @@ class SwiperEngine {
             if (posCapped < 0) { posCapped = 0 }
             else if (posCapped > this.maxPos) { posCapped = this.maxPos }
 
-            let coord = this._leftOffset - posCapped;
+            let coord = this._leftOffsetFunction() - posCapped;
 
             for (let i = 0; i < n; i++) {
                 coord += this.slideSize(i);
