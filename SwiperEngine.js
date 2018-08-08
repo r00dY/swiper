@@ -11,8 +11,6 @@ class SwiperEngine {
         this._slideSnapOffsetFunction = () => { return 0; };
         this._leftOffsetFunction = () => 0;
         this._rightOffsetFunction = () => 0;
-        this._leftOffset = 0;
-        this._rightOffset = 0;
 
         this._infinite = false;
         this._snapOnlyToAdjacentSlide = false;
@@ -47,12 +45,12 @@ class SwiperEngine {
         EventSystem.addEvent(this, 'visibleSlidesChange');
     }
 
-    set containerSize(containerSize) {
-        this._containerSize = containerSize;
+    set containerSizeFunction(containerSizeFunction) {
+        this._containerSizeFunction = containerSizeFunction;
     }
 
-    get containerSize() {
-        return this._containerSize;
+    get containerSizeFunction() {
+        return this._containerSizeFunction;
     }
 
     set count(newCount) {
@@ -182,7 +180,7 @@ class SwiperEngine {
         this._animations = [];
 
         // containerSize validation
-        if (typeof this._containerSize !== "number") { throw "'containerSize' is not defined or is not a number"; }
+        if (typeof this._containerSizeFunction !== "function") { throw "'containerSizeFunction' is not defined or is not a function"; }
 
         // slideSize validation
         if (typeof this._slideSizeFunction !== "function") { throw "'slideSize' is not defined or is not a function"; }
@@ -360,14 +358,14 @@ class SwiperEngine {
      * This method moves 1 container width to the right (with snap)
      */
     moveRight(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated, 1);
+        this.moveTo(this._getClosestSnapPosition(this._pos + this._containerSizeFunction()), animated, 1);
     }
 
     /**
      * This method moves 1 container width to the left (with snap)
      */
     moveLeft(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated, -1);
+        this.moveTo(this._getClosestSnapPosition(this._pos - this._containerSizeFunction()), animated, -1);
     }
 
     /**
@@ -472,7 +470,7 @@ class SwiperEngine {
             throw "maxPos method not available in infinite mode"
         }
 
-        return Math.max(0, this.slideableWidth - this._containerSize);
+        return Math.max(0, this.slideableWidth - this._containerSizeFunction());
     }
 
     isAnimating() {
@@ -494,20 +492,20 @@ class SwiperEngine {
         if (rightEdge < 0) {
             return 0;
         }
-        else if (leftEdge > this.containerSize) {
+        else if (leftEdge > this._containerSizeFunction()) {
             return 0;
         }
-        else if (leftEdge < 0 && rightEdge > this.containerSize) {
+        else if (leftEdge < 0 && rightEdge > this._containerSizeFunction()) {
             return 1;
         }
-        else if (leftEdge >= 0 && rightEdge <= this.containerSize) {
+        else if (leftEdge >= 0 && rightEdge <= this._containerSizeFunction()) {
             return 1;
         }
-        else if (leftEdge < 0 && rightEdge <= this.containerSize) {
+        else if (leftEdge < 0 && rightEdge <= this._containerSizeFunction()) {
             return rightEdge / this.slideSize(n);
         }
-        else if (leftEdge >= 0 && rightEdge > this.containerSize) {
-            return (this.containerSize - leftEdge) / this.slideSize(n);
+        else if (leftEdge >= 0 && rightEdge > this._containerSizeFunction()) {
+            return (this._containerSizeFunction() - leftEdge) / this.slideSize(n);
         }
     }
 
@@ -621,7 +619,7 @@ class SwiperEngine {
             // if (coord + this.slideSize(n) < 0) {
             //     coord = undefined;
             // }
-            // else if (coord > this.containerSize) {
+            // else if (coord > this.containerSizeFunction) {
             //     coord = undefined;
             // }
 
@@ -648,12 +646,12 @@ class SwiperEngine {
             let extraTranslation = 0;
 
             if (pos < 0) {
-                let rest = -pos / this.containerSize;
-                extraTranslation = this._overscrollFunction(rest) * this.containerSize;
+                let rest = -pos / this._containerSizeFunction();
+                extraTranslation = this._overscrollFunction(rest) * this._containerSizeFunction();
             }
             else if (pos > this.maxPos) {
-                let rest = (pos - this.maxPos) / this.containerSize;
-                extraTranslation = -this._overscrollFunction(rest) * this.containerSize;
+                let rest = (pos - this.maxPos) / this._containerSizeFunction();
+                extraTranslation = -this._overscrollFunction(rest) * this._containerSizeFunction();
             }
 
             coord += extraTranslation;
