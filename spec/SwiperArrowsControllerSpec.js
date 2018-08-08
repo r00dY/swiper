@@ -6,10 +6,8 @@ let swiper;
 function sliderRegular(infinite) {
     swiper = new SwiperEngine();
 
-    swiper.containerSize = 500;
+    swiper.containerSizeFunction = () => 500;
     swiper.count = 5;
-    swiper.leftOffset = 100;
-    swiper.rightOffset = 200;
     swiper.infinite = infinite;
 
     swiper.slideSizeFunction = function(n) {

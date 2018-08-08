@@ -5,7 +5,7 @@ let swiper;
 function sliderIrregular(infinite) {
     swiper = new SwiperEngine();
 
-    swiper.containerSize = 500;
+    swiper.containerSizeFunction = () => 500;
     swiper.count = 5;
     swiper.leftOffsetFunction = () => 100;
     swiper.rightOffsetFunction = () => 200;
@@ -32,7 +32,7 @@ function sliderIrregular(infinite) {
 function sliderRegular(infinite) {
     swiper = new SwiperEngine();
 
-    swiper.containerSize = 500;
+    swiper.containerSizeFunction = () => 500;
     swiper.count = 5;
     swiper.leftOffsetFunction = () => 100;
     swiper.rightOffsetFunction = () =>200;
