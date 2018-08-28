@@ -21,7 +21,7 @@ class SimpleSwiper extends TouchSwiper {
     layout() {
         this.blockEvents();
 
-        this.containerSize = this._container.offsetWidth;
+        this.containerSizeFunction = () => this._container.offsetWidth;
         this.count = this._items.length;
 
         // previousRelativePosition must be read before super.layout!
