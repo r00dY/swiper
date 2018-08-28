@@ -92,7 +92,7 @@ class TouchSwiper extends SwiperEngine {
                         this.stopMovement();
                         this._panStartPos = this.pos;
 
-                        this._touchSpace.addEventListener('click', stopPropagationCallback);
+                        this._touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
                     }
 
                     if (isTouched && !swiped) {
@@ -107,7 +107,7 @@ class TouchSwiper extends SwiperEngine {
 
                         // Remove panning class when we're not touching slider
                         setTimeout(() => {
-                            this._touchSpace.removeEventListener('click', stopPropagationCallback);
+                            this._touchSpace.removeEventListener('click', stopPropagationCallback, true);
                         }, 0);
 
                         this._unblockScrolling();
