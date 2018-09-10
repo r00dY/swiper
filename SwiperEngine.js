@@ -748,9 +748,17 @@ class SwiperEngine {
                 snapPositions.push(this._getSlideSnapPos(n));
             }
 
+
+
+
+            let maxSnapPoint = Math.max.apply(Math, snapPositions);
+
             if (side === -1 || side === 1) {
                 for(let i = 0; i < snapPositions.length-1; i++) {
-                    if (snapPositions[i] < pos && pos < snapPositions[i + 1]) {
+                    if (
+                        (snapPositions[i] < pos && pos < snapPositions[i + 1]) ||
+                        (snapPositions[i] === maxSnapPoint && (pos > snapPositions[i] || pos < snapPositions[i + 1]))
+                    ) {
                         if (side === -1) {
                             return snapPositions[i];
                         }
