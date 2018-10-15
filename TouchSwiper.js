@@ -1,8 +1,8 @@
-let Hammer = require("hammerjs");
+import Hammer from "hammerjs";
 
-let VerticalScrollDetector = require("./VerticalScrollDetector.js");
+import VerticalScrollDetector from "./VerticalScrollDetector.js";
 
-let SwiperEngine = require("./SwiperEngine");
+import SwiperEngine from "./SwiperEngine";
 
 class TouchSwiper extends SwiperEngine {
 
@@ -159,4 +159,4 @@ class TouchSwiper extends SwiperEngine {
 }
 
 
-module.exports = TouchSwiper;
+export default TouchSwiper;

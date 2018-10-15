@@ -1,11 +1,11 @@
-var AbstractSwiper = require("./AbstractSwiper.js");
-var SimpleSwiper = require("./SimpleSwiper.js");
+import TouchSwiper from "./TouchSwiper";
+import SimpleSwiper from "./SimpleSwiper";
+import SwiperEngine from "./SwiperEngine";
 
-module.exports = {
-	TouchSwiper: TouchSwiper,
-	SimpleSwiper: SimpleSwiper,
-	SwiperEngine: SwiperEngine,
-
+export default {
+    TouchSwiper,
+    SimpleSwiper,
+    SwiperEngine,
 };
 
 

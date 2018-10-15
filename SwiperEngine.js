@@ -1,7 +1,7 @@
-require("gsap/EasePack");
-require("gsap/TweenLite");
+import "gsap/EasePack";
+import "gsap/TweenLite";
 
-let EventSystem = require("./EventSystem");
+import EventSystem from "./EventSystem";
 
 class SwiperEngine {
 
@@ -816,4 +816,4 @@ class SwiperEngine {
 
 }
 
-module.exports = SwiperEngine;
+export default SwiperEngine;

@@ -1,4 +1,4 @@
-let EventSystem = require("./EventSystem");
+import EventSystem from "./EventSystem";
 
 class SwiperArrowsController {
 
@@ -65,4 +65,4 @@ class SwiperArrowsController {
     }
 }
 
-module.exports = SwiperArrowsController;
+export default SwiperArrowsController;

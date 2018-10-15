@@ -1,5 +1,5 @@
-let EventSystem = require("./EventSystem");
-let SwiperPagerController = require("./SwiperPagerController");
+import EventSystem from "./EventSystem";
+import SwiperPagerController from "./SwiperPagerController";
 
 class SwiperPager {
 
@@ -80,4 +80,4 @@ class SwiperPager {
     }
 }
 
-module.exports = SwiperPager;
+export default SwiperPager;

@@ -1,4 +1,4 @@
-let TouchSwiper = require("./TouchSwiper");
+import TouchSwiper from "./TouchSwiper";
 
 class SimpleSwiper extends TouchSwiper {
 
@@ -117,4 +117,4 @@ class SimpleSwiper extends TouchSwiper {
     }
 }
 
-module.exports = SimpleSwiper;
+export default SimpleSwiper;

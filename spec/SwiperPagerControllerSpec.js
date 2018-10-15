@@ -1,5 +1,5 @@
-let SwiperEngine = require("../SwiperEngine");
-let SwiperPagerController = require("../SwiperPagerController");
+import SwiperEngine from "../SwiperEngine";
+import SwiperPagerController from "../SwiperPagerController";
 
 let swiper;
 

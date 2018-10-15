@@ -1,5 +1,5 @@
-let SwiperArrowsController = require("./SwiperArrowsController");
-let EventSystem = require("./EventSystem");
+import SwiperArrowsController from "./SwiperArrowsController";
+import EventSystem from "./EventSystem";
 
 class SwiperArrows {
 
@@ -61,4 +61,4 @@ class SwiperArrows {
 
 }
 
-module.exports = SwiperArrows;
+export default SwiperArrows;

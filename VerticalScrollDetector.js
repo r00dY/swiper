@@ -1,4 +1,4 @@
-var VerticalScrollDetector = new function() {
+let VerticalScrollDetector = new function() {
 
 	var initScroll;
 	var isScrolling = false;
@@ -28,4 +28,4 @@ var VerticalScrollDetector = new function() {
 
 };
 
-module.exports = VerticalScrollDetector;
+export default VerticalScrollDetector;
