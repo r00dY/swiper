@@ -489,6 +489,7 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
         swiper.moveTo(350 + 10, false);
         swiper.snap(-1, false);
         expect(swiper.slideCoord(1)).toBe(20);
+
     });
 
     it("snaps properly with positive velocity and closer to left item", function() {
@@ -570,6 +571,32 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
         swiper.snap(1, false);
         expect(swiper.slideCoord(0)).toBe(0);
     });
+
+    /**
+     * This is very special use case. So here we have slideable width 1800 and snap points are 1790, 300, 630, 980, 1350.
+     * We want slider to be positioned between 1790 and 1800 and snap (to left or right) and see if slider properly behaves on infinite slider boundary.
+     *
+     * snap points, slideable width, position, direction
+     * [ 1790, 300, 630, 980, 1350 ] 1800 1500 1
+     * 
+     */
+    it("snaps properly with positive velocity when current position is bigger than highest-value snap point", function() {
+        sliderIrregular(true);
+
+        swiper.moveTo(swiper.slideableWidth - 2, false);
+        swiper.snap(1, false);
+        expect(swiper.pos).toBe(300);
+    });
+
+    it("snaps properly with negative velocity when current position is bigger than highest-value snap point", function() {
+        sliderIrregular(true);
+
+        swiper.moveTo(swiper.slideableWidth - 2, false);
+        swiper.snap(-1, false);
+        expect(swiper.pos).toBe(1790);
+    });
+
+
 
     // initial position
 

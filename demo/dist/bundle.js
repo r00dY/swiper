@@ -2347,7 +2347,7 @@ class TouchSwiper extends SwiperEngine {
                         this.stopMovement();
                         this._panStartPos = this.pos;
 
-                        this._touchSpace.addEventListener('click', stopPropagationCallback);
+                        this._touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
                     }
 
                     if (isTouched && !swiped) {
@@ -2362,7 +2362,7 @@ class TouchSwiper extends SwiperEngine {
 
                         // Remove panning class when we're not touching slider
                         setTimeout(() => {
-                            this._touchSpace.removeEventListener('click', stopPropagationCallback);
+                            this._touchSpace.removeEventListener('click', stopPropagationCallback, true);
                         }, 0);
 
                         this._unblockScrolling();
@@ -5857,9 +5857,17 @@ class SwiperEngine {
                 snapPositions.push(this._getSlideSnapPos(n));
             }
 
+
+
+
+            let maxSnapPoint = Math.max.apply(Math, snapPositions);
+
             if (side === -1 || side === 1) {
                 for(let i = 0; i < snapPositions.length-1; i++) {
-                    if (snapPositions[i] < pos && pos < snapPositions[i + 1]) {
+                    if (
+                        (snapPositions[i] < pos && pos < snapPositions[i + 1]) ||
+                        (snapPositions[i] === maxSnapPoint && (pos > snapPositions[i] || pos < snapPositions[i + 1]))
+                    ) {
                         if (side === -1) {
                             return snapPositions[i];
                         }
