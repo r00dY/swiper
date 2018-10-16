@@ -72,11 +72,11 @@
 }
 
 
-.swiper-click-space-previous, .swiper-click-space-next {
+.left, .right {
   visibility: hidden; /* by default click spaces are hidde, should only be visible with .active class */
 }
 
-.swiper-click-space-previous.active, .swiper-click-space-next.active {
+.left.active, .right.active {
   visibility: visible; /* let's show click spaces when active */
 }
 
@@ -97,5 +97,5 @@
   cursor: pointer;
 }
 .pager {
-  display: flex; justify-content: space-evenly; width: 50%; margin-top: 20px;
+  display: flex; justify-content: space-evenly; width: 50%; margin-bottom: 40px;
 }

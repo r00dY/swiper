@@ -2,8 +2,6 @@ import React from "react";
 
 import SimpleSwiper from "./SimpleSwiper";
 import ReactTouchSwiper from "./ReactTouchSwiper";
-import SwiperArrows from "./SwiperArrows";
-import SwiperPager from "./SwiperPager";
 
 class ReactSimpleSwiper extends ReactTouchSwiper {
 
@@ -29,16 +27,7 @@ class ReactSimpleSwiper extends ReactTouchSwiper {
         if (this.props.enableTouch) {
             this.slider.enableTouch();
         }
-
-        if (this.props.arrows) {
-            this.arrows = new SwiperArrows(this.slider);
-            this.arrows.init();
-        }
-
-        if (this.props.enablePager) {
-            this.pager = new SwiperPager(this.slider);
-            this.pager.init();
-        }
+        this.count = this.props.children.length
     }
 }
 

@@ -23,9 +23,9 @@ class SwiperArrows {
         }
     }
 
-    init() {
-        this._clickSpacePrevious = document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
-        this._clickSpaceNext = document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
+    init(arrowLeft, arrowRight) {
+        this._clickSpacePrevious = arrowLeft ? arrowLeft : document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
+        this._clickSpaceNext = arrowRight ? arrowRight : document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
 
         if (this._clickSpaceNext) {
             this.swiperArrowsController.addEventListener('arrowNextActiveStatusChanged', (active) => {

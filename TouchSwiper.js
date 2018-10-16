@@ -155,7 +155,6 @@ class TouchSwiper extends SwiperEngine {
     _getSelectorForComponent(component) {
         return '.swiper-' + component + '[data-swiper="' + this._name + '"]';
     }
-
 }
 
 

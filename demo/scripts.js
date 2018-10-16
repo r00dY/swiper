@@ -1,8 +1,8 @@
 
-var SimpleSwiper = require("../SimpleSwiper.js");
+import SimpleSwiper from "../SimpleSwiper";
 
-var SwiperArrows = require("../SwiperArrows.js");
-var SwiperPager = require("../SwiperPager.js");
+import SwiperArrows from "../SwiperArrows";
+import SwiperPager from "../SwiperPager";
 
 /**
  * Normally of course all the JS code would go here 

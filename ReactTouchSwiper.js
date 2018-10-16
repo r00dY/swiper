@@ -1,15 +1,12 @@
 import React from "react";
 import TouchSwiper from "./TouchSwiper";
 import PropTypes from "prop-types";
-import SwiperArrows from "./SwiperArrows";
-import SwiperPager from "./SwiperPager";
 
 class ReactTouchSwiper extends React.Component {
     constructor(props) {
         super(props);
         this.slider = null;
-        this.arrows = null;
-        this.pager = null;
+        this.count = 0;
     }
 
     componentDidMount() {
@@ -32,16 +29,7 @@ class ReactTouchSwiper extends React.Component {
         if (this.props.enableTouch) {
             this.slider.enableTouch();
         }
-
-        if (this.props.arrows) {
-            this.arrows = new SwiperArrows(this.slider);
-            this.arrows.init();
-        }
-
-        if (this.props.enablePager) {
-            this.pager = new SwiperPager(this.slider);
-            this.pager.init();
-        }
+        this.count = this.props.children.length
     }
 
     addEventListener(eventName, listener) {
@@ -84,15 +72,6 @@ class ReactTouchSwiper extends React.Component {
         return this.slider.isSlideActive(n);
     }
 
-    renderPager() {
-        return (
-            <div className="pager">
-                <div className="swiper-pager-item" data-swiper={this.props.name}>
-                </div>
-            </div>
-        )
-    }
-
     render() {
         return (
             <div className="ReactSlider">
@@ -101,10 +80,6 @@ class ReactTouchSwiper extends React.Component {
                         {this.props.children}
                     </div>
                 </div>
-                {React.cloneElement(this.props.arrows[0], {className: this.props.arrows[0].props.className + ' swiper-click-space-previous', 'data-swiper': this.props.name})}
-                {React.cloneElement(this.props.arrows[1], { className: this.props.arrows[1].props.className + ' swiper-click-space-next', 'data-swiper': this.props.name} )}
-
-                {this.props.enablePager? this.renderPager() : null}
             </div>
         );
     }
@@ -115,8 +90,6 @@ ReactTouchSwiper.propTypes = {
     slideMargin: PropTypes.func.isRequired,
     slideSnapOffset: PropTypes.func.isRequired,
     displayNoneAutomatically: PropTypes.bool,
-    enablePager: PropTypes.bool,
-    arrows: PropTypes.arrayOf(PropTypes.element),
     enableTouch: PropTypes.bool,
     slideSize: PropTypes.func,
     rightOffset: PropTypes.func,

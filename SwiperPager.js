@@ -8,19 +8,20 @@ class SwiperPager {
         EventSystem.register(this);
         EventSystem.addEvent(this, 'pagerItemClicked');
 
+        this._pagerElements = [];
         this.swiperPagerController = new SwiperPagerController(this.swiper);
     }
 
 
-    init() {
-        let pagerItemTemplate = document.querySelector(this.swiper._getSelectorForComponent('pager-item'));
+    init(pagerItem) {
+        let pagerItemTemplate = pagerItem ? pagerItem : document.querySelector(this.swiper._getSelectorForComponent('pager-item'));
 
         for (let i = 0; i < this.swiper.count - 1; i++) {
             let pagerItem = pagerItemTemplate.cloneNode(true);
+            this._pagerElements.unshift(pagerItem);
             pagerItemTemplate.parentNode.insertBefore(pagerItem, pagerItemTemplate.nextSibling);
         }
-
-        this._pagerElements = document.querySelectorAll(this.swiper._getSelectorForComponent('pager-item'));
+        this._pagerElements.unshift(pagerItemTemplate);
 
         this._pagerItemsOnClickListeners = [];
 

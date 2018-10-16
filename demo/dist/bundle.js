@@ -65,8 +65,9 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
+"use strict";
 let EventSystem = {
 
     register: function(object) {
@@ -121,7 +122,7 @@ let EventSystem = {
     }
 };
 
-module.exports = EventSystem;
+/* harmony default export */ __webpack_exports__["a"] = (EventSystem);
 
 /***/ }),
 /* 1 */
@@ -2101,13 +2102,18 @@ module.exports = g;
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(global) {
-var SimpleSwiper = __webpack_require__(4);
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SimpleSwiper__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__SwiperArrows__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__SwiperPager__ = __webpack_require__(12);
 
-var SwiperArrows = __webpack_require__(10);
-var SwiperPager = __webpack_require__(12);
+
+
+
+
 
 /**
  * Normally of course all the JS code would go here 
@@ -2115,22 +2121,24 @@ var SwiperPager = __webpack_require__(12);
  * of education I'll put all the code in .html file.
  */
 
-global.SimpleSwiper = SimpleSwiper;
+global.SimpleSwiper = __WEBPACK_IMPORTED_MODULE_0__SimpleSwiper__["a" /* default */];
 
-global.SwiperArrows = SwiperArrows;
+global.SwiperArrows = __WEBPACK_IMPORTED_MODULE_1__SwiperArrows__["a" /* default */];
 
-global.SwiperPager = SwiperPager;
+global.SwiperPager = __WEBPACK_IMPORTED_MODULE_2__SwiperPager__["a" /* default */];
 
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(1)))
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-let TouchSwiper = __webpack_require__(5);
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__TouchSwiper__ = __webpack_require__(5);
 
-class SimpleSwiper extends TouchSwiper {
+
+class SimpleSwiper extends __WEBPACK_IMPORTED_MODULE_0__TouchSwiper__["a" /* default */] {
 
     constructor(name) {
         super(name);
@@ -2247,19 +2255,24 @@ class SimpleSwiper extends TouchSwiper {
     }
 }
 
-module.exports = SimpleSwiper;
+/* harmony default export */ __webpack_exports__["a"] = (SimpleSwiper);
 
 /***/ }),
 /* 5 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-let Hammer = __webpack_require__(6);
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hammerjs__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hammerjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_hammerjs__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VerticalScrollDetector_js__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__SwiperEngine__ = __webpack_require__(8);
 
-let VerticalScrollDetector = __webpack_require__(7);
 
-let SwiperEngine = __webpack_require__(8);
 
-class TouchSwiper extends SwiperEngine {
+
+
+
+class TouchSwiper extends __WEBPACK_IMPORTED_MODULE_2__SwiperEngine__["a" /* default */] {
 
     constructor(name) {
         super();
@@ -2272,9 +2285,9 @@ class TouchSwiper extends SwiperEngine {
         if (this._enabled) { return; }
         this._enabled = true;
 
-        this._mc = new Hammer(this._touchSpace, { domEvents: false });
-        this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
-        this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
+        this._mc = new __WEBPACK_IMPORTED_MODULE_0_hammerjs___default.a(this._touchSpace, { domEvents: false });
+        this._mc.get('pan').set({direction: __WEBPACK_IMPORTED_MODULE_0_hammerjs___default.a.DIRECTION_HORIZONTAL, threshold: 20});
+        this._mc.get('swipe').set({direction: __WEBPACK_IMPORTED_MODULE_0_hammerjs___default.a.DIRECTION_HORIZONTAL, threshold: 20});
 
         let swiped = false;
 
@@ -2333,7 +2346,7 @@ class TouchSwiper extends SwiperEngine {
 
                 case "panleft":
                 case "panright":
-                    if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
+                    if (__WEBPACK_IMPORTED_MODULE_1__VerticalScrollDetector_js__["a" /* default */].isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
 
                     if (!isTouched) {
 
@@ -2395,26 +2408,25 @@ class TouchSwiper extends SwiperEngine {
 
     _blockScrolling() {
         if (this._mc) {
-            this._mc.get('pan').set({direction: Hammer.DIRECTION_ALL});
-            this._mc.get('swipe').set({direction: Hammer.DIRECTION_ALL});
+            this._mc.get('pan').set({direction: __WEBPACK_IMPORTED_MODULE_0_hammerjs___default.a.DIRECTION_ALL});
+            this._mc.get('swipe').set({direction: __WEBPACK_IMPORTED_MODULE_0_hammerjs___default.a.DIRECTION_ALL});
         }
     };
 
     _unblockScrolling() {
         if (this._mc) {
-            this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL});
-            this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL});
+            this._mc.get('pan').set({direction: __WEBPACK_IMPORTED_MODULE_0_hammerjs___default.a.DIRECTION_HORIZONTAL});
+            this._mc.get('swipe').set({direction: __WEBPACK_IMPORTED_MODULE_0_hammerjs___default.a.DIRECTION_HORIZONTAL});
         }
     };
 
     _getSelectorForComponent(component) {
         return '.swiper-' + component + '[data-swiper="' + this._name + '"]';
     }
-
 }
 
 
-module.exports = TouchSwiper;
+/* harmony default export */ __webpack_exports__["a"] = (TouchSwiper);
 
 /***/ }),
 /* 6 */
@@ -5068,9 +5080,10 @@ if (true) {
 
 /***/ }),
 /* 7 */
-/***/ (function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-var VerticalScrollDetector = new function() {
+"use strict";
+let VerticalScrollDetector = new function() {
 
 	var initScroll;
 	var isScrolling = false;
@@ -5100,17 +5113,23 @@ var VerticalScrollDetector = new function() {
 
 };
 
-module.exports = VerticalScrollDetector;
+/* harmony default export */ __webpack_exports__["a"] = (VerticalScrollDetector);
 
 
 /***/ }),
 /* 8 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-__webpack_require__(9);
-__webpack_require__(2);
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gsap_EasePack__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_gsap_EasePack___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_gsap_EasePack__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gsap_TweenLite__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_gsap_TweenLite___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_gsap_TweenLite__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EventSystem__ = __webpack_require__(0);
 
-let EventSystem = __webpack_require__(0);
+
+
+
 
 class SwiperEngine {
 
@@ -5143,15 +5162,15 @@ class SwiperEngine {
         this._activeSlidesString = undefined; // comma separated list of active slides indexes
         this._visibleSlidesString = undefined; // comma separated list of active slides indexes
 
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'move');
-        EventSystem.addEvent(this, 'animationStart');
-        EventSystem.addEvent(this, 'animationEnd');
-        EventSystem.addEvent(this, 'stillnessChange');
-        EventSystem.addEvent(this, 'touchdown');
-        EventSystem.addEvent(this, 'touchup');
-        EventSystem.addEvent(this, 'activeSlidesChange');
-        EventSystem.addEvent(this, 'visibleSlidesChange');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].register(this);
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'move');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'animationStart');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'animationEnd');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'stillnessChange');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'touchdown');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'touchup');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'activeSlidesChange');
+        __WEBPACK_IMPORTED_MODULE_2__EventSystem__["a" /* default */].addEvent(this, 'visibleSlidesChange');
     }
 
     set containerSizeFunction(containerSizeFunction) {
@@ -5925,7 +5944,7 @@ class SwiperEngine {
 
 }
 
-module.exports = SwiperEngine;
+/* harmony default export */ __webpack_exports__["a"] = (SwiperEngine);
 
 
 /***/ }),
@@ -6319,21 +6338,24 @@ var _gsScope = (typeof(module) !== "undefined" && module.exports && typeof(globa
 
 /***/ }),
 /* 10 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-let SwiperArrowsController = __webpack_require__(11);
-let EventSystem = __webpack_require__(0);
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__SwiperArrowsController__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__EventSystem__ = __webpack_require__(0);
+
+
 
 class SwiperArrows {
 
     constructor(swiper, animated = true) {
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'clickSpaceNextClicked');
-        EventSystem.addEvent(this, 'clickSpacePreviousClicked');
+        __WEBPACK_IMPORTED_MODULE_1__EventSystem__["a" /* default */].register(this);
+        __WEBPACK_IMPORTED_MODULE_1__EventSystem__["a" /* default */].addEvent(this, 'clickSpaceNextClicked');
+        __WEBPACK_IMPORTED_MODULE_1__EventSystem__["a" /* default */].addEvent(this, 'clickSpacePreviousClicked');
 
         this.swiper = swiper;
         this.animated = animated;
-        this.swiperArrowsController = new SwiperArrowsController(this.swiper);
+        this.swiperArrowsController = new __WEBPACK_IMPORTED_MODULE_0__SwiperArrowsController__["a" /* default */](this.swiper);
 
         this.clickNextListener = () => {
             this.swiperArrowsController.clickNext();
@@ -6346,9 +6368,9 @@ class SwiperArrows {
         }
     }
 
-    init() {
-        this._clickSpacePrevious = document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
-        this._clickSpaceNext = document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
+    init(arrowLeft, arrowRight) {
+        this._clickSpacePrevious = arrowLeft ? arrowLeft : document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
+        this._clickSpaceNext = arrowRight ? arrowRight : document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
 
         if (this._clickSpaceNext) {
             this.swiperArrowsController.addEventListener('arrowNextActiveStatusChanged', (active) => {
@@ -6384,20 +6406,22 @@ class SwiperArrows {
 
 }
 
-module.exports = SwiperArrows;
+/* harmony default export */ __webpack_exports__["a"] = (SwiperArrows);
 
 /***/ }),
 /* 11 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-let EventSystem = __webpack_require__(0);
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__EventSystem__ = __webpack_require__(0);
+
 
 class SwiperArrowsController {
 
     constructor(swiper, animated) {
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'arrowNextActiveStatusChanged');
-        EventSystem.addEvent(this, 'arrowPreviousActiveStatusChanged');
+        __WEBPACK_IMPORTED_MODULE_0__EventSystem__["a" /* default */].register(this);
+        __WEBPACK_IMPORTED_MODULE_0__EventSystem__["a" /* default */].addEvent(this, 'arrowNextActiveStatusChanged');
+        __WEBPACK_IMPORTED_MODULE_0__EventSystem__["a" /* default */].addEvent(this, 'arrowPreviousActiveStatusChanged');
 
         this.swiper = swiper;
         this.animated = animated;
@@ -6457,35 +6481,39 @@ class SwiperArrowsController {
     }
 }
 
-module.exports = SwiperArrowsController;
+/* harmony default export */ __webpack_exports__["a"] = (SwiperArrowsController);
 
 /***/ }),
 /* 12 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-let EventSystem = __webpack_require__(0);
-let SwiperPagerController = __webpack_require__(13);
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__EventSystem__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__SwiperPagerController__ = __webpack_require__(13);
+
+
 
 class SwiperPager {
 
     constructor(swiper) {
         this.swiper = swiper;
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'pagerItemClicked');
+        __WEBPACK_IMPORTED_MODULE_0__EventSystem__["a" /* default */].register(this);
+        __WEBPACK_IMPORTED_MODULE_0__EventSystem__["a" /* default */].addEvent(this, 'pagerItemClicked');
 
-        this.swiperPagerController = new SwiperPagerController(this.swiper);
+        this._pagerElements = [];
+        this.swiperPagerController = new __WEBPACK_IMPORTED_MODULE_1__SwiperPagerController__["a" /* default */](this.swiper);
     }
 
 
-    init() {
-        let pagerItemTemplate = document.querySelector(this.swiper._getSelectorForComponent('pager-item'));
+    init(pagerItem) {
+        let pagerItemTemplate = pagerItem ? pagerItem : document.querySelector(this.swiper._getSelectorForComponent('pager-item'));
 
         for (let i = 0; i < this.swiper.count - 1; i++) {
             let pagerItem = pagerItemTemplate.cloneNode(true);
+            this._pagerElements.unshift(pagerItem);
             pagerItemTemplate.parentNode.insertBefore(pagerItem, pagerItemTemplate.nextSibling);
         }
-
-        this._pagerElements = document.querySelectorAll(this.swiper._getSelectorForComponent('pager-item'));
+        this._pagerElements.unshift(pagerItemTemplate);
 
         this._pagerItemsOnClickListeners = [];
 
@@ -6545,21 +6573,23 @@ class SwiperPager {
     }
 }
 
-module.exports = SwiperPager;
+/* harmony default export */ __webpack_exports__["a"] = (SwiperPager);
 
 /***/ }),
 /* 13 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-let EventSystem = __webpack_require__(0);
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__EventSystem__ = __webpack_require__(0);
+
 
 class SwiperPagerController {
     constructor(swiper, animated) {
         this.swiper = swiper;
         this.animated = animated;
         this.activeElements = [];
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'activeElementsChanged');
+        __WEBPACK_IMPORTED_MODULE_0__EventSystem__["a" /* default */].register(this);
+        __WEBPACK_IMPORTED_MODULE_0__EventSystem__["a" /* default */].addEvent(this, 'activeElementsChanged');
 
         this.swiper.addEventListener('activeSlidesChange', () => {
             this._activeElementsChanged();
@@ -6581,7 +6611,7 @@ class SwiperPagerController {
     }
 }
 
-module.exports = SwiperPagerController;
+/* harmony default export */ __webpack_exports__["a"] = (SwiperPagerController);
 
 /***/ })
 /******/ ]);

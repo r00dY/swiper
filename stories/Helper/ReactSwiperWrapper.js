@@ -1,22 +1,36 @@
 import React from "react";
 import ReactSimpleSwiper from "../../ReactSimpleSwiper";
-import "./ReactSliderWrapper.scss"
+import "./ReactSwiperWrapper.scss"
+import SwiperArrows from "../../SwiperArrows";
+import SwiperPager from "../../SwiperPager";
 
-class ReactSliderWrapper extends React.Component {
+class ReactSwiperWrapper extends React.Component {
     constructor(props) {
         super(props);
         this.slider = React.createRef();
+
+        this.arrowLeft = React.createRef();
+        this.arrowRight = React.createRef();
+        this.pagerItem = React.createRef();
+
     }
 
     goToSlide(n) {
         this.slider.current.moveToSlide(n -1);
     }
 
+    componentDidMount() {
+        this.arrows = new SwiperArrows(this.slider.current);
+        this.arrows.init(this.arrowLeft.current, this.arrowRight.current);
+
+        this.pager = new SwiperPager(this.slider.current);
+        this.pager.init(this.pagerItem.current);
+    }
+
     render() {
         return (
             <div>
                 <ReactSimpleSwiper
-                    enablePager={true}
                     enableTouch={true}
                     displayNoneAutomatically={this.props.displayNoneAutomatically}
                     name='swiper-1'
@@ -41,16 +55,21 @@ class ReactSliderWrapper extends React.Component {
                         return 40;
                     }}
                     snapOnlyToAdjacentSlide={true}
-
-                    arrows={[
-                        <button>PREV</button>,
-                        <button>NEXT</button>
-                    ]}
-
                     infinite={this.props.infinite}
                 >
                     {this.props.slides}
                 </ReactSimpleSwiper>
+
+                <div className="pager">
+                    <div className="swiper-pager-item" ref={this.pagerItem}>
+                        <div className="pager-dot"></div>
+                    </div>
+                </div>
+
+                <button className={"left"} ref={this.arrowLeft}>Click previous</button>
+                <button className={"right"} ref={this.arrowRight}>Click next</button>
+
+                <br />
                 <button onClick={this.goToSlide.bind(this, 1)}>Go to first slide</button>
                 <button onClick={this.goToSlide.bind(this, this.props.slides.length)}>Go to last slide</button>
             </div>
@@ -58,4 +77,4 @@ class ReactSliderWrapper extends React.Component {
     }
 }
 
-export default ReactSliderWrapper;
+export default ReactSwiperWrapper;
