@@ -2,7 +2,7 @@
     "name": "simpleswiper",
     "description": "Super duper swiper",
     "author": "Andrzej Dąbrowski <a.r.dabrowski@gmail.com>",
-    "version": "0.5.7",
+    "version": "0.6.0",
     "main": "index.js",
     "dependencies": {
         "browser-sync": "^2.18.13",
