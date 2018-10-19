@@ -4,7 +4,7 @@ import SwiperEngine from "./SwiperEngine";
 import ReactSimpleSwiper from './presets/React/ReactSimpleSwiper';
 import ReactFadeSwiper from './presets/React/ReactFadeSwiper';
 
-export default {
+export {
     TouchSwiper,
     SimpleSwiper,
     SwiperEngine,
