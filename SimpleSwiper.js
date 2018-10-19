@@ -2,11 +2,11 @@ import TouchSwiper from "./TouchSwiper";
 
 class SimpleSwiper extends TouchSwiper {
 
-    constructor(name) {
-        super(name);
+    constructor(touchSpace, container) {
+        super(touchSpace);
 
-        this._container = document.querySelector(this._getSelectorForComponent('container'));
-        this._containerInner = this._container.querySelector('.swiper-items');
+        this._container = container;
+        this._containerInner = container.firstChild;
         this._items = this._containerInner.children;
 
         this.addEventListener('move', () => {

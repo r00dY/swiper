@@ -13,9 +13,7 @@ class SwiperPager {
     }
 
 
-    init(pagerItem) {
-        let pagerItemTemplate = pagerItem ? pagerItem : document.querySelector(this.swiper._getSelectorForComponent('pager-item'));
-
+    init(pagerItemTemplate) {
         for (let i = 0; i < this.swiper.count - 1; i++) {
             let pagerItem = pagerItemTemplate.cloneNode(true);
             this._pagerElements.unshift(pagerItem);
@@ -71,8 +69,10 @@ class SwiperPager {
     deinit() {
         for (let i = 0; i < this._pagerElements.length; i++) {
             // Let's leave first element alive, just unbind listener
+            // and remove 'active' class from first element. It would be added during "init" anyways
             if (i === 0) {
                 this._pagerElements[i].removeEventListener('click', this._pagerItemsOnClickListeners[i]);
+                this._pagerElements[i].classList.remove('active');
             }
             else { // rest elements -> out.
                 this._pagerElements[i].remove();

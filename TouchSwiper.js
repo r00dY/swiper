@@ -6,11 +6,10 @@ import SwiperEngine from "./SwiperEngine";
 
 class TouchSwiper extends SwiperEngine {
 
-    constructor(name) {
+    constructor(touchSpace) {
         super();
 
-        this._name = name;
-        this._touchSpace = document.querySelector(this._getSelectorForComponent('touch-space'));
+        this._touchSpace = touchSpace;
     }
 
     enableTouch() {
@@ -151,10 +150,6 @@ class TouchSwiper extends SwiperEngine {
             this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL});
         }
     };
-
-    _getSelectorForComponent(component) {
-        return '.swiper-' + component + '[data-swiper="' + this._name + '"]';
-    }
 }
 
 

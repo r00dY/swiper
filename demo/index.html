@@ -8,7 +8,7 @@
 
     <title>Swiper demo</title>
 
-    <script src="dist/bundle.js"></script>
+    <script src="../dist/bundle.js"></script>
 
     <script
             src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
@@ -916,7 +916,7 @@
             arrows.init();
 
             let pager = new SwiperPager(swiperNew1);
-            pager.init();
+            pager.init(document.querySelector(".swiper-pager-item[data-swiper='demo-new-1']"));
         });
 
     </script>
@@ -1013,7 +1013,7 @@
            arrows.init();
 
            let pager = new SwiperPager(swiperNew2);
-           pager.init();
+           pager.init(document.querySelector(".swiper-pager-item[data-swiper='demo-new-2']"));
        });
 
     </script>
