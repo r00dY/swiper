@@ -22,7 +22,9 @@ class ReactSimpleSwiper extends React.Component {
         this.slider.displayNoneAutomatically = this.props.displayNoneAutomatically;
         this.slider.snapOnlyToAdjacentSlide = this.props.snapOnlyToAdjacentSlide;
 
-        this.slider.layout();
+        if (this.props.relayout) {
+            this.slider.layout();
+        }
     }
 
     componentDidMount() {
@@ -54,6 +56,18 @@ class ReactSimpleSwiper extends React.Component {
         this.slider.infinite = this.props.infinite;
 
         this.slider.count = this.props.children.length;
+
+        this.slider.addEventListener('visibleSlidesChange', () => {
+            if (this.props.onVisibleSlidesChange) {
+                this.props.onVisibleSlidesChange();
+            }
+        });
+
+        this.slider.addEventListener('activeSlidesChange', () => {
+            if (this.props.onActiveSlidesChange) {
+                this.props.onActiveSlidesChange();
+            }
+        });
 
         this.slider.addEventListener('move', () => {
             if (this.props.onMove) {
@@ -95,6 +109,11 @@ class ReactSimpleSwiper extends React.Component {
         this.slider.moveToSlide(n);
     }
 
+
+    visibleSlides() {
+        return this.slider.visibleSlides();
+    }
+
     render() {
         return (
             <div className={this.props.containerClasses} style={this.props.containerStyles} ref={this.container}>
@@ -116,18 +135,21 @@ ReactSimpleSwiper.propTypes = {
     slideSize: PropTypes.func,
     slideMargin: PropTypes.func.isRequired,
     slideSnapOffset: PropTypes.func.isRequired,
-    displayNoneAutomatically: PropTypes.bool,
-    enableTouch: PropTypes.bool,
     rightOffset: PropTypes.func,
     leftOffset: PropTypes.func,
+    displayNoneAutomatically: PropTypes.bool,
+    enableTouch: PropTypes.bool,
     infinite: PropTypes.bool,
     snapOnlyToAdjacentSlide: PropTypes.bool,
     children: PropTypes.arrayOf(PropTypes.element).isRequired,
-    touchSpace: PropTypes.element,
     containerClasses: PropTypes.string,
     containerStyles: PropTypes.object,
     innerContainerClasses: PropTypes.string,
     initialSlide: PropTypes.number,
+    onMove: PropTypes.func,
+    onVisibleSlidesChange: PropTypes.func,
+    onActiveSlidesChange: PropTypes.func,
+    relayout: PropTypes.bool,
 };
 
 export default ReactSimpleSwiper;

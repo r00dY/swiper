@@ -22,18 +22,22 @@ class SimpleSwiperStorybookContainer extends React.Component {
             snapOnlyToAdjacentSlide: true,
             infinite: true,
             enableTouch: true,
+            relayout: false,
+            activeSlides: []
         }
     };
 
     handleStateChange(e, param) {
         this.setState({
-            [param]: parseInt(e.target.value)
+            [param]: parseInt(e.target.value),
+            relayout: true
         })
     }
 
     handleCheckbox(e, param) {
         this.setState({
-            [param]: e.target.checked
+            [param]: e.target.checked,
+            relayout: true
         })
     }
 
@@ -45,6 +49,7 @@ class SimpleSwiperStorybookContainer extends React.Component {
 
     componentDidMount() {
         this.setUpArrowsAndPager();
+        this.onMove();
     }
 
     setUpArrowsAndPager() {
@@ -53,6 +58,30 @@ class SimpleSwiperStorybookContainer extends React.Component {
 
         this.pager = new SwiperPager(this.slider.current);
         this.pager.init(this.pagerItem.current);
+    }
+
+    onVisibleSlidesChange() {
+        if (this.slider.current) {
+            console.log('visible slides changed', this.slider.current.visibleSlides());
+        }
+    }
+
+    onActiveSlidesChange() {
+        if (this.slider.current) {
+            console.log('active slides changed', this.slider.current.activeSlides());
+        }
+    }
+
+    onMove() {
+        let activeSlides = [];
+        if (this.slider.current) {
+            activeSlides = this.slider.current.activeSlides();
+        }
+
+        this.setState({
+            activeSlides,
+            relayout: false
+        });
     }
 
     render() {
@@ -70,9 +99,16 @@ class SimpleSwiperStorybookContainer extends React.Component {
                     slideMargin={() => this.state.slideMargin}
                     snapOnlyToAdjacentSlide={this.state.snapOnlyToAdjacentSlide}
                     infinite={this.state.infinite}
+                    onMove={this.onMove.bind(this)}
+                    onActiveSlidesChange={this.onActiveSlidesChange.bind(this)}
+                    onVisibleSlidesChange={this.onVisibleSlidesChange.bind(this)}
+                    rerender={this.state.rerender}
                 >
                     {this.props.slides}
                 </ReactSimpleSwiper>
+
+                <div className='activeSlidesInfo'><span>Active slides:</span> {this.state.activeSlides.join(', ')}</div>
+
                 <div className="pager">
                     <div className="swiper-pager-item" ref={this.pagerItem}>
                         <div className="pager-dot"></div>

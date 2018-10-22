@@ -66,7 +66,7 @@ class SwiperEngine {
     }
 
     get slideSizeFunction() {
-        return this._slideSize;
+        return this._slideSizeFunction;
     }
 
     set slideMarginFunction(slideMarginFunction) {
@@ -86,13 +86,20 @@ class SwiperEngine {
         return this._slideSnapOffsetFunction;
     }
 
-
     set rightOffsetFunction(rightOffsetFunction) {
         this._rightOffsetFunction = rightOffsetFunction;
     }
 
+    get rightOffsetFunction() {
+        return this._rightOffsetFunction;
+    }
+
     set leftOffsetFunction(leftOffsetFunction) {
         this._leftOffsetFunction = leftOffsetFunction;
+    }
+
+    get leftOffsetFunction() {
+        return this._leftOffsetFunction;
     }
 
     set leftOffset(leftOffset) {
