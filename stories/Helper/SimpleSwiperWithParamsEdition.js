@@ -72,6 +72,7 @@ class SimpleSwiperWithParamsEdition extends React.Component {
         }
     }
 
+    /** just an exemplary usage of onMove with relayout set to false, which in the end allows to call setState */
     onMove() {
         let activeSlides = [];
         if (this.slider.current) {

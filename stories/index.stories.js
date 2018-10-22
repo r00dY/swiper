@@ -5,6 +5,7 @@ import "./storybookSlider.scss";
 import ReactSwiperExternalTouchSpace from "./Helper/ReactSwiperExternalTouchSpace";
 import ReactSimpleSwiper from "../presets/React/ReactSimpleSwiper";
 import SimpleSwiperWithDynamicSlides from "./Helper/SimpleSwiperWithDynamicSlides";
+import ReactFadeSwiper from "../presets/React/ReactFadeSwiper";
 
 
 storiesOf('Slider', module)
@@ -123,6 +124,29 @@ storiesOf('Slider presets', module)
                 <div className="slide"></div>
                 <div className="slide"></div>
             </ReactSimpleSwiper>
+        </div>
+    )
+    .add('fade swiper', () =>
+        <div>
+            <h1>Fade in swiper preset.</h1>
+            <p>Touch swiper preset exemplary usage. All styles are included only in storybook. </p>
+            <ReactFadeSwiper
+                containerClasses='ReactTouchSwiper'
+                containerSize={() => 500}
+                slideSize={() => 500}
+                rightOffset={() => 100}
+                leftOffset={() => 50}
+                slideSnapOffset={() => 50}
+                slideMargin={() => 20}
+                infinite={true}
+            >
+                <div className='slideImageWrapper' style={{background: 'red'}}><a href="#">Link</a></div>
+                <div className='slideImageWrapper' style={{background: 'blue'}}><a href="#">Link1</a></div>
+                <div className='slideImageWrapper' style={{background: 'green'}}><a href="#">Link2</a></div>
+                <div className='slideImageWrapper' style={{background: 'yellow'}}><a href="#">Link3</a></div>
+                <div className='slideImageWrapper' style={{background: 'purple'}}><a href="#">Link4</a></div>
+                <div className='slideImageWrapper' style={{background: 'orange'}}><a href="#">Link5</a></div>
+            </ReactFadeSwiper>
         </div>
     )
 ;
