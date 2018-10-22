@@ -22,6 +22,10 @@ class ReactSwiperExternalTouchSpace extends React.Component {
     }
 
     componentDidUpdate() {
+        this.slider.infinite = this.props.infinite;
+        this.slider.displayNoneAutomatically = this.props.displayNoneAutomatically;
+        this.slider.snapOnlyToAdjacentSlide = this.props.snapOnlyToAdjacentSlide;
+
         this.slider.layout();
     }
 

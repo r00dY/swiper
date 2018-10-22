@@ -1,9 +1,10 @@
 import React from 'react';
 import {storiesOf} from '@storybook/react';
-import SimpleSwiperStorybookContainer from "./Helper/SimpleSwiperStorybookContainer";
+import SimpleSwiperWithParamsEdition from "./Helper/SimpleSwiperWithParamsEdition";
 import "./storybookSlider.scss";
 import ReactSwiperExternalTouchSpace from "./Helper/ReactSwiperExternalTouchSpace";
 import ReactSimpleSwiper from "../presets/React/ReactSimpleSwiper";
+import SimpleSwiperWithDynamicSlides from "./Helper/SimpleSwiperWithDynamicSlides";
 
 
 storiesOf('Slider', module)
@@ -16,7 +17,7 @@ storiesOf('Slider', module)
             <p>Slide size set up to 200 <b>DOES NOT</b> mean 200px. Container size is a point of reference.</p>
             <p>Also quite important fact is that every slide can have different width.</p>
 
-            <SimpleSwiperStorybookContainer
+            <SimpleSwiperWithParamsEdition
                 slides={[
                     <div className="slide"><a href="#">Link</a></div>,
                     <div className="slide"><a href="#">Link</a></div>,
@@ -53,7 +54,49 @@ storiesOf('Slider', module)
         </div>
     )
     .add('slider with different slides width', () =>
-    {})
+        <div className='ReactSlider__example'>
+            <h1>Swiper with different slide widths.</h1>
+            <p>For presentation purpose every n slide has width of 200 + 50 * n ( starting from 0, of course ) </p>
+            <ReactSimpleSwiper
+                containerClasses='swiper'
+                slideSize={(n) => 200 + 50 * n}
+                rightOffset={() => 20}
+                leftOffset={() => 20}
+                slideSnapOffset={() => 20}
+                slideMargin={() => 20}
+                infinite={true}
+            >
+                <div className="slide"><a href="#">Link</a></div>
+                <div className="slide"><a href="#">Link</a></div>
+                <div className="slide"><a href="#">Link</a></div>
+                <div className="slide"><a href="#">Link</a></div>
+                <div className="slide"></div>
+                <div className="slide"></div>
+                <div className="slide"></div>
+                <div className="slide"></div>
+                <div className="slide"></div>
+                <div className="slide"></div>
+            </ReactSimpleSwiper>
+        </div>
+    )
+    .add('slider with adding dynamic slides', () =>
+        <div>
+            <h1>Click the button</h1>
+            <p>Slides will be added to the end of a queue.</p>
+            <SimpleSwiperWithDynamicSlides slides={[
+                <div className="slide"><a href="#">Link</a></div>,
+                <div className="slide"><a href="#">Link</a></div>,
+                <div className="slide"><a href="#">Link</a></div>,
+                <div className="slide"><a href="#">Link</a></div>,
+                <div className="slide"></div>,
+                <div className="slide"></div>,
+                <div className="slide"></div>,
+                <div className="slide"></div>,
+                <div className="slide"></div>,
+                <div className="slide"></div>
+            ]} />
+        </div>
+    )
 
 storiesOf('Slider presets', module)
     .add('simple swiper', () =>
@@ -62,12 +105,12 @@ storiesOf('Slider presets', module)
             <p>SimpleSwiper preset exemplary usage. All styles are included only in storybook. </p>
             <ReactSimpleSwiper
                 containerClasses='swiper'
-                slideSize={() => 200}
-                rightOffset={() => 20}
-                leftOffset={() => 20}
-                slideSnapOffset={() => 30}
-                slideMargin={() => 40}
-                infinite={true}
+                slideSize={() => 500}
+                rightOffset={() => 100}
+                leftOffset={() => 50}
+                slideSnapOffset={() => 50}
+                slideMargin={() => 20}
+                infinite={false}
             >
                 <div className="slide"><a href="#">Link</a></div>
                 <div className="slide"><a href="#">Link</a></div>

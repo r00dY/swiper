@@ -3,7 +3,7 @@ import ReactSimpleSwiper from "../../presets/React/ReactSimpleSwiper";
 import SwiperArrows from "../../SwiperArrows";
 import SwiperPager from "../../SwiperPager";
 
-class SimpleSwiperStorybookContainer extends React.Component {
+class SimpleSwiperWithParamsEdition extends React.Component {
     constructor(props) {
         super(props);
 
@@ -102,7 +102,7 @@ class SimpleSwiperStorybookContainer extends React.Component {
                     onMove={this.onMove.bind(this)}
                     onActiveSlidesChange={this.onActiveSlidesChange.bind(this)}
                     onVisibleSlidesChange={this.onVisibleSlidesChange.bind(this)}
-                    rerender={this.state.rerender}
+                    relayout={this.state.relayout}
                 >
                     {this.props.slides}
                 </ReactSimpleSwiper>
@@ -169,4 +169,4 @@ class SimpleSwiperStorybookContainer extends React.Component {
     }
 }
 
-export default SimpleSwiperStorybookContainer;
+export default SimpleSwiperWithParamsEdition;
