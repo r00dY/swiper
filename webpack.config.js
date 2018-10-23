@@ -3,14 +3,14 @@ var path = require('path');
 module.exports = {
 
     entry: {
-        'index': './index.js',
+        'bundle': './index.js',
         'react': './presets/React/index.js',
     },
     output: {
         libraryTarget: "umd",
         library: "SimpleSwiper",
         filename: '[name].js',
-        path: path.resolve(__dirname, 'dist'),
+        path: path.resolve(__dirname, './'),
     },
 
     externals: [
