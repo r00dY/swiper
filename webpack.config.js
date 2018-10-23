@@ -2,11 +2,14 @@ var path = require('path');
 
 module.exports = {
 
-    entry: './index.js',
+    entry: {
+        'index': './index.js',
+        'react': './presets/React/index.js',
+    },
     output: {
         libraryTarget: "umd",
         library: "SimpleSwiper",
-        filename: 'index.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
     },
 

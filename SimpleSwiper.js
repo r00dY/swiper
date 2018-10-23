@@ -6,7 +6,7 @@ class SimpleSwiper extends TouchSwiper {
         super(touchSpace);
 
         this._container = container;
-        this._containerInner = container.firstChild;
+        this._containerInner = container.firstElementChild;
         this._items = this._containerInner.children;
 
         this.addEventListener('move', () => {

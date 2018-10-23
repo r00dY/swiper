@@ -8,12 +8,11 @@
 
     <title>Swiper demo</title>
 
-    <script src="../dist/bundle.js"></script>
-
     <script
             src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
             crossorigin="anonymous"></script>
+    <script src="../dist/index.js"></script>
 
     <link rel="stylesheet" href="dist/style.css">
 
@@ -892,7 +891,7 @@
 
         document.addEventListener("DOMContentLoaded", function () {
 
-            var swiperNew1 = new SimpleSwiper('demo-new-1');
+            var swiperNew1 = new SimpleSwiper.SimpleSwiper(document.querySelector('[data-swiper="demo-new-1"]'), document.querySelector('[data-swiper="demo-new-1"]'));
             swiperNew1.slideSizeFunction = function(n) {
                 return 200 + n * 30;
             };
@@ -912,10 +911,10 @@
                swiperNew1.layout();
             });
 
-            let arrows = new SwiperArrows(swiperNew1);
-            arrows.init();
+            let arrows = new SimpleSwiper.SwiperArrows(swiperNew1);
+            arrows.init(document.querySelector('.swiper-click-space-previous'), document.querySelector('.swiper-click-space-next'));
 
-            let pager = new SwiperPager(swiperNew1);
+            let pager = new SimpleSwiper.SwiperPager(swiperNew1);
             pager.init(document.querySelector(".swiper-pager-item[data-swiper='demo-new-1']"));
         });
 
