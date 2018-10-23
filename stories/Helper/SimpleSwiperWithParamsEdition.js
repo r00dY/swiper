@@ -22,7 +22,6 @@ class SimpleSwiperWithParamsEdition extends React.Component {
             snapOnlyToAdjacentSlide: true,
             infinite: true,
             enableTouch: true,
-            relayout: false,
             activeSlides: []
         }
     };
@@ -30,24 +29,24 @@ class SimpleSwiperWithParamsEdition extends React.Component {
     handleStateChange(e, param) {
         this.setState({
             [param]: parseInt(e.target.value),
-            relayout: true
         })
     }
 
     handleCheckbox(e, param) {
         this.setState({
             [param]: e.target.checked,
-            relayout: true
         })
     }
 
     componentDidUpdate() {
+        this.slider.current.layout();
         this.arrows.deinit();
         this.pager.deinit();
         this.setUpArrowsAndPager();
     }
 
     componentDidMount() {
+        this.slider.current.layout();
         this.setUpArrowsAndPager();
         this.onMove();
     }
@@ -61,28 +60,19 @@ class SimpleSwiperWithParamsEdition extends React.Component {
     }
 
     onVisibleSlidesChange() {
-        if (this.slider.current) {
-            console.log('visible slides changed', this.slider.current.visibleSlides());
-        }
+        console.log('visible slides changed', this.slider.current.visibleSlides());
     }
 
     onActiveSlidesChange() {
-        if (this.slider.current) {
-            console.log('active slides changed', this.slider.current.activeSlides());
-        }
+        console.log('active slides changed', this.slider.current.activeSlides());
     }
 
-    /** just an exemplary usage of onMove with relayout set to false, which in the end allows to call setState */
     onMove() {
-        let activeSlides = [];
-        if (this.slider.current) {
-            activeSlides = this.slider.current.activeSlides();
+        if (this.state.activeSlides.join("-") !== this.slider.current.activeSlides().join("-")) {
+            this.setState({
+                activeSlides: this.slider.current.activeSlides(),
+            });
         }
-
-        this.setState({
-            activeSlides,
-            relayout: false
-        });
     }
 
     render() {
@@ -103,7 +93,6 @@ class SimpleSwiperWithParamsEdition extends React.Component {
                     onMove={this.onMove.bind(this)}
                     onActiveSlidesChange={this.onActiveSlidesChange.bind(this)}
                     onVisibleSlidesChange={this.onVisibleSlidesChange.bind(this)}
-                    relayout={this.state.relayout}
                 >
                     {this.props.slides}
                 </ReactSimpleSwiper>

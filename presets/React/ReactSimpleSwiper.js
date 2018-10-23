@@ -21,17 +21,9 @@ class ReactSimpleSwiper extends React.Component {
         this.slider.infinite = this.props.infinite;
         this.slider.displayNoneAutomatically = this.props.displayNoneAutomatically;
         this.slider.snapOnlyToAdjacentSlide = this.props.snapOnlyToAdjacentSlide;
-
-        if (this.props.relayout) {
-            this.slider.layout();
-        }
     }
 
     componentDidMount() {
-        this.layoutSlider();
-    }
-
-    layoutSlider() {
         this.slider = new SimpleSwiper(
             this.container.current,
             this.container.current
@@ -75,12 +67,14 @@ class ReactSimpleSwiper extends React.Component {
             }
         });
 
-        this.slider.layout();
-
         if (this.props.enableTouch) {
             this.slider.enableTouch();
         }
         this.count = this.props.children.length
+    }
+
+    layout() {
+        this.slider.layout();
     }
 
     /** This function is necessary for swiper arrows to work */

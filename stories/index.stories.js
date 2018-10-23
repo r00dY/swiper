@@ -6,6 +6,8 @@ import ReactSwiperExternalTouchSpace from "./Helper/ReactSwiperExternalTouchSpac
 import ReactSimpleSwiper from "../presets/React/ReactSimpleSwiper";
 import SimpleSwiperWithDynamicSlides from "./Helper/SimpleSwiperWithDynamicSlides";
 import ReactFadeSwiper from "../presets/React/ReactFadeSwiper";
+import SimpleSwiperContainer from "./Helper/SimpleSwiperContainer";
+import FadeSwiperContainer from "./Helper/FadeSwiperContainer";
 
 
 storiesOf('Slider', module)
@@ -58,26 +60,7 @@ storiesOf('Slider', module)
         <div className='ReactSlider__example'>
             <h1>Swiper with different slide widths.</h1>
             <p>For presentation purpose every n slide has width of 200 + 50 * n ( starting from 0, of course ) </p>
-            <ReactSimpleSwiper
-                containerClasses='swiper'
-                slideSize={(n) => 200 + 50 * n}
-                rightOffset={() => 20}
-                leftOffset={() => 20}
-                slideSnapOffset={() => 20}
-                slideMargin={() => 20}
-                infinite={true}
-            >
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-            </ReactSimpleSwiper>
+            <SimpleSwiperContainer slideSize={(n) => 200 + 50 * n} />
         </div>
     )
     .add('slider with adding dynamic slides', () =>
@@ -104,49 +87,14 @@ storiesOf('Slider presets', module)
         <div className='ReactSlider__example'>
             <h1>Simple swiper</h1>
             <p>SimpleSwiper preset exemplary usage. All styles are included only in storybook. </p>
-            <ReactSimpleSwiper
-                containerClasses='swiper'
-                slideSize={() => 500}
-                rightOffset={() => 100}
-                leftOffset={() => 50}
-                slideSnapOffset={() => 50}
-                slideMargin={() => 20}
-                infinite={false}
-            >
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"><a href="#">Link</a></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-                <div className="slide"></div>
-            </ReactSimpleSwiper>
+            <SimpleSwiperContainer slideSize={() => 500}/>
         </div>
     )
     .add('fade swiper', () =>
         <div>
             <h1>Fade in swiper preset.</h1>
             <p>Touch swiper preset exemplary usage. All styles are included only in storybook. </p>
-            <ReactFadeSwiper
-                containerClasses='ReactTouchSwiper'
-                containerSize={() => 500}
-                slideSize={() => 500}
-                rightOffset={() => 100}
-                leftOffset={() => 50}
-                slideSnapOffset={() => 50}
-                slideMargin={() => 20}
-                infinite={true}
-            >
-                <div className='slideImageWrapper' style={{background: 'red'}}><a href="#">Link</a></div>
-                <div className='slideImageWrapper' style={{background: 'blue'}}><a href="#">Link1</a></div>
-                <div className='slideImageWrapper' style={{background: 'green'}}><a href="#">Link2</a></div>
-                <div className='slideImageWrapper' style={{background: 'yellow'}}><a href="#">Link3</a></div>
-                <div className='slideImageWrapper' style={{background: 'purple'}}><a href="#">Link4</a></div>
-                <div className='slideImageWrapper' style={{background: 'orange'}}><a href="#">Link5</a></div>
-            </ReactFadeSwiper>
+            <FadeSwiperContainer />
         </div>
     )
 ;

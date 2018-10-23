@@ -2,9 +2,12 @@ import TouchSwiper from "./TouchSwiper";
 
 
 class FadeSwiper extends TouchSwiper {
-    layout(slides) {
+    constructor(touchSpace) {
+        super(touchSpace);
+        this.slides = Array.from(touchSpace.children);
+
         this.addEventListener('move', () => {
-            slides.forEach((slide, index) => {
+            this.slides.forEach((slide, index) => {
                 let visibility = this.slideVisibility(index);
 
                 if (visibility < 0.01) {
@@ -16,8 +19,6 @@ class FadeSwiper extends TouchSwiper {
                 }
             });
         });
-
-        super.layout();
     }
 }
 

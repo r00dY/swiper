@@ -7,21 +7,11 @@ class ReactFadeSwiper extends React.Component {
     constructor(props) {
         super(props);
         this.container = React.createRef();
-
-        this.bindSlides = this.bindSlides.bind(this);
-    }
-
-    bindSlides(el) {
-        this.slides.push(el);
     }
 
     componentDidUpdate() {
         this.slider.infinite = this.props.infinite;
         this.slider.snapOnlyToAdjacentSlide = this.props.snapOnlyToAdjacentSlide;
-
-        if (this.props.relayout) {
-            this.slider.layout(this.slides);
-        }
     }
 
     componentDidMount() {
@@ -45,8 +35,8 @@ class ReactFadeSwiper extends React.Component {
 
         this.slider.infinite = this.props.infinite;
 
-        this.slider.count = this.slides.length;
-        this.count = this.slides.length;
+        this.slider.count = this.props.children.length;
+        this.count = this.props.children.length;
 
         this.slider.addEventListener('visibleSlidesChange', () => {
             if (this.props.onVisibleSlidesChange) {
@@ -67,8 +57,10 @@ class ReactFadeSwiper extends React.Component {
         });
 
         this.slider.enableTouch();
+    }
 
-        this.slider.layout(this.slides);
+    layout() {
+        this.slider.layout();
     }
 
     /** This function is necessary for swiper arrows to work */
@@ -102,11 +94,9 @@ class ReactFadeSwiper extends React.Component {
     }
 
     render() {
-        this.slides = [];
-
         return (
             <div className={this.props.containerClasses} ref={this.container}>
-                {this.props.children.map(slide => <div ref={this.bindSlides}>{slide}</div>)}
+                {this.props.children}
             </div>
         );
     }

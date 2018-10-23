@@ -13,6 +13,14 @@ class SimpleSwiperWithDynamicSlides extends React.Component {
         this.slider = React.createRef();
     }
 
+    componentDidUpdate() {
+        this.slider.current.layout();
+    }
+    
+    componentDidMount() {
+        this.slider.current.layout();
+    }
+
     addNewSlide() {
         let slides = this.state.slides;
         slides.push(<div className="slide">Dynamically added slide</div>);
