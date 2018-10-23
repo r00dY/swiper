@@ -105,8 +105,8 @@ class ReactSimpleSwiper extends React.Component {
 
 
     /** This function is necessary for swiper pager to work */
-    moveToSlide(n) {
-        this.slider.moveToSlide(n);
+    moveToSlide(n, animated) {
+        this.slider.moveToSlide(n, animated);
     }
 
 
