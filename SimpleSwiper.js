@@ -2,8 +2,8 @@ import TouchSwiper from "./TouchSwiper";
 
 class SimpleSwiper extends TouchSwiper {
 
-    constructor(touchSpace, container) {
-        super(touchSpace);
+    constructor(touchSpace, container, gestureListener) {
+        super(touchSpace, gestureListener);
 
         this._container = container;
         this._containerInner = container.firstElementChild;

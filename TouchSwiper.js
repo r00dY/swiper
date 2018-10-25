@@ -1,24 +1,20 @@
-import Hammer from "hammerjs";
-
 import VerticalScrollDetector from "./VerticalScrollDetector.js";
 
 import SwiperEngine from "./SwiperEngine";
+import HammerGestureListener from "./HammerGestureListener";
 
 class TouchSwiper extends SwiperEngine {
 
-    constructor(touchSpace) {
+    constructor(touchSpace, gestureListener) {
         super();
 
         this._touchSpace = touchSpace;
+        this._gestureListener = gestureListener ? gestureListener : new HammerGestureListener(this._touchSpace);
     }
 
     enableTouch() {
         if (this._enabled) { return; }
         this._enabled = true;
-
-        this._mc = new Hammer(this._touchSpace, { domEvents: false });
-        this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
-        this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
 
         let swiped = false;
 
@@ -33,98 +29,81 @@ class TouchSwiper extends SwiperEngine {
         // maybe we should make this user-drag on all children
         // Users can easily do this in CSS for only touch devices. Easy.
 
-        this._mc.on("pan panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown", (ev) => {
+        let swipeLeftListener = (ev) => {
+            if (isTouched) {
+                this.snap(Math.abs(ev.velocityX) * 1000, true);
+                swiped = true;
+            }
+        };
 
-            // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
-            // https://github.com/hammerjs/hammer.js/issues/1050
-            if (ev.srcEvent.type == "pointercancel") {
-                return;
+        let swipeRightListener = (ev) => {
+            if (isTouched) {
+                this.snap(-Math.abs(ev.velocityX) * 1000, true);
+                swiped = true;
+            }
+        };
+
+        let panRightListener = (ev) => {
+            if (VerticalScrollDetector.isScrolling()) { return; } // if body is scrolling then not allow for horizontal movement
+
+            if (!isTouched) {
+                this.touchdown();
+
+                this._gestureListener.blockScrolling();
+
+                isTouched = true;
+                swiped = false;
+
+                this.stopMovement();
+                this._panStartPos = this.pos;
+
+                this._touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
             }
 
-            let delta = ev.deltaX;
+            if (isTouched && !swiped) {
+                this.moveTo(this._panStartPos - ev.deltaX, false);
+            }
+        };
 
-            switch (ev.type) {
-                case "swipeleft":
-                case "swipeup":
+        let panEndListener = (ev) => {
+            if (isTouched) {
 
-                    if (isTouched) {
-                        this.snap(Math.abs(ev.velocityX) * 1000, true);
-                        swiped = true;
-                    }
+                // Remove panning class when we're not touching slider
+                setTimeout(() => {
+                    this._touchSpace.removeEventListener('click', stopPropagationCallback, true);
+                }, 0);
 
-                    break;
+                this._gestureListener.unblockScrolling();
 
-                case "swiperight":
-                case "swipedown":
+                isTouched = false;
 
-                    if (isTouched) {
-                        this.snap(-Math.abs(ev.velocityX) * 1000, true);
-                        swiped = true;
-                    }
+                if (!swiped) {
+                    this.snap(0, true);
+                }
 
-                    break;
+                swiped = false;
 
-                case "panstart":
-                    break;
+                this.touchup();
+            }
+        }
 
-                case "panup":
-                case "pandown":
-                    // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
-                    // However, if we gave up returning when _isTouched is false, Android would too eagerly start "panning" instead of waiting for scroll.
-                    if (!isTouched) {
-                        return;
-                    }
-
-                case "panleft":
-                case "panright":
-                    if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
-
-                    if (!isTouched) {
-
-                        this.touchdown();
-
-                        this._blockScrolling();
-
-                        isTouched = true;
-                        swiped = false;
-
-                        this.stopMovement();
-                        this._panStartPos = this.pos;
-
-                        this._touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
-                    }
-
-                    if (isTouched && !swiped) {
-                        this.moveTo(this._panStartPos - delta, false);
-                    }
-
-                    break;
-
-                case "panend":
-
-                    if (isTouched) {
-
-                        // Remove panning class when we're not touching slider
-                        setTimeout(() => {
-                            this._touchSpace.removeEventListener('click', stopPropagationCallback, true);
-                        }, 0);
-
-                        this._unblockScrolling();
-
-                        isTouched = false;
-
-                        if (!swiped) {
-                            this.snap(0, true);
-                        }
-
-                        swiped = false;
-
-                        this.touchup();
-                    }
-                    break;
+        this._gestureListener.on('swipeleft', swipeLeftListener);
+        this._gestureListener.on('swipeup', swipeLeftListener);
+        this._gestureListener.on('swiperight', swipeRightListener);
+        this._gestureListener.on('swipedown', swipeRightListener);
+        this._gestureListener.on('panleft', panRightListener);
+        this._gestureListener.on('panright', panRightListener);
+        this._gestureListener.on('panend', panEndListener);
+        this._gestureListener.on('panup', (e) => {
+            if(!isTouched) {
+                e.stopPropagation();
             }
         });
-
+        this._gestureListener.on('pandown', (e) => {
+            if(!isTouched) {
+                e.stopPropagation();
+            }
+        });
     }
 
     disableTouch() {
@@ -133,23 +112,9 @@ class TouchSwiper extends SwiperEngine {
         }
         this._enabled = false;
 
-        this._mc.destroy();
-        this._mc = undefined;
+        this._gestureListener.destroy();
+        this._gestureListener = undefined;
     }
-
-    _blockScrolling() {
-        if (this._mc) {
-            this._mc.get('pan').set({direction: Hammer.DIRECTION_ALL});
-            this._mc.get('swipe').set({direction: Hammer.DIRECTION_ALL});
-        }
-    };
-
-    _unblockScrolling() {
-        if (this._mc) {
-            this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL});
-            this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL});
-        }
-    };
 }
 
 

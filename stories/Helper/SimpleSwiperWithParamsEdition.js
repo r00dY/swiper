@@ -48,7 +48,6 @@ class SimpleSwiperWithParamsEdition extends React.Component {
     componentDidMount() {
         this.slider.current.layout();
         this.setUpArrowsAndPager();
-        this.onMove();
     }
 
     setUpArrowsAndPager() {
@@ -67,14 +66,6 @@ class SimpleSwiperWithParamsEdition extends React.Component {
         console.log('active slides changed', this.slider.current.activeSlides());
     }
 
-    onMove() {
-        if (this.state.activeSlides.join("-") !== this.slider.current.activeSlides().join("-")) {
-            this.setState({
-                activeSlides: this.slider.current.activeSlides(),
-            });
-        }
-    }
-
     render() {
         return (
             <div>
@@ -90,14 +81,11 @@ class SimpleSwiperWithParamsEdition extends React.Component {
                     slideMargin={() => this.state.slideMargin}
                     snapOnlyToAdjacentSlide={this.state.snapOnlyToAdjacentSlide}
                     infinite={this.state.infinite}
-                    onMove={this.onMove.bind(this)}
                     onActiveSlidesChange={this.onActiveSlidesChange.bind(this)}
                     onVisibleSlidesChange={this.onVisibleSlidesChange.bind(this)}
                 >
                     {this.props.slides}
                 </ReactSimpleSwiper>
-
-                <div className='activeSlidesInfo'><span>Active slides:</span> {this.state.activeSlides.join(', ')}</div>
 
                 <div className="pager">
                     <div className="swiper-pager-item" ref={this.pagerItem}>

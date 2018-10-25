@@ -12,7 +12,7 @@
             src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
             integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
             crossorigin="anonymous"></script>
-    <script src="../dist/index.js"></script>
+    <script src="../bundle.js"></script>
 
     <link rel="stylesheet" href="dist/style.css">
 
@@ -954,7 +954,7 @@
 
        document.addEventListener("DOMContentLoaded", function () {
 
-           var swiperNew2 = new SimpleSwiper('demo-new-2');
+           var swiperNew2 = new SimpleSwiper.SimpleSwiper(document.querySelector('[data-swiper="demo-new-2"]'), document.querySelector('[data-swiper="demo-new-2"]'));
            swiperNew2.slideSizeFunction = function(n) {
                return 200 + n * 30;
            };
@@ -1008,10 +1008,13 @@
                swiperNew2.layout();
            });
            
-           var arrows = new SwiperArrows(swiperNew2);
-           arrows.init();
+           var arrows = new SimpleSwiper.SwiperArrows(swiperNew2);
+           arrows.init(
+               document.querySelector(".swiper-click-space-previous[data-swiper='demo-new-2']"),
+               document.querySelector(".swiper-click-space-next[data-swiper='demo-new-2']"),
+           );
 
-           let pager = new SwiperPager(swiperNew2);
+           let pager = new SimpleSwiper.SwiperPager(swiperNew2);
            pager.init(document.querySelector(".swiper-pager-item[data-swiper='demo-new-2']"));
        });
 
@@ -1038,8 +1041,7 @@
     <script>
 
         document.addEventListener("DOMContentLoaded", function () {
-
-            var swiperNew3 = new SimpleSwiper('demo-new-3');
+            var swiperNew3 = new SimpleSwiper.SimpleSwiper(document.querySelector('[data-swiper="demo-new-3"]'), document.querySelector('[data-swiper="demo-new-3"]'));
 
             console.log('width', document.querySelector('[data-swiper="demo-new-3"]').offsetWidth);
 
@@ -1094,7 +1096,8 @@
 
         document.addEventListener("DOMContentLoaded", function () {
 
-            var swiperNew4 = new SimpleSwiper('demo-new-4');
+            var swiperNew4 = new SimpleSwiper.SimpleSwiper(document.querySelector('[data-swiper="demo-new-4"]'), document.querySelector('[data-swiper="demo-new-4"]'));
+
             swiperNew4.slideSizeFunction = function(n) {
                 return 200 + n * 30;
             };
