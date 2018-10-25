@@ -1,7 +1,7 @@
 import ReactSimpleSwiper from './ReactSimpleSwiper';
 import ReactFadeSwiper from './ReactFadeSwiper';
 
-export {
+export default {
     ReactSimpleSwiper,
     ReactFadeSwiper,
 }

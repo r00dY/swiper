@@ -4,7 +4,7 @@ import SwiperEngine from "./SwiperEngine";
 import SwiperArrows from './SwiperArrows';
 import SwiperPager from './SwiperPager';
 
-export {
+export default {
     TouchSwiper,
     SimpleSwiper,
     SwiperEngine,
