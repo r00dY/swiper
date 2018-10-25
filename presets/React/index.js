@@ -1,4 +1,7 @@
-import ReactSimpleSwiper from './ReactSimpleSwiper';
-import ReactFadeSwiper from './ReactFadeSwiper';
+import React from "react";
 
-export default ReactSimpleSwiper;
+export default class extends React.Component {
+    render() {
+        return (<div>eloszka</div>)
+    }
+};
