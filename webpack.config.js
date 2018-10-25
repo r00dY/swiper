@@ -8,10 +8,11 @@ module.exports = {
         'react': './presets/React/index.js',
     },
     output: {
-        libraryTarget: "this",
+        libraryTarget: "umd",
         library: "SimpleSwiper",
         filename: '[name].js',
         path: path.resolve(__dirname, './'),
+        globalObject: `typeof self !== 'undefined' ? self : this`
     },
 
     externals: [
