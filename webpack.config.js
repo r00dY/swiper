@@ -1,4 +1,5 @@
 var path = require('path');
+var webpack = require("webpack");
 
 module.exports = {
 
@@ -7,7 +8,7 @@ module.exports = {
         'react': './presets/React/index.js',
     },
     output: {
-        libraryTarget: "umd",
+        libraryTarget: "this",
         library: "SimpleSwiper",
         filename: '[name].js',
         path: path.resolve(__dirname, './'),
@@ -47,7 +48,7 @@ module.exports = {
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 options: {
-                    presets: ["react", "es2015"]
+                    presets: ["react", "es2015", "stage-0"]
                 }
             }
         ]
