@@ -1,7 +1,5 @@
-if (process.env.APP_ENV === 'browser' || process.env.NODE_ENV === 'development') {
-    require("gsap/EasePack");
-    require("gsap/TweenLite");
-}
+require("gsap/EasePack");
+require("gsap/TweenLite");
 
 import EventSystem from "./EventSystem";
 
