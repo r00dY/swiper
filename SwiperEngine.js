@@ -187,7 +187,7 @@ class SwiperEngine {
         this._CACHE = {
             slideSize: {},
             slideMargin: {},
-            slideSnapOffset: {}
+            slideSnapOffset: {},
         };
 
         this._activeSlidesString = undefined;
@@ -375,14 +375,14 @@ class SwiperEngine {
      * This method moves 1 container width to the right (with snap)
      */
     moveRight(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos + this._containerSizeFunction()), animated, 1);
+        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated, 1);
     }
 
     /**
      * This method moves 1 container width to the left (with snap)
      */
     moveLeft(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos - this._containerSizeFunction()), animated, -1);
+        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated, -1);
     }
 
     /**
@@ -452,6 +452,16 @@ class SwiperEngine {
         return this._CACHE["slideSnapOffset"][n];
     }
 
+    get containerSize() {
+        if (this._CACHE["containerSize"]) { return this._CACHE["containerSize"]; }
+
+        let result = this._containerSizeFunction();
+
+        this._CACHE["containerSize"] = result;
+
+        return result;
+    }
+
 
     /**
      * Helpers
@@ -487,7 +497,7 @@ class SwiperEngine {
             throw "maxPos method not available in infinite mode"
         }
 
-        return Math.max(0, this.slideableWidth - this._containerSizeFunction());
+        return Math.max(0, this.slideableWidth - this.containerSize);
     }
 
     isAnimating() {
@@ -509,20 +519,20 @@ class SwiperEngine {
         if (rightEdge < 0) {
             return 0;
         }
-        else if (leftEdge > this._containerSizeFunction()) {
+        else if (leftEdge > this.containerSize) {
             return 0;
         }
-        else if (leftEdge < 0 && rightEdge > this._containerSizeFunction()) {
+        else if (leftEdge < 0 && rightEdge > this.containerSize) {
             return 1;
         }
-        else if (leftEdge >= 0 && rightEdge <= this._containerSizeFunction()) {
+        else if (leftEdge >= 0 && rightEdge <= this.containerSize) {
             return 1;
         }
-        else if (leftEdge < 0 && rightEdge <= this._containerSizeFunction()) {
+        else if (leftEdge < 0 && rightEdge <= this.containerSize) {
             return rightEdge / this.slideSize(n);
         }
-        else if (leftEdge >= 0 && rightEdge > this._containerSizeFunction()) {
-            return (this._containerSizeFunction() - leftEdge) / this.slideSize(n);
+        else if (leftEdge >= 0 && rightEdge > this.containerSize) {
+            return (this.containerSize - leftEdge) / this.slideSize(n);
         }
     }
 
@@ -663,12 +673,12 @@ class SwiperEngine {
             let extraTranslation = 0;
 
             if (pos < 0) {
-                let rest = -pos / this._containerSizeFunction();
-                extraTranslation = this._overscrollFunction(rest) * this._containerSizeFunction();
+                let rest = -pos / this.containerSize;
+                extraTranslation = this._overscrollFunction(rest) * this.containerSize;
             }
             else if (pos > this.maxPos) {
-                let rest = (pos - this.maxPos) / this._containerSizeFunction();
-                extraTranslation = -this._overscrollFunction(rest) * this._containerSizeFunction();
+                let rest = (pos - this.maxPos) / this.containerSize;
+                extraTranslation = -this._overscrollFunction(rest) * this.containerSize;
             }
 
             coord += extraTranslation;

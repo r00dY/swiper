@@ -41,7 +41,6 @@ class SimpleSwiperWithDynamicSlides extends React.Component {
                     slideSnapOffset={() => 20}
                     slideMargin={() => 20}
                     infinite={true}
-                    relayout={true}
                     initialSlide={this.state.initalSlide}
                 >
                     {this.state.slides}

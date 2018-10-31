@@ -19,7 +19,7 @@ class SimpleSwiperWithParamsEdition extends React.Component {
             slideSnapOffset: 20,
             slideMargin: 20,
             displayNoneAutomatically: true,
-            snapOnlyToAdjacentSlide: true,
+            snapOnlyToAdjacentSlide: false,
             infinite: true,
             enableTouch: true,
             activeSlides: []
