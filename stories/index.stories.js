@@ -61,7 +61,7 @@ storiesOf('Slider', module)
             <h1>Swiper with different slide widths.</h1>
             <p>For presentation purpose every n slide has width of 200 + 50 * n ( starting from 0, of course ) </p>
             <p>Also some exemplary "onMove" listener connected to this slider.</p>
-            <SimpleSwiperContainer slideSize={(n) => 200 + 50 * n} />
+            <SimpleSwiperContainer slideSize={(n) => 200} />
         </div>
     )
     .add('slider with adding dynamic slides', () =>

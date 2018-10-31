@@ -49,6 +49,46 @@ class SimpleSwiperContainer extends React.Component {
                     <div className="slide"></div>
                     <div className="slide"></div>
                     <div className="slide"></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
                 </ReactSimpleSwiper>
 
                 <div className='activeSlidesInfo'><span>Active slides:</span> {this.state.activeSlides.join(', ')}</div>

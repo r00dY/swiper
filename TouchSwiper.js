@@ -5,8 +5,8 @@ import HammerGestureListener from "./HammerGestureListener";
 
 class TouchSwiper extends SwiperEngine {
 
-    constructor(touchSpace, gestureListener) {
-        super();
+    constructor(touchSpace, gestureListener, animationEngine) {
+        super(animationEngine);
 
         this._touchSpace = touchSpace;
         this._gestureListener = gestureListener ? gestureListener : new HammerGestureListener(this._touchSpace);
