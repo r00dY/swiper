@@ -1,7 +1,7 @@
 import VerticalScrollDetector from "./VerticalScrollDetector.js";
 
 import SwiperEngine from "./SwiperEngine";
-import HammerGestureListener from "./HammerGestureListener";
+import HammerGestureListener from "./GestureListeners/HammerGestureListener";
 
 class TouchSwiper extends SwiperEngine {
 

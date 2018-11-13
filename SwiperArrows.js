@@ -49,7 +49,8 @@ class SwiperArrows {
     }
 
     deinit() {
-        // Unbind clicks on next / previous
+        this.swiperArrowsController.deinit();
+
         if (this._clickSpaceNext) {
             this._clickSpaceNext.removeEventListener('click', this.clickNextListener);
         }

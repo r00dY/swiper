@@ -8,6 +8,7 @@ class ReactSimpleSwiper extends React.Component {
     constructor(props) {
         super(props);
 
+        this.infinite = this.props.infinite;
         this.container = React.createRef();
     }
 
@@ -19,6 +20,7 @@ class ReactSimpleSwiper extends React.Component {
         }
 
         this.slider.infinite = this.props.infinite;
+        this.infinite = this.props.infinite;
         this.slider.displayNoneAutomatically = this.props.displayNoneAutomatically;
         this.slider.snapOnlyToAdjacentSlide = this.props.snapOnlyToAdjacentSlide;
     }
@@ -90,6 +92,11 @@ class ReactSimpleSwiper extends React.Component {
     /** This function is necessary for swiper arrows to work */
     addEventListener(event, cb) {
         this.slider.addEventListener(event, cb);
+    }
+
+    /** This function is necessary for swiper arrows to work */
+    removeEventListener(event, cb) {
+        this.slider.removeEventListener(event, cb);
     }
 
     /** This function is necessary for swiper arrows to work */

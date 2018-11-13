@@ -15,13 +15,20 @@ class SwiperArrowsController {
 
         this.arrowNextIsActive = false;
         this.arrowPreviousIsActive = false;
+
+        if (this.swiper.infinite) {
+            this.arrowNextIsActive = true;
+            this.arrowPreviousIsActive = true;
+        }
+
+        this.moveListener = () => {
+            this._setActiveState();
+        };
     }
 
     init() {
         if (!this.swiper.infinite) {
-            this.swiper.addEventListener('move', () => {
-                this._setActiveState();
-            });
+            this.swiper.addEventListener('move', this.moveListener);
             this._setActiveState();
         } else {
             this._runEventListeners('arrowNextActiveStatusChanged', true);
@@ -37,28 +44,32 @@ class SwiperArrowsController {
         this.swiper.moveLeft(this.animated);
     }
 
+    deinit() {
+        this.swiper.removeEventListener('move', this.moveListener);
+    }
+
     _setActiveState() {
 
         let activeSlides = this.swiper.activeSlides();
 
         // previous arrow
-        if (this.arrowPreviousIsActive && activeSlides[0] === 0) {
+        if (activeSlides[0] === 0) {
             this.arrowPreviousIsActive = false;
             this._runEventListeners('arrowPreviousActiveStatusChanged', false);
         }
 
-        if(!this.arrowPreviousIsActive && activeSlides[0] !== 0) {
+        if(activeSlides[0] !== 0) {
             this.arrowPreviousIsActive = true;
             this._runEventListeners('arrowPreviousActiveStatusChanged', true);
         }
 
         // next arrow
-        if (this.arrowNextIsActive && activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
+        if (activeSlides[activeSlides.length - 1] === this.swiper.count - 1) {
             this.arrowNextIsActive = false;
             this._runEventListeners('arrowNextActiveStatusChanged', false);
         }
 
-        if(!this.arrowNextIsActive && activeSlides[activeSlides.length - 1] !== this.swiper.count - 1) {
+        if(activeSlides[activeSlides.length - 1] !== this.swiper.count - 1) {
             this.arrowNextIsActive = true;
             this._runEventListeners('arrowNextActiveStatusChanged', true);
         }

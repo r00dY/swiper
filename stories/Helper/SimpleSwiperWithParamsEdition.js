@@ -81,6 +81,8 @@ class SimpleSwiperWithParamsEdition extends React.Component {
                     slideMargin={() => this.state.slideMargin}
                     snapOnlyToAdjacentSlide={this.state.snapOnlyToAdjacentSlide}
                     infinite={this.state.infinite}
+                    onVisibleSlidesChange={this.onVisibleSlidesChange.bind(this)}
+                    onActiveSlidesChange={this.onActiveSlidesChange.bind(this)}
                 >
                     {this.props.slides}
                 </ReactSimpleSwiper>

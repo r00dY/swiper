@@ -39,7 +39,7 @@ describe("SwiperArrowsController (no animations / finite mode)", function() {
 
     });
 
-    it ("changes arrows active status properly", function() {
+    it ("changes arrows active status properly for finite slider", function() {
         sliderRegular(false);
 
         let swiperArrows = new SwiperArrowsController(swiper, false);
@@ -57,5 +57,25 @@ describe("SwiperArrowsController (no animations / finite mode)", function() {
         swiperArrows.clickNext();
         swiperArrows.clickNext();
         expect(swiperArrows.arrowNextIsActive).toBe(false);
+    });
+
+    it ("changes arrows active status properly for infinite slider", function() {
+        sliderRegular(true);
+
+        let swiperArrows = new SwiperArrowsController(swiper, false);
+
+        swiperArrows.init();
+
+        expect(swiperArrows.arrowPreviousIsActive).toBe(true);
+        expect(swiperArrows.arrowNextIsActive).toBe(true);
+
+        swiperArrows.clickNext();
+
+        expect(swiperArrows.arrowPreviousIsActive).toBe(true);
+
+        swiperArrows.clickNext();
+        swiperArrows.clickNext();
+        swiperArrows.clickNext();
+        expect(swiperArrows.arrowNextIsActive).toBe(true);
     });
 });

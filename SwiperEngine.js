@@ -1,6 +1,3 @@
-require("gsap/EasePack");
-require("gsap/TweenLite");
-
 import AnimationEngine from "./AnimationEngine";
 import EventSystem from "./EventSystem";
 import EasingFunctions from "./EasingFunctions";
@@ -22,13 +19,10 @@ class SwiperEngine {
             return 0.5 * Math.log(1 + x);
         };
 
-        this._animationEase = Expo.easeOut;
-        this._animationTime = 0.8;
-
         this.animationEngine = animationEngine;
 
         if (!this.animationEngine) {
-            this.animationEngine = new AnimationEngine(EasingFunctions.easeOutQuint, this._animationTime)
+            this.animationEngine = new AnimationEngine(EasingFunctions.easeOutExpo, 0.8)
         }
 
         this._scrollingAnimationTime = 0.8;
@@ -136,22 +130,6 @@ class SwiperEngine {
 
     get infinite() {
         return this._infinite;
-    }
-
-    set animationEase(animationEase) {
-        this._animationEase = animationEase;
-    }
-
-    get animationEase() {
-        return this._animationEase;
-    }
-
-    set animationTime(animationTime) {
-        this._animationTime = animationTime;
-    }
-
-    get animationTime() {
-        return this._animationTime;
     }
 
     set snapOnlyToAdjacentSlide(snapOnlyToAdjacentSlide) {
@@ -303,23 +281,6 @@ class SwiperEngine {
             }
 
             this.animationEngine.animate(this._pos, pos, this._updatePos.bind(this), this._finishAnimation.bind(this));
-
-            // let tmp = { pos: this._pos };
-            //
-            // let anim = TweenLite.to(tmp, this._animationTime, {
-            //     pos: pos,
-            //     ease: this._animationEase,
-            //
-            //     onUpdate: () => {
-            //         this._updatePos(tmp.pos);
-            //     },
-            //
-            //     onComplete: () => {
-            //         this._finishAnimation();
-            //     }
-            // });
-
-            // this._animations = [anim];
 
             this._startAnimation();
         }
@@ -831,11 +792,6 @@ class SwiperEngine {
         if (!this._isAnimating) { return; }
 
         this.animationEngine.killAnimation();
-
-        // for (let i = 0; i < this._animations.length; i++) {
-        //     this._animations[i].kill();
-        // }
-        this._animations = [];
 
         this._runEventListeners('animationEnd');
         this._isAnimating = false;

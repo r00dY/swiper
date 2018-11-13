@@ -6,7 +6,6 @@
     "main": "bundle.js",
     "dependencies": {
         "browser-sync": "^2.18.13",
-        "gsap": "^1.20.2",
         "hammerjs": "^2.0.8",
         "react": "^16.5.2",
         "react-dom": "^16.5.2"
@@ -29,8 +28,13 @@
         "webpack-stream": "^4.0.0"
     },
     "scripts": {
-        "test": "jasmine",
+        "test": "babel-node ./spec/run.js",
         "storybook": "start-storybook -s . -p 3131",
         "build": "webpack"
+    },
+    "babel": {
+        "presets": [
+            "es2015"
+        ]
     }
 }

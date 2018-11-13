@@ -1,7 +1,3 @@
-const easeIn  = p => t => Math.pow(t, p);
-const easeOut = p => t => (1 - Math.abs(Math.pow(t-1, p)));
-const easeInOut = p => t => t<.5 ? easeIn(p)(t*2)/2 : easeOut(p)(t*2 - 1)/2+0.5;
-
 export default {
     linear: function (t) { return t },
     easeInQuad: function (t) { return t*t },
@@ -15,5 +11,7 @@ export default {
     easeInOutQuart: function (t) { return t<.5 ? 8*t*t*t*t : 1-8*(--t)*t*t*t },
     easeInQuint: function (t) { return t*t*t*t*t },
     easeOutQuint: function (t) { return 1+(--t)*t*t*t*t },
-    easeInOutQuint: function (t) { return t<.5 ? 16*t*t*t*t*t : 1+16*(--t)*t*t*t*t }
+    easeInOutQuint: function (t) { return t<.5 ? 16*t*t*t*t*t : 1+16*(--t)*t*t*t*t },
+    easeInExpo: function (t) { return Math.pow( 2, 10 * (t - 1) ); },
+    easeOutExpo: function (t) { return ( -Math.pow( 2, -10 * t ) + 1 ); },
 }
