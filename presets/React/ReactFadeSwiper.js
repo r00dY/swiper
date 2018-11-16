@@ -93,6 +93,10 @@ class ReactFadeSwiper extends React.Component {
         return this.slider.visibleSlides();
     }
 
+    slideVisibility(n) {
+        return this.slider.slideVisibility(n);
+    }
+
     render() {
         return (
             <div className={this.props.containerClasses} ref={this.container}>

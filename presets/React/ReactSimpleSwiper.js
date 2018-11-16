@@ -110,9 +110,12 @@ class ReactSimpleSwiper extends React.Component {
         this.slider.moveToSlide(n, animated);
     }
 
-
     visibleSlides() {
         return this.slider.visibleSlides();
+    }
+
+    slideVisibility(n) {
+        return this.slider.slideVisibility(n);
     }
 
     render() {
