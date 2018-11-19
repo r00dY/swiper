@@ -414,7 +414,7 @@ class SwiperEngine {
     }
 
     get containerSize() {
-        if (this._CACHE["containerSize"]) { return this._CACHE["containerSize"]; }
+        if (typeof this._CACHE["containerSize"] !== 'undefined') { return this._CACHE["containerSize"]; }
 
         let result = this._containerSizeFunction();
 
