@@ -3,7 +3,7 @@
     "description": "Super duper swiper",
     "author": "Andrzej Dąbrowski <a.r.dabrowski@gmail.com>",
     "version": "0.6.0",
-    "main": "bundle.js",
+    "main": "dist/bundle.js",
     "dependencies": {
         "hammerjs": "^2.0.8",
         "react": "^16.5.2",

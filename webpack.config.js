@@ -4,13 +4,13 @@ module.exports = {
 
     entry: {
         'bundle': './index.js',
-        'react': './presets/React/index.js',
+        // 'react': './presets/React/index.js',
     },
     output: {
         libraryTarget: "umd",
         library: "SimpleSwiper",
         filename: '[name].js',
-        path: path.resolve(__dirname, './'),
+        path: path.resolve(__dirname, './dist/'),
         globalObject: `typeof self !== 'undefined' ? self : this`
     },
 
