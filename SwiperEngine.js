@@ -170,7 +170,6 @@ class SwiperEngine {
 
         this._activeSlidesString = undefined;
         this._visibleSlidesString = undefined;
-        this._animations = [];
 
         // containerSize validation
         if (typeof this._containerSizeFunction !== "function") { throw "'containerSizeFunction' is not defined or is not a function"; }

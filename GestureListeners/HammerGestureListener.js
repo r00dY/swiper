@@ -1,6 +1,7 @@
 const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
 
 class HammerGestureListener {
+
     constructor(touchSpace) {
         this._mc = new Hammer(touchSpace, { domEvents: false });
         this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});

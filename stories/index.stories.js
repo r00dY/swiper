@@ -97,5 +97,4 @@ storiesOf('Slider presets', module)
             <p>Touch swiper preset exemplary usage. All styles are included only in storybook. </p>
             <FadeSwiperContainer />
         </div>
-    )
-;
+    );
