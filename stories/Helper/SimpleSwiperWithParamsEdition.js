@@ -18,12 +18,14 @@ class SimpleSwiperWithParamsEdition extends React.Component {
             leftOffset: 20,
             slideSnapOffset: 20,
             slideMargin: 20,
-            displayNoneAutomatically: true,
+            displayNoneAutomatically: false,
             snapOnlyToAdjacentSlide: false,
             infinite: true,
             enableTouch: true,
             activeSlides: []
-        }
+        };
+
+        this.handleTouch = this.handleTouch.bind(this);
     };
 
     handleStateChange(e, param) {
@@ -60,16 +62,34 @@ class SimpleSwiperWithParamsEdition extends React.Component {
     }
 
     onVisibleSlidesChange() {
-        console.log('visible slides changed', this.slider.current.visibleSlides());
+        // console.log('visible slides changed', this.slider.current.visibleSlides());
     }
 
     onActiveSlidesChange() {
-        console.log('active slides changed', this.slider.current.activeSlides());
+        // console.log('active slides changed', this.slider.current.activeSlides());
+    }
+
+    handleTouch(type, e) {
+        console.log('TOUCH: ' + type);
+        if (type == 'move') {
+            console.log(e);
+        }
     }
 
     render() {
         return (
             <div>
+
+                {/*<div*/}
+                    {/*style={{width: "600px", height: "600px", border: "1px solid red"}}*/}
+                    {/*onTouchStart={(e) => { this.handleTouch('start', e) }}*/}
+                    {/*onTouchCancel={(e) => { this.handleTouch('cancel', e) }}*/}
+                    {/*onTouchEnd={(e) => { this.handleTouch('end', e) }}*/}
+                    {/*onTouchMove={(e) => { this.handleTouch('move', e) }}*/}
+                {/*>*/}
+
+                {/*</div>*/}
+
                 <ReactSimpleSwiper
                     containerClasses='swiper'
                     enableTouch={this.state.enableTouch}
