@@ -1,5 +1,5 @@
 import React from "react";
-import SimpleSwiper from "../../SimpleSwiper";
+import SimpleSwiper from "../../src/native/SimpleSwiper";
 
 class ReactSwiperExternalTouchSpace extends React.Component {
 

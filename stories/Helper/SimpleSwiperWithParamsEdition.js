@@ -1,7 +1,7 @@
 import React from "react";
-import ReactSimpleSwiper from "../../presets/React/ReactSimpleSwiper";
-import SwiperArrows from "../../SwiperArrows";
-import SwiperPager from "../../SwiperPager";
+import ReactSimpleSwiper from "../../src/react/ReactSimpleSwiper";
+import SwiperArrows from "../../src/components/arrows/SwiperArrows";
+import SwiperPager from "../../src/components/pager/SwiperPager";
 
 class SimpleSwiperWithParamsEdition extends React.Component {
     constructor(props) {
@@ -40,6 +40,7 @@ class SimpleSwiperWithParamsEdition extends React.Component {
 
     componentDidUpdate() {
         this.slider.current.layout();
+
         this.arrows.deinit();
         this.pager.deinit();
         this.setUpArrowsAndPager();

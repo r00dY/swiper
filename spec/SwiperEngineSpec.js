@@ -1,4 +1,4 @@
-import SwiperEngine from "../SwiperEngine";
+import SwiperEngine from "../src/native/SwiperEngine";
 
 let swiper;
 

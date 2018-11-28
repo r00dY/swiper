@@ -1,6 +1,6 @@
 import React from "react";
 
-import SimpleSwiper from "../../SimpleSwiper";
+import SimpleSwiper from "../native/SimpleSwiper";
 import PropTypes from "prop-types";
 
 class ReactSimpleSwiper extends React.Component {
@@ -28,7 +28,6 @@ class ReactSimpleSwiper extends React.Component {
     componentDidMount() {
         this.slider = new SimpleSwiper(
             this.container.current,
-            this.container.current
         );
 
         this.slider._initialSlide = this.props.initialSlide;

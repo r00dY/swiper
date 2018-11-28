@@ -1,5 +1,5 @@
 import React from "react";
-import ReactFadeSwiper from "../../presets/React/ReactFadeSwiper";
+import ReactFadeSwiper from "../../src/react/ReactFadeSwiper";
 
 
 class FadeSwiperContainer extends React.Component {

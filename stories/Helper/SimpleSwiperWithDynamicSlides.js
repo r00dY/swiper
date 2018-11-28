@@ -1,5 +1,5 @@
 import React from "react";
-import ReactSimpleSwiper from "../../presets/React/ReactSimpleSwiper";
+import ReactSimpleSwiper from "../../src/react/ReactSimpleSwiper";
 
 class SimpleSwiperWithDynamicSlides extends React.Component {
 

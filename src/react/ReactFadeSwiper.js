@@ -1,5 +1,5 @@
 import React from "react";
-import FadeSwiper from "../../FadeSwiper";
+import FadeSwiper from "../native/FadeSwiper";
 import PropTypes from "prop-types";
 
 

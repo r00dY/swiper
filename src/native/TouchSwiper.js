@@ -1,7 +1,7 @@
-import VerticalScrollDetector from "./VerticalScrollDetector.js";
+import VerticalScrollDetector from "../helpers/VerticalScrollDetector.js";
 
 import SwiperEngine from "./SwiperEngine";
-import HammerGestureListener from "./GestureListeners/HammerGestureListener";
+import HammerGestureListener from "../gestureListeners/HammerGestureListener";
 
 class TouchSwiper extends SwiperEngine {
 
@@ -143,14 +143,14 @@ class TouchSwiper extends SwiperEngine {
     }
 
     snap() {
-        throw "snap method can't be used in TouchSwiper instance!";
+        if (this.isAnimating()) {
+            throw "snap method can't be used in TouchSwiper instance while animation is in progress!";
+        }
     }
 
     stopMovement() {
         throw "stopMovement method can't be used in TouchSwiper instance!";
     }
-
-
 
 }
 

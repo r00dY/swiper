@@ -1,5 +1,5 @@
 import SwiperArrowsController from "./SwiperArrowsController";
-import EventSystem from "./EventSystem";
+import EventSystem from "../../helpers/EventSystem";
 
 class SwiperArrows {
 

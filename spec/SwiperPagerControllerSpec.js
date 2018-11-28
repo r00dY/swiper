@@ -1,5 +1,5 @@
-import SwiperEngine from "../SwiperEngine";
-import SwiperPagerController from "../SwiperPagerController";
+import SwiperEngine from "../src/native/SwiperEngine";
+import SwiperPagerController from "../src/components/pager/SwiperPagerController";
 
 let swiper;
 

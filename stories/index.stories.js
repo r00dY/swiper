@@ -3,9 +3,9 @@ import {storiesOf} from '@storybook/react';
 import SimpleSwiperWithParamsEdition from "./Helper/SimpleSwiperWithParamsEdition";
 import "./storybookSlider.scss";
 import ReactSwiperExternalTouchSpace from "./Helper/ReactSwiperExternalTouchSpace";
-import ReactSimpleSwiper from "../presets/React/ReactSimpleSwiper";
+import ReactSimpleSwiper from "../src/react/ReactSimpleSwiper";
 import SimpleSwiperWithDynamicSlides from "./Helper/SimpleSwiperWithDynamicSlides";
-import ReactFadeSwiper from "../presets/React/ReactFadeSwiper";
+import ReactFadeSwiper from "../src/react/ReactFadeSwiper";
 import SimpleSwiperContainer from "./Helper/SimpleSwiperContainer";
 import FadeSwiperContainer from "./Helper/FadeSwiperContainer";
 

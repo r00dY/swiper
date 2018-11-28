@@ -1,5 +1,5 @@
-import SwiperArrowsController from "../SwiperArrowsController";
-import SwiperEngine from "../SwiperEngine";
+import SwiperArrowsController from "../src/components/arrows/SwiperArrowsController";
+import SwiperEngine from "../src/native/SwiperEngine";
 
 let swiper;
 

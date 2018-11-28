@@ -1,6 +1,5 @@
-import AnimationEngine from "./AnimationEngine";
-import EventSystem from "./EventSystem";
-import EasingFunctions from "./EasingFunctions";
+import AnimationEngine from "../animationEngines/AnimationEngine";
+import EventSystem from "../helpers/EventSystem";
 
 class SwiperEngine {
 
@@ -20,7 +19,7 @@ class SwiperEngine {
         };
 
         // default animation engine
-        this._animationEngine = new AnimationEngine(EasingFunctions.easeOutExpo, 0.8);
+        this._animationEngine = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8);
 
         this._scrollingAnimationTime = 0.8;
 

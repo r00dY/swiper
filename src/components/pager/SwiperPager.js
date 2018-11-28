@@ -1,4 +1,4 @@
-import EventSystem from "./EventSystem";
+import EventSystem from "../../helpers/EventSystem";
 import SwiperPagerController from "./SwiperPagerController";
 
 class SwiperPager {

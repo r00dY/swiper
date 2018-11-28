@@ -1,10 +1,12 @@
 import TouchSwiper from "./TouchSwiper";
 
-
 class FadeSwiper extends TouchSwiper {
-    constructor(touchSpace, gestureListener, animationEngine) {
-        super(touchSpace, gestureListener, animationEngine);
-        this.slides = Array.from(touchSpace.children);
+    constructor(container) {
+        super();
+
+        this.touchSpace = container;
+
+        this.slides = Array.from(this.touchSpace.children);
 
         this.addEventListener('move', () => {
             this.slides.forEach((slide, index) => {
