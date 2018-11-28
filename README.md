@@ -5,8 +5,5 @@ SimpleSwiper allows you to simply implement swipers with mobile app grade gestur
 # To do
 
 1. Clean up Storybook.
-2. Make calling "layout" unnecessary in ReactSimpleSwiper. Make comparison in componentDidUpdate smart so that it knows when it should call .layout again.
-
-
-
+2. Make calling "layout" unnecessary in ReactSimpleSwiper. Make comparison in componentDidUpdate smart so that it knows when it should call .layout again. Or better, this comparison logic should be directly in SwiperEngine so that we don't copy this code between frameworks etc.
 
