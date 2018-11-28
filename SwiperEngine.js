@@ -4,7 +4,7 @@ import EasingFunctions from "./EasingFunctions";
 
 class SwiperEngine {
 
-    constructor(animationEngine) {
+    constructor() {
 
         this._slideMarginFunction = () => { return 0; };
         this._slideSnapOffsetFunction = () => { return 0; };
@@ -19,11 +19,8 @@ class SwiperEngine {
             return 0.5 * Math.log(1 + x);
         };
 
-        this.animationEngine = animationEngine;
-
-        if (!this.animationEngine) {
-            this.animationEngine = new AnimationEngine(EasingFunctions.easeOutExpo, 0.8)
-        }
+        // default animation engine
+        this._animationEngine = new AnimationEngine(EasingFunctions.easeOutExpo, 0.8);
 
         this._scrollingAnimationTime = 0.8;
 
@@ -45,6 +42,14 @@ class SwiperEngine {
         EventSystem.addEvent(this, 'touchup');
         EventSystem.addEvent(this, 'activeSlidesChange');
         EventSystem.addEvent(this, 'visibleSlidesChange');
+    }
+
+    set animationEngine(engine) {
+        this._animationEngine = engine;
+    }
+
+    get animationEngine() {
+        return this._animationEngine;
     }
 
     set containerSizeFunction(containerSizeFunction) {

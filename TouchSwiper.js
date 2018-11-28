@@ -5,16 +5,33 @@ import HammerGestureListener from "./GestureListeners/HammerGestureListener";
 
 class TouchSwiper extends SwiperEngine {
 
-    constructor(touchSpace, gestureListener, animationEngine) {
-        super(animationEngine);
+    constructor() {
+        super();
 
+        this._gestureListenerClass = HammerGestureListener; // TODO: default gesture listener class is Hammer but it should be sth more leightweight definitely
+    }
+
+    set gestureListenerClass(gestureListener) {
+        this._gestureListenerClass = gestureListener;
+    }
+
+    get gestureListenerClass() {
+        return this._gestureListenerClass;
+    }
+
+    set touchSpace(touchSpace) {
         this._touchSpace = touchSpace;
-        this._gestureListener = gestureListener ? gestureListener : new HammerGestureListener(this._touchSpace);
+    }
+
+    get touchSpace() {
+        return this._touchSpace;
     }
 
     enableTouch() {
         if (this._enabled) { return; }
         this._enabled = true;
+
+        this._gestureListener = new this._gestureListenerClass(this._touchSpace);
 
         let swiped = false;
 
@@ -31,14 +48,14 @@ class TouchSwiper extends SwiperEngine {
 
         let swipeLeftListener = (ev) => {
             if (isTouched) {
-                this.snap(Math.abs(ev.velocityX) * 1000, true);
+                super.snap(Math.abs(ev.velocityX) * 1000, true);
                 swiped = true;
             }
         };
 
         let swipeRightListener = (ev) => {
             if (isTouched) {
-                this.snap(-Math.abs(ev.velocityX) * 1000, true);
+                super.snap(-Math.abs(ev.velocityX) * 1000, true);
                 swiped = true;
             }
         };
@@ -47,14 +64,14 @@ class TouchSwiper extends SwiperEngine {
             if (VerticalScrollDetector.isScrolling()) { return; } // if body is scrolling then not allow for horizontal movement
 
             if (!isTouched) {
-                this.touchdown();
+                super.touchdown();
 
                 this._gestureListener.blockScrolling();
 
                 isTouched = true;
                 swiped = false;
 
-                this.stopMovement();
+                super.stopMovement();
                 this._panStartPos = this.pos;
 
                 this._touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
@@ -78,14 +95,14 @@ class TouchSwiper extends SwiperEngine {
                 isTouched = false;
 
                 if (!swiped) {
-                    this.snap(0, true);
+                    super.snap(0, true);
                 }
 
                 swiped = false;
 
-                this.touchup();
+                super.touchup();
             }
-        }
+        };
 
         this._gestureListener.on('swipeleft', swipeLeftListener);
         this._gestureListener.on('swipeup', swipeLeftListener);
@@ -115,6 +132,26 @@ class TouchSwiper extends SwiperEngine {
         this._gestureListener.destroy();
         this._gestureListener = undefined;
     }
+
+    /* Following methods from SwiperEngine shouldn't be in API of TouchSwiper */
+    touchdown() {
+        throw "touchdown method can't be used in TouchSwiper instance!";
+    }
+
+    touchup() {
+        throw "touchup method can't be used in TouchSwiper instance!";
+    }
+
+    snap() {
+        throw "snap method can't be used in TouchSwiper instance!";
+    }
+
+    stopMovement() {
+        throw "stopMovement method can't be used in TouchSwiper instance!";
+    }
+
+
+
 }
 
 

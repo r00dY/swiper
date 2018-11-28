@@ -1,7 +1,6 @@
 import React from "react";
 import SimpleSwiper from "../../SimpleSwiper";
 
-
 class ReactSwiperExternalTouchSpace extends React.Component {
 
     constructor(props) {
@@ -35,9 +34,10 @@ class ReactSwiperExternalTouchSpace extends React.Component {
 
     layoutSlider() {
         this.slider = new SimpleSwiper(
-            this.touchSpace.current,
             this.container.current
         );
+
+        this.slider.touchSpace = this.touchSpace.current;
 
         this.slider._initialSlide = this.props.initialSlide;
 
