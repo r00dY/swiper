@@ -1,5 +1,5 @@
 import EventSystem from "../helpers/EventSystem";
-import VerticalScrollDetector from "../helpers/VerticalScrollDetector.js";
+// import VerticalScrollDetector from "../helpers/VerticalScrollDetector.js";
 
 const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
 
@@ -19,7 +19,7 @@ const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
  *
  * onPanStart
  *
- * - always called at start of panning
+ * - always called at start of panning. Called when it's CERTAIN that user did really started scrolling left / right, there is threshold for that.
  *
  * onPanEnd
  *
@@ -37,14 +37,16 @@ class HammerGestureListener {
 
         // this._mc.get('pinch').set({ enable: true });
         //
+        // this._blockEvents = false;
+        //
         // this._mc.on('pinch pinchstart pinchmove pinchend pinchcancel pinchin pinchout', (ev) => {
         //    console.log('PINCH', ev.type, ev);
         //
         //    if (ev.type == "pinchend") {
         //
-        //        this.blockEvents = true;
+        //        this._blockEvents = true;
         //        setTimeout(() => {
-        //            this.blockEvents = false;
+        //            this._blockEvents = false;
         //        }, 50);
         //    }
         // });
@@ -63,42 +65,24 @@ class HammerGestureListener {
             ev.stopPropagation();
         };
 
-
-        let deltaClientY = 0;
-        let deltaScreenY = 0;
+        // At this point in time we manually subscribe to touch events to detect whether user is scrolling the window. If deltaY is big and deltaX is so small that panleft/panright wasn't triggered yet it means that we're scrolling vertically and swiping left/right should be blocked.
         let refScreenY;
         let refClientY;
 
         let isWindowScrolling;
 
         touchSpace.ontouchstart = (ev) => {
-            console.log('touch start!', ev);
-
             isWindowScrolling = false;
             refScreenY = ev.touches[0].screenY;
             refClientY = ev.touches[0].clientY;
         };
 
-        touchSpace.ontouchend = () => {
-            console.log('touch end!');
-        };
-
         touchSpace.ontouchmove = (ev) => {
-
             if (isWindowScrolling) { return; }
-            deltaClientY = ev.touches[0].clientY - refClientY;
-            deltaScreenY = ev.touches[0].screenY - refScreenY;
 
-            if (Math.abs(deltaClientY) > 10 || Math.abs(deltaScreenY) > 10) {
+            if (Math.abs(ev.touches[0].clientY - refClientY) > 10 || Math.abs(ev.touches[0].screenY - refScreenY) > 10) {
                 isWindowScrolling = true;
-                console.log('==== BLOCKED =====');
             }
-
-            console.log('touch move!', 'delta client Y', deltaClientY, 'deltaScreenY', deltaScreenY);
-        };
-
-        touchSpace.ontouchcancel = () => {
-            console.log('touch start!');
         };
 
         this._mc.on('panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown', (ev) => {
@@ -106,6 +90,11 @@ class HammerGestureListener {
             // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
             // https://github.com/hammerjs/hammer.js/issues/1050
             if (ev.srcEvent.type == "pointercancel") {
+                return;
+            }
+
+            // If events are blocked after pinch, only one that can't be blocked is panend
+            if (this._blockEvents && ev.type !== "panend") {
                 return;
             }
 
@@ -147,40 +136,25 @@ class HammerGestureListener {
 
                 case "panleft":
                 case "panright":
-                    // if (VerticalScrollDetector.isScrolling()) { break; } // if body is scrolling then not allow for horizontal movement
-
                     if (!isTouched) {
-
                         // If wasn't already detected and window is scrolling then break
                         if (isWindowScrolling) { break; }
-
-                        // this.touchdown();
-
-                        this._blockScrolling();
 
                         isTouched = true;
                         swiped = false;
 
-                        // this.stopMovement();
-                        // this._panStartPos = this.pos;
-
                         touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
 
                         this._runEventListeners('panstart');
-
                     }
 
                     if (isTouched && !swiped) {
-
                         this._runEventListeners('pan', delta);
-
-                        // this.moveTo(this._panStartPos - delta, false);
                     }
 
                     break;
 
                 case "panend":
-
                     if (isTouched) {
 
                         // Remove panning class when we're not touching slider
@@ -188,38 +162,17 @@ class HammerGestureListener {
                             touchSpace.removeEventListener('click', stopPropagationCallback, true);
                         }, 0);
 
-                        this._unblockScrolling();
-
                         isTouched = false;
 
                         if (!swiped) {
                             this._runEventListeners('panend', swiped);
-                            // this.snap(0, true);
                         }
 
                         swiped = false;
-
-                        // this.touchup();
                     }
                     break;
             }
         });
-
-        // this.blockEvents = false;
-    }
-
-    _blockScrolling() {
-        if (this._mc) {
-            // this._mc.get('pan').set({direction: Hammer.DIRECTION_ALL});
-            // this._mc.get('swipe').set({direction: Hammer.DIRECTION_ALL});
-        }
-    }
-
-    _unblockScrolling() {
-        if (this._mc) {
-            // this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL});
-            // this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL});
-        }
     }
 
     destroy() {
