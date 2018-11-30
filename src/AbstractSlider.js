@@ -1,5 +1,5 @@
-import AnimationEngine from "../animationEngines/AnimationEngine";
-import EventSystem from "../helpers/EventSystem";
+import AnimationEngine from "./animationEngines/AnimationEngine";
+import EventSystem from "./helpers/EventSystem";
 
 let defaults = {
     slideMarginFunction: () => 0,
@@ -12,7 +12,7 @@ let defaults = {
     animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8)
 };
 
-class SwiperEngine {
+class AbstractSlider {
 
     constructor() {
 
@@ -794,4 +794,4 @@ class SwiperEngine {
 
 }
 
-export default SwiperEngine;
+export default AbstractSlider;

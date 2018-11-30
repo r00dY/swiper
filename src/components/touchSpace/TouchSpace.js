@@ -19,8 +19,6 @@ class TouchSpace {
         if (this._inited) { return; }
         this._inited = true;
 
-        console.log('enable touch space!', this.swiper);
-
         let touchSpace = this._touchSpace;
 
         this._mc = new Hammer(touchSpace, { domEvents: false/*, touchAction: 'pan-y'*/ });
@@ -84,8 +82,6 @@ class TouchSpace {
             if (this._blockEvents && ev.type !== "panend") {
                 return;
             }
-
-            console.log('event', ev.type);
 
             let delta = ev.deltaX;
 

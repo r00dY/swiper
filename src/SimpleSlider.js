@@ -1,8 +1,7 @@
-// import TouchSwiper from "./TouchSwiper";
-import SwiperEngine from "./SwiperEngine";
-import TouchSpace from "../components/touchSpace/TouchSpace";
+import TouchSpace from "./components/touchSpace/TouchSpace";
+import AbstractSlider from "./AbstractSlider";
 
-class SimpleSwiper extends SwiperEngine {
+class SimpleSlider extends AbstractSlider {
 
     constructor(container) {
         super();
@@ -125,4 +124,4 @@ class SimpleSwiper extends SwiperEngine {
     }
 }
 
-export default SimpleSwiper;
+export default SimpleSlider;

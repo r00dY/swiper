@@ -2,7 +2,7 @@ import React from 'react';
 import {storiesOf} from '@storybook/react';
 import "./styles.scss";
 
-import ReactSimpleSwiper from "../src/react/ReactSimpleSwiper";
+import SimpleSlider from "../src/SimpleSlider";
 import SwiperArrows from "../src/components/arrows/SwiperArrows";
 import SwiperPager from "../src/components/pager/SwiperPager";
 
@@ -10,22 +10,21 @@ class SimpleSwiperWithParams extends React.Component {
     constructor(props) {
         super(props);
 
-        this.slider = React.createRef();
+        this.simpleSliderNodeRef = React.createRef();
         this.arrowLeft = React.createRef();
         this.arrowRight = React.createRef();
         this.pagerItem = React.createRef();
 
         this.state = {
             slideSize: 200,
+            slideMargin: 20,
+            slideSnapOffset: 20,
             rightOffset: 40,
             leftOffset: 20,
-            slideSnapOffset: 20,
-            slideMargin: 20,
             displayNoneAutomatically: false,
             snapOnlyToAdjacentSlide: false,
             infinite: true,
             disableInternalTouchSpace: false,
-            activeSlides: []
         };
     };
 
@@ -41,65 +40,68 @@ class SimpleSwiperWithParams extends React.Component {
         })
     }
 
+    _setSliderParamsBasedOnState() {
+        this.slider.slideSizeFunction = () => this.state.slideSize;
+        this.slider.slideMarginFunction = () => this.state.slideMargin;
+        this.slider.slideSnapOffsetFunction = () => this.state.slideSnapOffset;
+        this.slider.rightOffsetFunction = () => this.state.rightOffset;
+        this.slider.leftOffsetFunction = () => this.state.leftOffset;
+        this.slider.displayNoneAutomatically = this.state.displayNoneAutomatically;
+        this.slider.snapOnlyToAdjacentSlide = this.state.snapOnlyToAdjacentSlide
+        this.slider.infinite = this.slider.infinite;
+
+        if (this.state.disableInternalTouchSpace) {
+            this.slider.touchSpace.disable();
+        } else {
+            this.slider.touchSpace.enable();
+        }
+    }
+
     componentDidUpdate() {
-        this.slider.current.slider.layout();
+        this._setSliderParamsBasedOnState();
+        this.slider.layout();
     }
 
     componentDidMount() {
-        /**
-         * This method unfortunately must be called externally.
-         *
-         * The reason is that if ReactSimpleSwiper calls this method INTERNALLY (in componentDidMount / componentDidUpdate), events are triggered.
-         *
-         * The event listeners are in parent (which controls slider) and parent might react on them. However, parent will need swiper instance to do this. and the swiper insance is not yet available because parent ref is not available yet.
-         *
-         */
-        this.slider.current.slider.layout();
+        this.slider = new SimpleSlider(this.simpleSliderNodeRef.current);
 
-        this.arrows = new SwiperArrows(this.slider.current.slider, this.arrowLeft.current, this.arrowRight.current);
-        this.pager = new SwiperPager(this.slider.current.slider, this.pagerItem.current);
+        this.slider.addEventListener('visibleSlidesChange', () => {
+            console.log('visible slides changed', this.slider.visibleSlides());
+        });
+
+        this.slider.addEventListener('activeSlidesChange', () => {
+            console.log('active slides changed', this.slider.activeSlides());
+        });
+
+        this._setSliderParamsBasedOnState();
+
+        this.slider.layout();
+
+        this.arrows = new SwiperArrows(this.slider, this.arrowLeft.current, this.arrowRight.current);
+        this.pager = new SwiperPager(this.slider, this.pagerItem.current);
 
         this.arrows.enable();
         this.pager.enable();
     }
 
-    onVisibleSlidesChange() {
-        console.log('visible slides changed', this.slider.current.slider.visibleSlides());
-    }
-
-    onActiveSlidesChange() {
-        console.log('active slides changed', this.slider.current.slider.activeSlides());
-    }
-
     render() {
         return (
             <div>
-                <ReactSimpleSwiper
-                    className={'swiper'}
-                    disableInternalTouchSpace={this.state.disableInternalTouchSpace}
-                    displayNoneAutomatically={this.state.displayNoneAutomatically}
-                    ref={this.slider}
-                    slideSize={() => this.state.slideSize}
-                    rightOffset={() => this.state.rightOffset}
-                    leftOffset={() => this.state.leftOffset}
-                    slideSnapOffset={() => this.state.slideSnapOffset}
-                    slideMargin={() => this.state.slideMargin}
-                    snapOnlyToAdjacentSlide={this.state.snapOnlyToAdjacentSlide}
-                    infinite={this.state.infinite}
-                    onVisibleSlidesChange={this.onVisibleSlidesChange.bind(this)}
-                    onActiveSlidesChange={this.onActiveSlidesChange.bind(this)}
-                >
-                    <div className="slide"><a href="#">Link</a></div>
-                    <div className="slide"><a href="#">Link</a></div>
-                    <div className="slide"><a href="#">Link</a></div>
-                    <div className="slide"><a href="#">Link</a></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                </ReactSimpleSwiper>
+
+                <div ref={this.simpleSliderNodeRef} className={"swiper"}>
+                    <div>
+                        <div className="slide"><a href="#">Link</a></div>
+                        <div className="slide"><a href="#">Link</a></div>
+                        <div className="slide"><a href="#">Link</a></div>
+                        <div className="slide"><a href="#">Link</a></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                    </div>
+                </div>
 
                 <div className="pager">
                     <div className="swiper-pager-item" ref={this.pagerItem}>

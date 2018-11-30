@@ -2,8 +2,9 @@ import React from 'react';
 import {storiesOf} from '@storybook/react';
 import "./styles.scss";
 
-import ReactSimpleSwiper from "../src/react/ReactSimpleSwiper";
+// import ReactSimpleSwiper from "../src/react/ReactSimpleSwiper";
 import TouchSpace from "../src/components/touchSpace/TouchSpace";
+import SimpleSlider from "../src/SimpleSlider";
 
 
 class SimpleSwiperWithExternalTouchSpace extends React.Component {
@@ -11,64 +12,60 @@ class SimpleSwiperWithExternalTouchSpace extends React.Component {
     constructor(props) {
         super(props);
 
-        this.slider = React.createRef();
+        this.simpleSliderNodeRef = React.createRef();
         this.touchSpaceNode = React.createRef();
     }
 
     componentDidUpdate() {
-        this.slider.current.slider.layout();
+        this.slider.layout();
     }
 
     componentDidMount() {
-        this.slider.current.slider.layout();
+        this.slider = new SimpleSlider(this.simpleSliderNodeRef.current);
+        this.slider.slideSizeFunction = () => 200;
+        this.slider.layout();
+
+        // We don't enable this.slider.touchSpace!!!
 
         // Let's create new touch space which is external.
-        this.touchSpace = new TouchSpace(this.slider.current.slider, this.touchSpaceNode.current);
+        this.touchSpace = new TouchSpace(this.slider, this.touchSpaceNode.current);
         this.touchSpace.enable();
     }
 
     render() {
         return (
             <div>
-                <ReactSimpleSwiper
-                    ref={this.slider}
-                    className={'swiper'}
-                    slideSize={() => 200}
-                    rightOffset={() => 100}
-                    leftOffset={() => 50}
-                    slideSnapOffset={() => 50}
-                    slideMargin={() => 20}
-                    infinite={false}
-                    disableInternalTouchSpace={true} // this flag disables default internal touchSpace of SimpleSwiper
-                >
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                    <div className="slide"></div>
-                </ReactSimpleSwiper>
+                <div className={"swiper"} ref={this.simpleSliderNodeRef}>
+                    <div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                        <div className="slide"></div>
+                    </div>
+                </div>
 
                 <div ref={this.touchSpaceNode} style={{width: '50%', height: '200px', cursor: 'pointer', background: 'pink', marginTop: '40px'}}>
                     <div>SWIPE HERE</div>

@@ -2,7 +2,7 @@ import React from 'react';
 import {storiesOf} from '@storybook/react';
 import "./styles.scss";
 
-import ReactSimpleSwiper from "../src/react/ReactSimpleSwiper";
+import SimpleSlider from "../src/SimpleSlider";
 
 class SimpleSwiperWithDynamicSlides extends React.Component {
 
@@ -12,15 +12,18 @@ class SimpleSwiperWithDynamicSlides extends React.Component {
             slidesNum: 10
         };
 
-        this.slider = React.createRef();
+        this.simpleSwiperNodeRef = React.createRef();
     }
 
     componentDidUpdate() {
-        this.slider.current.slider.layout();
+        this.slider.layout();
     }
 
     componentDidMount() {
-        this.slider.current.slider.layout();
+        this.slider = new SimpleSlider(this.simpleSwiperNodeRef.current);
+        this.slider.slideSizeFunction = () => 200;
+        this.slider.touchSpace.enable();
+        this.slider.layout();
     }
 
     addNewSlide() {
@@ -32,20 +35,14 @@ class SimpleSwiperWithDynamicSlides extends React.Component {
     render() {
         return (
             <div className='ReactSlider__example'>
-                <ReactSimpleSwiper
-                    className='swiper'
-                    ref={this.slider}
-                    slideSize={() => 200}
-                    rightOffset={() => 20}
-                    leftOffset={() => 20}
-                    slideSnapOffset={() => 20}
-                    slideMargin={() => 20}
-                    infinite={false}
-                >
-                    {[...Array(this.state.slidesNum).keys()].map((i) => {
-                        return <div className="slide">{i} slide</div>;
-                    })}
-                </ReactSimpleSwiper>
+
+                <div className={"swiper"} ref={this.simpleSwiperNodeRef}>
+                    <div>
+                        {[...Array(this.state.slidesNum).keys()].map((i) => {
+                            return <div className="slide">{i} slide</div>;
+                        })}
+                    </div>
+                </div>
 
                 <div className='ReactSlider__paramSetter'>
                     <p>Slides amount</p>
@@ -60,11 +57,12 @@ class SimpleSwiperWithDynamicSlides extends React.Component {
         )
     }
 }
+
 storiesOf('Slider', module)
     .add('dynamic slides', () =>
         <div>
             <h1>Slider with dynamic slides</h1>
 
-            <SimpleSwiperWithDynamicSlides />
+            <SimpleSwiperWithDynamicSlides/>
         </div>
     );
