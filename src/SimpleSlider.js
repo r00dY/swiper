@@ -1,12 +1,13 @@
-let TouchSwiper = require("./TouchSwiper");
+import TouchSpace from "./components/touchSpace/TouchSpace";
+import AbstractSlider from "./AbstractSlider";
 
-class SimpleSwiper extends TouchSwiper {
+class SimpleSlider extends AbstractSlider {
 
-    constructor(name) {
-        super(name);
+    constructor(container) {
+        super();
 
-        this._container = document.querySelector(this._getSelectorForComponent('container'));
-        this._containerInner = this._container.querySelector('.swiper-items');
+        this._container = container;
+        this._containerInner = container.firstElementChild;
         this._items = this._containerInner.children;
 
         this.addEventListener('move', () => {
@@ -16,6 +17,12 @@ class SimpleSwiper extends TouchSwiper {
         this._wasLaidOut = false;
 
         this.displayNoneAutomatically = true;
+
+        this._touchSpaceComponent = new TouchSpace(this, this._container); // internal touch space. No need to enable it. Very low cost if not enabled.
+    }
+
+    get touchSpace() {
+        return this._touchSpaceComponent;
     }
 
     layout() {
@@ -117,4 +124,4 @@ class SimpleSwiper extends TouchSwiper {
     }
 }
 
-module.exports = SimpleSwiper;
+export default SimpleSlider;

@@ -1,27 +1,31 @@
-require("gsap/EasePack");
-require("gsap/TweenLite");
+import AnimationEngine from "./animationEngines/AnimationEngine";
+import EventSystem from "./helpers/EventSystem";
 
-let EventSystem = require("./EventSystem");
+let defaults = {
+    slideMarginFunction: () => 0,
+    slideSnapOffsetFunction: () => 0,
+    leftOffsetFunction: () => 0,
+    rightOffsetFunction: () => 0,
+    infinite: false,
+    snapOnlyToAdjacentSlide: false,
+    overscrollFunction: (x) => 0.5 * Math.log(1 + x), // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
+    animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8)
+};
 
-class SwiperEngine {
+class AbstractSlider {
 
     constructor() {
 
-        this._slideMarginFunction = () => { return 0; };
-        this._slideSnapOffsetFunction = () => { return 0; };
-        this._leftOffsetFunction = () => 0;
-        this._rightOffsetFunction = () => 0;
+        this.defaults = defaults;
 
-        this._infinite = false;
-        this._snapOnlyToAdjacentSlide = false;
-
-        // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
-        this._overscrollFunction = (x) => {
-            return 0.5 * Math.log(1 + x);
-        };
-
-        this._animationEase = Expo.easeOut;
-        this._animationTime = 0.8;
+        this._slideMarginFunction = defaults.slideMarginFunction;
+        this._slideSnapOffsetFunction = defaults.slideSnapOffsetFunction;
+        this._leftOffsetFunction = defaults.leftOffsetFunction;
+        this._rightOffsetFunction = defaults.rightOffsetFunction;
+        this._infinite = defaults.infinite;
+        this._snapOnlyToAdjacentSlide = defaults.snapOnlyToAdjacentSlide;
+        this._overscrollFunction = defaults.overscrollFunction;
+        this._animationEngine = defaults.animationEngine;
 
         this._scrollingAnimationTime = 0.8;
 
@@ -45,6 +49,14 @@ class SwiperEngine {
         EventSystem.addEvent(this, 'visibleSlidesChange');
     }
 
+    set animationEngine(engine) {
+        this._animationEngine = engine || defaults.animationEngine;
+    }
+
+    get animationEngine() {
+        return this._animationEngine;
+    }
+
     set containerSizeFunction(containerSizeFunction) {
         this._containerSizeFunction = containerSizeFunction;
     }
@@ -62,15 +74,15 @@ class SwiperEngine {
     }
 
     set slideSizeFunction(slideSizeFunction) {
-        this._slideSizeFunction = slideSizeFunction;
+        this._slideSizeFunction = slideSizeFunction || defaults.slideSizeFunction;
     }
 
     get slideSizeFunction() {
-        return this._slideSize;
+        return this._slideSizeFunction;
     }
 
     set slideMarginFunction(slideMarginFunction) {
-        this._slideMarginFunction = slideMarginFunction;
+        this._slideMarginFunction = slideMarginFunction || defaults.slideMarginFunction;
     }
 
     get slideMarginFunction() {
@@ -79,68 +91,43 @@ class SwiperEngine {
 
 
     set slideSnapOffsetFunction(slideSnapOffsetFunction) {
-        this._slideSnapOffsetFunction = slideSnapOffsetFunction;
+        this._slideSnapOffsetFunction = slideSnapOffsetFunction || defaults.slideSnapOffsetFunction;
     }
 
     get slideSnapOffsetFunction() {
         return this._slideSnapOffsetFunction;
     }
 
-
     set rightOffsetFunction(rightOffsetFunction) {
-        this._rightOffsetFunction = rightOffsetFunction;
+        this._rightOffsetFunction = rightOffsetFunction || defaults.rightOffsetFunction;
+    }
+
+    get rightOffsetFunction() {
+        return this._rightOffsetFunction;
     }
 
     set leftOffsetFunction(leftOffsetFunction) {
-        this._leftOffsetFunction = leftOffsetFunction;
+        this._leftOffsetFunction = leftOffsetFunction || defaults.leftOffsetFunction;
     }
 
-    set leftOffset(leftOffset) {
-        this._leftOffset = leftOffset;
-    }
-
-    get leftOffset() {
-        return this._leftOffset;
-    }
-
-    set rightOffset(rightOffset) {
-        this._rightOffset = rightOffset;
-    }
-
-    get rightOffset() {
-        return this._rightOffset;
+    get leftOffsetFunction() {
+        return this._leftOffsetFunction;
     }
 
     set overscrollFunction(overscrollFunction) {
-        this._overscrollFunction = overscrollFunction;
+        this._overscrollFunction = overscrollFunction || defaults.overscrollFunction;
     }
 
     set infinite(infinite) {
-        this._infinite = infinite;
+        this._infinite = infinite || defaults.infinite;
     }
 
     get infinite() {
         return this._infinite;
     }
 
-    set animationEase(animationEase) {
-        this._animationEase = animationEase;
-    }
-
-    get animationEase() {
-        return this._animationEase;
-    }
-
-    set animationTime(animationTime) {
-        this._animationTime = animationTime;
-    }
-
-    get animationTime() {
-        return this._animationTime;
-    }
-
     set snapOnlyToAdjacentSlide(snapOnlyToAdjacentSlide) {
-        this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide;
+        this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide || defaults.snapOnlyToAdjacentSlide;
     }
 
     get snapOnlyToAdjacentSlide() {
@@ -172,12 +159,11 @@ class SwiperEngine {
         this._CACHE = {
             slideSize: {},
             slideMargin: {},
-            slideSnapOffset: {}
+            slideSnapOffset: {},
         };
 
         this._activeSlidesString = undefined;
         this._visibleSlidesString = undefined;
-        this._animations = [];
 
         // containerSize validation
         if (typeof this._containerSizeFunction !== "function") { throw "'containerSizeFunction' is not defined or is not a function"; }
@@ -287,22 +273,7 @@ class SwiperEngine {
 
             }
 
-            let tmp = { pos: this._pos };
-
-            let anim = TweenLite.to(tmp, this._animationTime, {
-                pos: pos,
-                ease: this._animationEase,
-
-                onUpdate: () => {
-                    this._updatePos(tmp.pos);
-                },
-
-                onComplete: () => {
-                    this._finishAnimation();
-                }
-            });
-
-            this._animations = [anim];
+            this.animationEngine.animate(this._pos, pos, this._updatePos.bind(this), this._finishAnimation.bind(this));
 
             this._startAnimation();
         }
@@ -358,14 +329,14 @@ class SwiperEngine {
      * This method moves 1 container width to the right (with snap)
      */
     moveRight(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos + this._containerSizeFunction()), animated, 1);
+        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated, 1);
     }
 
     /**
      * This method moves 1 container width to the left (with snap)
      */
     moveLeft(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos - this._containerSizeFunction()), animated, -1);
+        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated, -1);
     }
 
     /**
@@ -435,6 +406,16 @@ class SwiperEngine {
         return this._CACHE["slideSnapOffset"][n];
     }
 
+    get containerSize() {
+        if (typeof this._CACHE["containerSize"] !== 'undefined') { return this._CACHE["containerSize"]; }
+
+        let result = this._containerSizeFunction();
+
+        this._CACHE["containerSize"] = result;
+
+        return result;
+    }
+
 
     /**
      * Helpers
@@ -470,7 +451,7 @@ class SwiperEngine {
             throw "maxPos method not available in infinite mode"
         }
 
-        return Math.max(0, this.slideableWidth - this._containerSizeFunction());
+        return Math.max(0, this.slideableWidth - this.containerSize);
     }
 
     isAnimating() {
@@ -492,20 +473,20 @@ class SwiperEngine {
         if (rightEdge < 0) {
             return 0;
         }
-        else if (leftEdge > this._containerSizeFunction()) {
+        else if (leftEdge > this.containerSize) {
             return 0;
         }
-        else if (leftEdge < 0 && rightEdge > this._containerSizeFunction()) {
+        else if (leftEdge < 0 && rightEdge > this.containerSize) {
             return 1;
         }
-        else if (leftEdge >= 0 && rightEdge <= this._containerSizeFunction()) {
+        else if (leftEdge >= 0 && rightEdge <= this.containerSize) {
             return 1;
         }
-        else if (leftEdge < 0 && rightEdge <= this._containerSizeFunction()) {
+        else if (leftEdge < 0 && rightEdge <= this.containerSize) {
             return rightEdge / this.slideSize(n);
         }
-        else if (leftEdge >= 0 && rightEdge > this._containerSizeFunction()) {
-            return (this._containerSizeFunction() - leftEdge) / this.slideSize(n);
+        else if (leftEdge >= 0 && rightEdge > this.containerSize) {
+            return (this.containerSize - leftEdge) / this.slideSize(n);
         }
     }
 
@@ -646,12 +627,12 @@ class SwiperEngine {
             let extraTranslation = 0;
 
             if (pos < 0) {
-                let rest = -pos / this._containerSizeFunction();
-                extraTranslation = this._overscrollFunction(rest) * this._containerSizeFunction();
+                let rest = -pos / this.containerSize;
+                extraTranslation = this._overscrollFunction(rest) * this.containerSize;
             }
             else if (pos > this.maxPos) {
-                let rest = (pos - this.maxPos) / this._containerSizeFunction();
-                extraTranslation = -this._overscrollFunction(rest) * this._containerSizeFunction();
+                let rest = (pos - this.maxPos) / this.containerSize;
+                extraTranslation = -this._overscrollFunction(rest) * this.containerSize;
             }
 
             coord += extraTranslation;
@@ -803,10 +784,7 @@ class SwiperEngine {
     _finishAnimation() {
         if (!this._isAnimating) { return; }
 
-        for (let i = 0; i < this._animations.length; i++) {
-            this._animations[i].kill();
-        }
-        this._animations = [];
+        this.animationEngine.killAnimation();
 
         this._runEventListeners('animationEnd');
         this._isAnimating = false;
@@ -816,4 +794,4 @@ class SwiperEngine {
 
 }
 
-module.exports = SwiperEngine;
+export default AbstractSlider;

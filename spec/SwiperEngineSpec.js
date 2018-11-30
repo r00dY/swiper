@@ -1,4 +1,4 @@
-let SwiperEngine = require("../SwiperEngine");
+import SwiperEngine from "../src/native/SwiperEngine";
 
 let swiper;
 

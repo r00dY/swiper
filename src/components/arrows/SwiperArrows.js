@@ -1,9 +1,9 @@
-let SwiperArrowsController = require("./SwiperArrowsController");
-let EventSystem = require("./EventSystem");
+import SwiperArrowsController from "./SwiperArrowsController";
+import EventSystem from "../../helpers/EventSystem";
 
 class SwiperArrows {
 
-    constructor(swiper, animated = true) {
+    constructor(swiper, arrowLeft, arrowRight, animated = true) {
         EventSystem.register(this);
         EventSystem.addEvent(this, 'clickSpaceNextClicked');
         EventSystem.addEvent(this, 'clickSpacePreviousClicked');
@@ -21,11 +21,12 @@ class SwiperArrows {
             this.swiperArrowsController.clickPrevious();
             this._runEventListeners('clickSpacePreviousClicked');
         }
+
+        this._clickSpacePrevious = arrowLeft;
+        this._clickSpaceNext = arrowRight;
     }
 
-    init() {
-        this._clickSpacePrevious = document.querySelector(this.swiper._getSelectorForComponent('click-space-previous'));
-        this._clickSpaceNext = document.querySelector(this.swiper._getSelectorForComponent('click-space-next'));
+    enable() {
 
         if (this._clickSpaceNext) {
             this.swiperArrowsController.addEventListener('arrowNextActiveStatusChanged', (active) => {
@@ -48,8 +49,9 @@ class SwiperArrows {
         this.swiperArrowsController.init();
     }
 
-    deinit() {
-        // Unbind clicks on next / previous
+    disable() {
+        this.swiperArrowsController.deinit();
+
         if (this._clickSpaceNext) {
             this._clickSpaceNext.removeEventListener('click', this.clickNextListener);
         }
@@ -61,4 +63,4 @@ class SwiperArrows {
 
 }
 
-module.exports = SwiperArrows;
+export default SwiperArrows;

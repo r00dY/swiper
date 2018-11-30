@@ -1,4 +1,4 @@
-let EventSystem = require("./EventSystem");
+import EventSystem from "../../helpers/EventSystem";
 
 class SwiperPagerController {
     constructor(swiper, animated) {
@@ -28,4 +28,4 @@ class SwiperPagerController {
     }
 }
 
-module.exports = SwiperPagerController;
+export default SwiperPagerController;
