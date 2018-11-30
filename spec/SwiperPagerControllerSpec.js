@@ -1,10 +1,10 @@
-import SwiperEngine from "../src/native/SwiperEngine";
+import AbstractSlider from "../src/AbstractSlider";
 import SwiperPagerController from "../src/components/pager/SwiperPagerController";
 
 let swiper;
 
 function sliderRegular(infinite) {
-    swiper = new SwiperEngine();
+    swiper = new AbstractSlider();
 
     swiper.containerSizeFunction = () => 500;
     swiper.count = 5;

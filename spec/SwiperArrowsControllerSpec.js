@@ -1,10 +1,10 @@
 import SwiperArrowsController from "../src/components/arrows/SwiperArrowsController";
-import SwiperEngine from "../src/native/SwiperEngine";
+import AbstractSlider from "../src/AbstractSlider";
 
 let swiper;
 
 function sliderRegular(infinite) {
-    swiper = new SwiperEngine();
+    swiper = new AbstractSlider();
 
     swiper.containerSizeFunction = () => 500;
     swiper.count = 5;
