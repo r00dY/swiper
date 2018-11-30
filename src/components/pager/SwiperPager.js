@@ -3,30 +3,33 @@ import SwiperPagerController from "./SwiperPagerController";
 
 class SwiperPager {
 
-    constructor(swiper) {
+    constructor(swiper, pagerItemTemplate) {
         this.swiper = swiper;
         EventSystem.register(this);
         EventSystem.addEvent(this, 'pagerItemClicked');
 
         this._pagerElements = [];
         this.swiperPagerController = new SwiperPagerController(this.swiper);
+
+        this._pagerItemTemplate = pagerItemTemplate;
     }
 
 
-    init(pagerItemTemplate) {
+    enable() {
         for (let i = 0; i < this.swiper.count - 1; i++) {
-            let pagerItem = pagerItemTemplate.cloneNode(true);
+            let pagerItem = this._pagerItemTemplate.cloneNode(true);
             this._pagerElements.unshift(pagerItem);
-            pagerItemTemplate.parentNode.insertBefore(pagerItem, pagerItemTemplate.nextSibling);
+            this._pagerItemTemplate.parentNode.insertBefore(pagerItem, this._pagerItemTemplate.nextSibling);
         }
-        this._pagerElements.unshift(pagerItemTemplate);
+        this._pagerElements.unshift(this._pagerItemTemplate);
 
         this._pagerItemsOnClickListeners = [];
 
         for (let i = 0; i < this._pagerElements.length; i++) {
             ((i) => {
                 this._pagerItemsOnClickListeners[i] = () => {
-                    this.pagerElementClickListener(i);
+                    this.swiperPagerController.elementClicked(i);
+                    this._runEventListeners('pagerItemClicked', i);
                 };
                 this._pagerElements[i].addEventListener('click', this._pagerItemsOnClickListeners[i]);
             })(i);
@@ -42,11 +45,6 @@ class SwiperPager {
             this._setElementsActive(elementsIndexes);
 
         })
-    }
-
-    pagerElementClickListener(index) {
-        this.swiperPagerController.elementClicked(index);
-        this._runEventListeners('pagerItemClicked', index);
     }
 
     _setElementsActive(elementsIndexes) {
@@ -66,7 +64,7 @@ class SwiperPager {
         })
     }
 
-    deinit() {
+    disable() {
         for (let i = 0; i < this._pagerElements.length; i++) {
             // Let's leave first element alive, just unbind listener
             // and remove 'active' class from first element. It would be added during "init" anyways

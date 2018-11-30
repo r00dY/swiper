@@ -1,12 +1,13 @@
-import TouchSwiper from "./TouchSwiper";
+import TouchSpace from "../components/touchSpace/TouchSpace";
+import SwiperEngine from "./SwiperEngine";
 
-class FadeSwiper extends TouchSwiper {
+class FadeSwiper extends SwiperEngine {
     constructor(container) {
         super();
 
-        this.touchSpace = container;
+        this._touchSpaceComponent = new TouchSpace(this, container);
 
-        this.slides = Array.from(this.touchSpace.children);
+        this.slides = Array.from(container.children);
 
         this.addEventListener('move', () => {
             this.slides.forEach((slide, index) => {
@@ -22,6 +23,15 @@ class FadeSwiper extends TouchSwiper {
             });
         });
     }
+
+    set touchSpace(touchSpaceComponent) {
+        this._touchSpaceComponent = touchSpaceComponent;
+    }
+
+    get touchSpace() {
+        return this._touchSpaceComponent;
+    }
+
 }
 
 export default FadeSwiper;

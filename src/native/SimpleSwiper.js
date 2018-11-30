@@ -1,6 +1,8 @@
-import TouchSwiper from "./TouchSwiper";
+// import TouchSwiper from "./TouchSwiper";
+import SwiperEngine from "./SwiperEngine";
+import TouchSpace from "../components/touchSpace/TouchSpace";
 
-class SimpleSwiper extends TouchSwiper {
+class SimpleSwiper extends SwiperEngine {
 
     constructor(container) {
         super();
@@ -9,8 +11,6 @@ class SimpleSwiper extends TouchSwiper {
         this._containerInner = container.firstElementChild;
         this._items = this._containerInner.children;
 
-        this.touchSpace = this._container;
-
         this.addEventListener('move', () => {
             this._onMove();
         });
@@ -18,6 +18,12 @@ class SimpleSwiper extends TouchSwiper {
         this._wasLaidOut = false;
 
         this.displayNoneAutomatically = true;
+
+        this._touchSpaceComponent = new TouchSpace(this, this._container); // internal touch space. No need to enable it. Very low cost if not enabled.
+    }
+
+    get touchSpace() {
+        return this._touchSpaceComponent;
     }
 
     layout() {

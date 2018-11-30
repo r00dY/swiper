@@ -3,7 +3,7 @@ import EventSystem from "../../helpers/EventSystem";
 
 class SwiperArrows {
 
-    constructor(swiper, animated = true) {
+    constructor(swiper, arrowLeft, arrowRight, animated = true) {
         EventSystem.register(this);
         EventSystem.addEvent(this, 'clickSpaceNextClicked');
         EventSystem.addEvent(this, 'clickSpacePreviousClicked');
@@ -21,11 +21,12 @@ class SwiperArrows {
             this.swiperArrowsController.clickPrevious();
             this._runEventListeners('clickSpacePreviousClicked');
         }
-    }
 
-    init(arrowLeft, arrowRight) {
         this._clickSpacePrevious = arrowLeft;
         this._clickSpaceNext = arrowRight;
+    }
+
+    enable() {
 
         if (this._clickSpaceNext) {
             this.swiperArrowsController.addEventListener('arrowNextActiveStatusChanged', (active) => {
@@ -48,7 +49,7 @@ class SwiperArrows {
         this.swiperArrowsController.init();
     }
 
-    deinit() {
+    disable() {
         this.swiperArrowsController.deinit();
 
         if (this._clickSpaceNext) {

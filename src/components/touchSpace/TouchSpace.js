@@ -1,35 +1,28 @@
-import EventSystem from "../helpers/EventSystem";
-// import VerticalScrollDetector from "../helpers/VerticalScrollDetector.js";
+// import HammerGestureListener from "../gestureListeners/HammerGestureListener";
+import TouchSpaceController from "./TouchSpaceController";
 
+// Default TouchSpace uses hammer.js as gestures engine.
 const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
 
-/**
- * Events:
- *
- * onPan(deltaX)
- *
- * - should be called only when user's intention is to pan left or pan right the swiper.
- * - when user is scrolling page top/bottom, this event shouldn't fire.
- * - when this event started firing (users intention is scrolling swiper), page shouldn't scroll
- *
- * onSwipe(velocity)
- *
- * - called after couple of onPan's when user sharply moves his finger
- * - after onSwipe there won't be any onPan events until onPanEnd is called.
- *
- * onPanStart
- *
- * - always called at start of panning. Called when it's CERTAIN that user did really started scrolling left / right, there is threshold for that.
- *
- * onPanEnd
- *
- * - called when fingers are released
- *
- */
+class TouchSpace {
 
-class HammerGestureListener {
+    constructor(swiper, touchSpace) {
+        this.swiper = swiper;
 
-    constructor(touchSpace) {
+        this._touchSpaceController = new TouchSpaceController(this.swiper, true);
+        this._touchSpace = touchSpace;
+
+        this._inited = false;
+    }
+
+    enable() {
+        if (this._inited) { return; }
+        this._inited = true;
+
+        console.log('enable touch space!', this.swiper);
+
+        let touchSpace = this._touchSpace;
+
         this._mc = new Hammer(touchSpace, { domEvents: false/*, touchAction: 'pan-y'*/ });
         this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
         this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
@@ -50,12 +43,6 @@ class HammerGestureListener {
         //        }, 50);
         //    }
         // });
-
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'swipe');
-        EventSystem.addEvent(this, 'pan');
-        EventSystem.addEvent(this, 'panstart');
-        EventSystem.addEvent(this, 'panend');
 
         let isTouched = false;
         let swiped = false;
@@ -107,7 +94,7 @@ class HammerGestureListener {
                 case "swipeup":
 
                     if (isTouched) {
-                        this._runEventListeners('swipe', Math.abs(ev.velocityX));
+                        this._touchSpaceController.swipe(Math.abs(ev.velocityX));
                         swiped = true;
                     }
 
@@ -117,7 +104,7 @@ class HammerGestureListener {
                 case "swipedown":
 
                     if (isTouched) {
-                        this._runEventListeners('swipe', -Math.abs(ev.velocityX));
+                        this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
                         swiped = true;
                     }
 
@@ -145,11 +132,11 @@ class HammerGestureListener {
 
                         touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
 
-                        this._runEventListeners('panstart');
+                        this._touchSpaceController.panStart();
                     }
 
                     if (isTouched && !swiped) {
-                        this._runEventListeners('pan', delta);
+                        this._touchSpaceController.panMove(delta);
                     }
 
                     break;
@@ -165,7 +152,7 @@ class HammerGestureListener {
                         isTouched = false;
 
                         if (!swiped) {
-                            this._runEventListeners('panend', swiped);
+                            this._touchSpaceController.panEnd(swiped)
                         }
 
                         swiped = false;
@@ -175,9 +162,16 @@ class HammerGestureListener {
         });
     }
 
-    destroy() {
-        this._mc.destroy();
+    disable() {
+        if (!this._inited) { return; }
+        this._inited = false;
+
+        if (this._mc) {
+            this._mc.destroy();
+        }
     }
+
 }
 
-export default HammerGestureListener;
+
+export default TouchSpace;

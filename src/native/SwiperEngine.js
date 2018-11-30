@@ -1,25 +1,31 @@
 import AnimationEngine from "../animationEngines/AnimationEngine";
 import EventSystem from "../helpers/EventSystem";
 
+let defaults = {
+    slideMarginFunction: () => 0,
+    slideSnapOffsetFunction: () => 0,
+    leftOffsetFunction: () => 0,
+    rightOffsetFunction: () => 0,
+    infinite: false,
+    snapOnlyToAdjacentSlide: false,
+    overscrollFunction: (x) => 0.5 * Math.log(1 + x), // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
+    animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8)
+};
+
 class SwiperEngine {
 
     constructor() {
 
-        this._slideMarginFunction = () => { return 0; };
-        this._slideSnapOffsetFunction = () => { return 0; };
-        this._leftOffsetFunction = () => 0;
-        this._rightOffsetFunction = () => 0;
+        this.defaults = defaults;
 
-        this._infinite = false;
-        this._snapOnlyToAdjacentSlide = false;
-
-        // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
-        this._overscrollFunction = (x) => {
-            return 0.5 * Math.log(1 + x);
-        };
-
-        // default animation engine
-        this._animationEngine = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8);
+        this._slideMarginFunction = defaults.slideMarginFunction;
+        this._slideSnapOffsetFunction = defaults.slideSnapOffsetFunction;
+        this._leftOffsetFunction = defaults.leftOffsetFunction;
+        this._rightOffsetFunction = defaults.rightOffsetFunction;
+        this._infinite = defaults.infinite;
+        this._snapOnlyToAdjacentSlide = defaults.snapOnlyToAdjacentSlide;
+        this._overscrollFunction = defaults.overscrollFunction;
+        this._animationEngine = defaults.animationEngine;
 
         this._scrollingAnimationTime = 0.8;
 
@@ -44,7 +50,7 @@ class SwiperEngine {
     }
 
     set animationEngine(engine) {
-        this._animationEngine = engine;
+        this._animationEngine = engine || defaults.animationEngine;
     }
 
     get animationEngine() {
@@ -68,7 +74,7 @@ class SwiperEngine {
     }
 
     set slideSizeFunction(slideSizeFunction) {
-        this._slideSizeFunction = slideSizeFunction;
+        this._slideSizeFunction = slideSizeFunction || defaults.slideSizeFunction;
     }
 
     get slideSizeFunction() {
@@ -76,7 +82,7 @@ class SwiperEngine {
     }
 
     set slideMarginFunction(slideMarginFunction) {
-        this._slideMarginFunction = slideMarginFunction;
+        this._slideMarginFunction = slideMarginFunction || defaults.slideMarginFunction;
     }
 
     get slideMarginFunction() {
@@ -85,7 +91,7 @@ class SwiperEngine {
 
 
     set slideSnapOffsetFunction(slideSnapOffsetFunction) {
-        this._slideSnapOffsetFunction = slideSnapOffsetFunction;
+        this._slideSnapOffsetFunction = slideSnapOffsetFunction || defaults.slideSnapOffsetFunction;
     }
 
     get slideSnapOffsetFunction() {
@@ -93,7 +99,7 @@ class SwiperEngine {
     }
 
     set rightOffsetFunction(rightOffsetFunction) {
-        this._rightOffsetFunction = rightOffsetFunction;
+        this._rightOffsetFunction = rightOffsetFunction || defaults.rightOffsetFunction;
     }
 
     get rightOffsetFunction() {
@@ -101,35 +107,19 @@ class SwiperEngine {
     }
 
     set leftOffsetFunction(leftOffsetFunction) {
-        this._leftOffsetFunction = leftOffsetFunction;
+        this._leftOffsetFunction = leftOffsetFunction || defaults.leftOffsetFunction;
     }
 
     get leftOffsetFunction() {
         return this._leftOffsetFunction;
     }
 
-    set leftOffset(leftOffset) {
-        this._leftOffset = leftOffset;
-    }
-
-    get leftOffset() {
-        return this._leftOffset;
-    }
-
-    set rightOffset(rightOffset) {
-        this._rightOffset = rightOffset;
-    }
-
-    get rightOffset() {
-        return this._rightOffset;
-    }
-
     set overscrollFunction(overscrollFunction) {
-        this._overscrollFunction = overscrollFunction;
+        this._overscrollFunction = overscrollFunction || defaults.overscrollFunction;
     }
 
     set infinite(infinite) {
-        this._infinite = infinite;
+        this._infinite = infinite || defaults.infinite;
     }
 
     get infinite() {
@@ -137,7 +127,7 @@ class SwiperEngine {
     }
 
     set snapOnlyToAdjacentSlide(snapOnlyToAdjacentSlide) {
-        this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide;
+        this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide || defaults.snapOnlyToAdjacentSlide;
     }
 
     get snapOnlyToAdjacentSlide() {

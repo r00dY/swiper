@@ -1,9 +1,12 @@
-import React from "react";
-import ReactSimpleSwiper from "../../src/react/ReactSimpleSwiper";
-import SwiperArrows from "../../src/components/arrows/SwiperArrows";
-import SwiperPager from "../../src/components/pager/SwiperPager";
+import React from 'react';
+import {storiesOf} from '@storybook/react';
+import "./styles.scss";
 
-class SimpleSwiperWithParamsEdition extends React.Component {
+import ReactSimpleSwiper from "../src/react/ReactSimpleSwiper";
+import SwiperArrows from "../src/components/arrows/SwiperArrows";
+import SwiperPager from "../src/components/pager/SwiperPager";
+
+class SimpleSwiperWithParams extends React.Component {
     constructor(props) {
         super(props);
 
@@ -21,11 +24,9 @@ class SimpleSwiperWithParamsEdition extends React.Component {
             displayNoneAutomatically: false,
             snapOnlyToAdjacentSlide: false,
             infinite: true,
-            enableTouch: true,
+            disableInternalTouchSpace: false,
             activeSlides: []
         };
-
-        this.handleTouch = this.handleTouch.bind(this);
     };
 
     handleStateChange(e, param) {
@@ -41,58 +42,41 @@ class SimpleSwiperWithParamsEdition extends React.Component {
     }
 
     componentDidUpdate() {
-        this.slider.current.layout();
-
-        this.arrows.deinit();
-        this.pager.deinit();
-        this.setUpArrowsAndPager();
+        this.slider.current.slider.layout();
     }
 
     componentDidMount() {
-        this.slider.current.layout();
-        this.setUpArrowsAndPager();
-    }
+        /**
+         * This method unfortunately must be called externally.
+         *
+         * The reason is that if ReactSimpleSwiper calls this method INTERNALLY (in componentDidMount / componentDidUpdate), events are triggered.
+         *
+         * The event listeners are in parent (which controls slider) and parent might react on them. However, parent will need swiper instance to do this. and the swiper insance is not yet available because parent ref is not available yet.
+         *
+         */
+        this.slider.current.slider.layout();
 
-    setUpArrowsAndPager() {
-        this.arrows = new SwiperArrows(this.slider.current);
-        this.arrows.init(this.arrowLeft.current, this.arrowRight.current);
+        this.arrows = new SwiperArrows(this.slider.current.slider, this.arrowLeft.current, this.arrowRight.current);
+        this.pager = new SwiperPager(this.slider.current.slider, this.pagerItem.current);
 
-        this.pager = new SwiperPager(this.slider.current);
-        this.pager.init(this.pagerItem.current);
+        this.arrows.enable();
+        this.pager.enable();
     }
 
     onVisibleSlidesChange() {
-        // console.log('visible slides changed', this.slider.current.visibleSlides());
+        console.log('visible slides changed', this.slider.current.slider.visibleSlides());
     }
 
     onActiveSlidesChange() {
-        // console.log('active slides changed', this.slider.current.activeSlides());
-    }
-
-    handleTouch(type, e) {
-        console.log('TOUCH: ' + type);
-        if (type == 'move') {
-            console.log(e);
-        }
+        console.log('active slides changed', this.slider.current.slider.activeSlides());
     }
 
     render() {
         return (
             <div>
-
-                {/*<div*/}
-                    {/*style={{width: "600px", height: "600px", border: "1px solid red"}}*/}
-                    {/*onTouchStart={(e) => { this.handleTouch('start', e) }}*/}
-                    {/*onTouchCancel={(e) => { this.handleTouch('cancel', e) }}*/}
-                    {/*onTouchEnd={(e) => { this.handleTouch('end', e) }}*/}
-                    {/*onTouchMove={(e) => { this.handleTouch('move', e) }}*/}
-                {/*>*/}
-
-                {/*</div>*/}
-
                 <ReactSimpleSwiper
-                    containerClasses='swiper'
-                    enableTouch={this.state.enableTouch}
+                    className={'swiper'}
+                    disableInternalTouchSpace={this.state.disableInternalTouchSpace}
                     displayNoneAutomatically={this.state.displayNoneAutomatically}
                     ref={this.slider}
                     slideSize={() => this.state.slideSize}
@@ -105,7 +89,16 @@ class SimpleSwiperWithParamsEdition extends React.Component {
                     onVisibleSlidesChange={this.onVisibleSlidesChange.bind(this)}
                     onActiveSlidesChange={this.onActiveSlidesChange.bind(this)}
                 >
-                    {this.props.slides}
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"><a href="#">Link</a></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
+                    <div className="slide"></div>
                 </ReactSimpleSwiper>
 
                 <div className="pager">
@@ -160,12 +153,24 @@ class SimpleSwiperWithParamsEdition extends React.Component {
                 </div>
 
                 <div className='ReactSlider__paramSetter'>
-                    <p>Enable touch</p>
-                    <input type='checkbox' onChange={(e) => this.handleCheckbox(e, 'enableTouch')} checked={this.state.enableTouch} />
+                    <p>Disable internal touch space</p>
+                    <input type='checkbox' onChange={(e) => this.handleCheckbox(e, 'disableInternalTouchSpace')} checked={this.state.disableInternalTouchSpace} />
                 </div>
             </div>
         )
     }
 }
 
-export default SimpleSwiperWithParamsEdition;
+storiesOf('Slider', module)
+    .add('default', () =>
+        <div className='ReactSlider__example'>
+            <h1>Default slider</h1>
+            <p>With arrows and pager set up. </p>
+            <p>There are also slider params to edit, to see how it will look like.</p>
+            <p>IMPORTANT!!! Params values are relative to each other.</p>
+            <p>Slide size set up to 200 <b>DOES NOT</b> mean 200px. Container size is a point of reference.</p>
+            <p>Also quite important fact is that every slide can have different width.</p>
+
+            <SimpleSwiperWithParams />
+        </div>
+    );
