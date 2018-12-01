@@ -119,7 +119,6 @@ class SimpleSlider extends AbstractSlider {
             }
 
             this._containerInner.style.height = maxHeight + 'px';
-
         }
     }
 }
