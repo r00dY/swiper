@@ -6,6 +6,10 @@ import TouchSpaceExperiment from "../src/components/touchSpace/TouchSpaceExperim
 import SimpleSlider from "../src/SimpleSlider";
 import SimpleSliderContainer from "../src/react/SimpleSliderContainer";
 
+/**
+ * 1. Algorithm of scale + translate doesn't work well. When I zoom in a point on edge in PhotoSwipe, then it works perfectly. there's some offset in mine algo.
+ * 2.
+ */
 let standardSnapFunction = function(boundaries, zoomArea) {
 
     var targetParams = {
@@ -60,86 +64,91 @@ class PinchZoomable extends React.Component {
         this.pinchstart = this.pinchstart.bind(this);
         this.pinchend = this.pinchend.bind(this);
         this.pinch = this.pinch.bind(this);
+        this.getParams = this.getParams.bind(this);
+        this.resetZoom = this.resetZoom.bind(this);
     }
 
-    _combineCurrentWithRelative(params) {
-        let s = params.scale / this._pinchStartEvent.scale;
+    _updateParams(inputParams) {
+        let s = inputParams.scale / this._previousInputParams.scale;
 
+        // this "short diff" algorithm will never work because we keep only diff here. We don' have info about absolute place and this is neccessay to keep consistent.
+        
         let centerRelative = {
-            x: (1 / (s * 2)) + this._pinchStartCenterRelativePosition.x * (1 - 1 / s),
-            y: (1 / (s * 2)) + this._pinchStartCenterRelativePosition.y * (1 - 1 / s)
+            x: (1 / (s * 2)) + this._currentParams.x * (1 - 1 / s),
+            y: (1 / (s * 2)) + this._currentParams.y * (1 - 1 / s)
         };
 
-        let tX = params.x / this.state.containerSize.width - this._pinchStartCenterRelativePosition.x;
-        let tY = params.y / this.state.containerSize.height - this._pinchStartCenterRelativePosition.y;
+        let tX = (inputParams.x - this._previousInputParams.x) / this.state.containerSize.width;
+        let tY = (inputParams.y - this._previousInputParams.y) / this.state.containerSize.height;
 
-        return {
+        let newParams = {
             x: centerRelative.x / this._currentParams.scale + this._currentParams.x - 1 / (2 * this._currentParams.scale) - tX / (s * this._currentParams.scale),
             y: centerRelative.y / this._currentParams.scale + this._currentParams.y - 1 / (2 * this._currentParams.scale) - tY / (s * this._currentParams.scale),
             scale: this._currentParams.scale * s
-        }
+        };
+
+        this._currentParams = newParams;
     }
 
-    _onMove(params) {
-        // console.log('on move', params);
-
+    _onMove() {
         this.setState({
             transform: {
-                x: params.x,
-                y: params.y,
-                scale: params.scale
+                x: this._currentParams.x,
+                y: this._currentParams.y,
+                scale: this._currentParams.scale
             }
-
         });
     }
 
-    _snapToBoundaries(params) {
+    _snapToBoundaries() {
+        this._currentParams.scale = Math.max(1, this._currentParams.scale);
+        this._currentParams.scale = Math.min(5, this._currentParams.scale);
 
-        if (params.scale < 1) { params.scale = 1 };
-        if (params.scale > 4) { params.scale = 4 };
+        this._currentParams = Object.assign({}, standardSnapFunction(this._boundaries, this._currentParams));
 
-        this._currentParams = Object.assign({}, standardSnapFunction(this._boundaries, params));
-        this._onMove(this._currentParams);
+
+        // this._onMove(this._currentParams);
     }
 
-
-    pinchstart(params) {
-        this._isPinching = true;
-        this._pinchStartCenterRelativePosition = {
-            x: params.x / this.state.containerSize.width,
-            y: params.y / this.state.containerSize.height
+    resetZoom() {
+        this._currentParams = {
+            x: 0.5,
+            y: 0.5,
+            scale: 1
         };
 
-        this._pinchStartEvent = params;
+        this._onMove();
     }
 
-    pinch(p) {
+    pinchstart(inputParams) {
+        console.log('pinchstart', inputParams);
+        this._previousInputParams = Object.assign({}, inputParams);
+    }
 
-        console.log(p);
-        // console.log('pinch', ev.center.x / this.state.containerSize.width, ev.center.y / this.state.containerSize.height, ev.scale);
+    pinch(inputParams) {
+        console.log('pinch', inputParams);
+        this._updateParams(inputParams);
+        // this._snapToBoundaries();
+        this._onMove();
 
-        let params = this._combineCurrentWithRelative(p);
-
-        params.scale = Math.max(params.scale, 1);
-        params.scale = Math.min(params.scale, 5);
-
-        this._onMove(params);
-
-        this._pinchPreviousEvent = p;
+        this._previousInputParams = inputParams;
     }
 
     pinchend() {
-        this._currentParams = Object.assign({}, this._combineCurrentWithRelative(this._pinchPreviousEvent));
-        this._snapToBoundaries(this._currentParams);
+        this._snapToBoundaries();
+        this._onMove();
+        this._previousInputParams = undefined;
+    }
 
-        this._pinchPreviousEvent = undefined;
+    getParams() {
+        return this._currentParams;
     }
 
     componentDidMount() {
         this.setState({
             containerSize: {
-                width: this.containerRef.current.clientWidth,
-                height: this.containerRef.current.clientHeight
+                width: 800,//this.containerRef.current.clientWidth,
+                height: 600,//this.containerRef.current.clientHeight
             }
         });
     }
@@ -188,10 +197,10 @@ class Test extends React.Component {
 
     componentDidMount() {
         this.slider = new SimpleSlider(this.simpleSliderNodeRef.current);
-        this.slider.slideSizeFunction = () => 600;
-        this.slider.slideSnapOffsetFunction = () => 100;
-        this.slider.leftOffsetFunction = () => 100;
-        this.slider.rightOffsetFunction = () => 100;
+        this.slider.slideSizeFunction = () => 800;
+        this.slider.slideSnapOffsetFunction = () => 0;
+        this.slider.leftOffsetFunction = () => 0;
+        this.slider.rightOffsetFunction = () => 0;
         this.slider.displayNoneAutomatically = false;
         this.slider.layout();
 
@@ -205,6 +214,7 @@ class Test extends React.Component {
             this.setState({
                scale: params.scale * this.scaleRef
             });
+            console.log('pinch', params);
 
             // console.log(this.ref);
             this.ref.current.pinch(params);
@@ -227,37 +237,74 @@ class Test extends React.Component {
             // this.refs['ref0'].current.pinchend(params);
         });
 
+        this.touchSpace.addEventListener('doubletap', (params, center) => {
+
+            if (this.ref.current.getParams().scale > 1) {
+                this.ref.current.resetZoom();
+            }
+            else {
+                //
+                // console.log('double tap!', center, params);
+                //
+                // center.scale = 1;
+                // params.scale = 3;
+                //
+                // this.ref.current.pinchstart(center);
+                // this.ref.current.pinch(params);
+
+                this.ref.current.pinchstart({
+                    x: 400,
+                    y: 300,
+                    scale: 1
+                });
+
+                this.ref.current.pinch({
+                    x: 650,
+                    y: 450,
+                    scale: 1
+                });
+
+                // this.ref.current.pinchend();
+
+
+                // this.ref.current.goTo({
+                //     x: params.x,
+                //     y: params.y,
+                //     scale: 2
+                // });
+            }
+
+
+        });
+
         this.touchSpace.isGestureIntercepted = (ev) => {
 
-            // if (ev.type.startsWith('pinch')) {
-            //
-            //     let pincher = this.refs['ref0'].current;
-            //
-            //     console.log('pinch intercepted!', ev.type);
-            //
-            //     // switch(ev.type) {
-            //     //     case 'pinchstart':
-            //     //         pincher.pinchStart(ev);
-            //     //         break;
-            //     //     case 'pinchend':
-            //     //     case 'pinchcancel':
-            //     //         pincher.pinchend();
-            //     //         break;
-            //     //     case 'pinchin':
-            //     //     case 'pinchout':
-            //     //     case 'pinchmove':
-            //     //         pincher.pinchmove(ev);
-            //     //         break;
-            //     //     default:
-            //     //         break;
-            //     // }
-            //
-            //
-            //     return true;
-            // }
+            if (this.ref.current.getParams().scale > 1) {
 
+                let params = {
+                    x: ev.deltaX,
+                    y: ev.deltaY,
+                    scale: 1
+                };
 
-            if (this.state.scale > 1) {
+                // console.log('pan intercepted', ev.type, params);
+
+                switch(ev.type) {
+                    case 'panstart':
+                        this.ref.current.pinchstart(params);
+                        break;
+                    case 'panleft':
+                    case 'panright':
+                    case 'panup':
+                    case 'pandown':
+                        this.ref.current.pinch(params);
+                        break;
+                    case 'panend':
+                        this.ref.current.pinchend();
+                    default:
+                        break;
+
+                }
 
                 return true;
             }
@@ -274,7 +321,7 @@ class Test extends React.Component {
                 <div className={"swiper"} ref={this.simpleSliderNodeRef} style={{position: "relative"}}>
                     <div>
                         <PinchZoomable ref={this.ref} style={{position: "relative"}}>
-                            <div className={"slideWithImage"}><div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: "yellow", fontSize: "100px", height: "600px"}}>XXX</div></div>
+                            <div className={"slideWithImage"}><div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: "yellow", fontSize: "300px", height: "600px"}}>XXX</div></div>
                         </PinchZoomable>
 
                         <PinchZoomable ref={'ref1'}>

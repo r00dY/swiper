@@ -18,6 +18,7 @@ class TouchSpaceExperiment {
         EventSystem.addEvent(this, 'pinch');
         EventSystem.addEvent(this, 'pinchstart');
         EventSystem.addEvent(this, 'pinchend');
+        EventSystem.addEvent(this, 'doubletap');
     }
 
     set isGestureIntercepted(cb) {
@@ -55,7 +56,22 @@ class TouchSpaceExperiment {
 
         this._mc.on('singletap', (ev) => {
             if (waiting) {
-                console.log('double tap!');
+
+                let clientRect = this._touchSpace.getBoundingClientRect();
+
+                let params = {
+                    x: ev.center.x - clientRect.left,
+                    y: ev.center.y - clientRect.top,
+                };
+
+                let center = {
+                    x: clientRect.width / 2,
+                    y: clientRect.height / 2,
+                };
+
+                this._runEventListeners('doubletap', params, center);
+
+                // console.log('doubletap', ev);
                 waiting = false;
             }
             else {
@@ -136,14 +152,13 @@ class TouchSpaceExperiment {
             //     return;
             // }
 
-            console.log(ev.type);
-
             let delta = ev.deltaX;
 
             switch (ev.type) {
                 case "swipeleft":
                 case "swipeup":
-                    if (this._isGestureIntercepted(ev) || this._blockPanAndSwipeEvents) { break; }
+                    if (this._blockPanAndSwipeEvents) { break; }
+                    if (this._isGestureIntercepted(ev)) { break; }
 
                     this._touchSpaceController.swipe(Math.abs(ev.velocityX));
 
@@ -156,7 +171,8 @@ class TouchSpaceExperiment {
 
                 case "swiperight":
                 case "swipedown":
-                    if (this._isGestureIntercepted(ev) || this._blockPanAndSwipeEvents) { break; }
+                    if (this._blockPanAndSwipeEvents) { break; }
+                    if (this._isGestureIntercepted(ev)) { break; }
 
                     this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
 
@@ -168,12 +184,14 @@ class TouchSpaceExperiment {
                     break;
 
                 case "panstart":
-                    if (this._isGestureIntercepted(ev) || this._blockPanAndSwipeEvents) { break; }
+                    if (this._blockPanAndSwipeEvents) { break; }
+                    if (this._isGestureIntercepted(ev)) { break; }
                     break;
 
                 case "panup":
                 case "pandown":
-                    if (this._isGestureIntercepted(ev) || this._blockPanAndSwipeEvents) { break; }
+                    if (this._blockPanAndSwipeEvents) { break; }
+                    if (this._isGestureIntercepted(ev)) { break; }
 
                     // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
                     // However, if we gave up returning when _isTouched is false, Android would too eagerly start "panning" instead of waiting for scroll.
@@ -183,7 +201,8 @@ class TouchSpaceExperiment {
 
                 case "panleft":
                 case "panright":
-                    if (this._isGestureIntercepted(ev) || this._blockPanAndSwipeEvents) { break; }
+                    if (this._blockPanAndSwipeEvents) { break; }
+                    if (this._isGestureIntercepted(ev)) { break; }
 
                     if (!isTouched) {
                         // If wasn't already detected and window is scrolling then break
