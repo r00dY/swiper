@@ -43,8 +43,8 @@ class TouchSpaceExperiment {
         this._mc = new Hammer.Manager(touchSpace);
 
         let tap = new Hammer.Tap({ event: 'singletap', taps: 1, time: 500 });
-        let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 });
-        let swipe = new Hammer.Swipe({ direction: Hammer.DIRECTION_HORIZONTAL });
+        let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
+        let swipe = new Hammer.Swipe({ direction: Hammer.DIRECTION_ALL });
         let pinch = new Hammer.Pinch();
 
         this._mc.add([tap, pan, swipe, pinch]);
@@ -55,6 +55,7 @@ class TouchSpaceExperiment {
         let waiting = false;
 
         this._mc.on('singletap', (ev) => {
+
             if (waiting) {
 
                 let clientRect = this._touchSpace.getBoundingClientRect();
@@ -64,12 +65,7 @@ class TouchSpaceExperiment {
                     y: ev.center.y - clientRect.top,
                 };
 
-                let center = {
-                    x: clientRect.width / 2,
-                    y: clientRect.height / 2,
-                };
-
-                this._runEventListeners('doubletap', params, center);
+                this._runEventListeners('doubletap', params);
 
                 // console.log('doubletap', ev);
                 waiting = false;
@@ -147,6 +143,7 @@ class TouchSpaceExperiment {
                 return;
             }
 
+            console.log('PAN', ev.type);
             // If events are blocked after pinch, only one that can't be blocked is panend
             // if (this._blockPanAndSwipeEvents && ev.type !== "panend") {
             //     return;

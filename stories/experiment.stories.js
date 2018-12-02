@@ -48,17 +48,14 @@ class PinchZoomable extends React.Component {
         this.containerRef = React.createRef();
 
         this._boundaries = {
-            top: 0,
+            top: 0.25,
             left: 0,
             width: 1,
-            height: 1
+            height: 0.5
         };
 
         // this._currentParams are current x, y and scale. They change after pinchend, not changing during pinchmove
         this._currentParams = { x: 0.5, y: 0.5, scale: 1 };
-        this._lastParamsBeforeBeingPinched = { x: 0.5, y: 0.5, scale: 1 };
-
-        // this._paramsBeforeSession = { x: 0.5, y: 0.5, scale: 1 };
 
         this.state = {
             transform: Object.assign({}, this._currentParams),
@@ -72,24 +69,25 @@ class PinchZoomable extends React.Component {
     }
 
     _updateParams(inputParams) {
-        let s = inputParams.scale / this._pinchStartValues.inputParams.scale;
 
-        // this "short diff" algorithm will never work because we keep only diff here. We don' have info about absolute place and this is neccessay to keep consistent.
-        
+        // shorter variable names help make code below to be more readable
+        let initInputParams = this._pinchStartValues.inputParams;
+        let initParams = this._pinchStartValues.params;
+
+        let s = inputParams.scale / initInputParams.scale;
+
         let centerRelative = {
-            x: (1 / (s * 2)) + this._pinchStartValues.inputParams.x / this.state.containerSize.width * (1 - 1 / s),
-            y: (1 / (s * 2)) + this._pinchStartValues.inputParams.y / this.state.containerSize.height * (1 - 1 / s)
+            x: (1 / (s * 2)) + initInputParams.x / this.state.containerSize.width * (1 - 1 / s),
+            y: (1 / (s * 2)) + initInputParams.y / this.state.containerSize.height * (1 - 1 / s)
         };
 
-        // let tX = inputParams.x / this.state.containerSize.width - this._initialInputParams.x;
-        // let tY = inputParams.y / this.state.containerSize.height - this._initialInputParams.y;
-        let tX = (inputParams.x - this._pinchStartValues.inputParams.x) / this.state.containerSize.width;
-        let tY = (inputParams.y - this._pinchStartValues.inputParams.y) / this.state.containerSize.height;
+        let tX = (inputParams.x - initInputParams.x) / this.state.containerSize.width;
+        let tY = (inputParams.y - initInputParams.y) / this.state.containerSize.height;
 
         this._currentParams = {
-            x: centerRelative.x / this._pinchStartValues.params.scale + this._pinchStartValues.params.x - 1 / (2 * this._pinchStartValues.params.scale) - tX / (s * this._pinchStartValues.params.scale),
-            y: centerRelative.y / this._pinchStartValues.params.scale + this._pinchStartValues.params.y - 1 / (2 * this._pinchStartValues.params.scale) - tY / (s * this._pinchStartValues.params.scale),
-            scale: this._pinchStartValues.params.scale * s
+            x: centerRelative.x / initParams.scale + initParams.x - 1 / (2 * initParams.scale) - tX / (s * initParams.scale),
+            y: centerRelative.y / initParams.scale + initParams.y - 1 / (2 * initParams.scale) - tY / (s * initParams.scale),
+            scale: initParams.scale * s
         };
     }
 
@@ -230,7 +228,6 @@ class Test extends React.Component {
             this.scaleRef = this.state.scale;
 
             this.ref.current.pinchstart(params);
-            // this.refs['ref0'].current.pinchstart(params);
         });
 
         this.touchSpace.addEventListener('pinchend', (params) => {
@@ -239,7 +236,6 @@ class Test extends React.Component {
             });
 
             this.ref.current.pinchend(params);
-            // this.refs['ref0'].current.pinchend(params);
         });
 
         this.touchSpace.addEventListener('doubletap', (params) => {
@@ -256,8 +252,6 @@ class Test extends React.Component {
 
         this.touchSpace.isGestureIntercepted = (ev) => {
 
-            console.log(this.ref.current.getParams());
-
             if (this.ref.current.getParams().scale > 1) {
 
                 let params = {
@@ -268,16 +262,19 @@ class Test extends React.Component {
 
                 switch(ev.type) {
                     case 'panstart':
+                        console.log('panstart');
                         this.ref.current.pinchstart(params);
                         break;
                     case 'panleft':
                     case 'panright':
                     case 'panup':
                     case 'pandown':
+                        console.log('pan');
                         this.ref.current.pinch(params);
                         break;
                     case 'panend':
-                        this.ref.current.pinchend(params);
+                        console.log('panend');
+                        this.ref.current.pinchend();
                     default:
                         break;
 
@@ -298,7 +295,26 @@ class Test extends React.Component {
                 <div className={"swiper"} ref={this.simpleSliderNodeRef} style={{position: "relative"}}>
                     <div>
                         <PinchZoomable ref={this.ref} style={{position: "relative"}}>
-                            <div className={"slideWithImage"}><div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: "yellow", fontSize: "300px", height: "600px"}}>XXX</div></div>
+                            <div className={"slideWithImage"}>
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    height: "600px"}}>
+
+                                    <div style={{
+                                        backgroundColor: "red",
+                                        fontSize: "300px",
+                                        height: "300px",
+                                        width: "100%",
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>
+                                        XXX
+                                    </div>
+                                </div>
+                            </div>
                         </PinchZoomable>
 
                         <PinchZoomable ref={'ref1'}>
