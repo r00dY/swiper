@@ -256,6 +256,8 @@ class Test extends React.Component {
 
         this.touchSpace.isGestureIntercepted = (ev) => {
 
+            console.log(this.ref.current.getParams());
+
             if (this.ref.current.getParams().scale > 1) {
 
                 let params = {
@@ -263,8 +265,6 @@ class Test extends React.Component {
                     y: ev.deltaY,
                     scale: 1
                 };
-
-                // console.log('pan intercepted', ev.type, params);
 
                 switch(ev.type) {
                     case 'panstart':
