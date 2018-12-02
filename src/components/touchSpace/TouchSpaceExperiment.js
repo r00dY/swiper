@@ -31,15 +31,6 @@ class TouchSpaceExperiment {
 
         let touchSpace = this._touchSpace;
 
-        // this._mc = new Hammer(touchSpace, { domEvents: false/*, touchAction: 'pan-y'*/ });
-        // this._mc.get('pan').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
-        // this._mc.get('swipe').set({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
-        // this._mc.get('pinch').set({ enable: true });
-        //
-        // this._mc.get('pan').set({enable: false});
-        // this._mc.get('swipe').set({enable: false});
-        // this._mc.get('pinch').set({ enable: false });
-
         this._mc = new Hammer.Manager(touchSpace);
 
         let tap = new Hammer.Tap({ event: 'singletap', taps: 1, time: 500 });
@@ -140,43 +131,9 @@ class TouchSpaceExperiment {
                 return;
             }
 
-            // console.log('PAN', ev.type);
-            // If events are blocked after pinch, only one that can't be blocked is panend
-            // if (this._blockPanAndSwipeEvents && ev.type !== "panend") {
-            //     return;
-            // }
-
             let delta = ev.deltaX;
 
             switch (ev.type) {
-                // case "swipeleft":
-                // case "swipeup":
-                //     if (this._blockPanAndSwipeEvents) { break; }
-                //     if (this._isGestureIntercepted(ev)) { break; }
-                //
-                //     this._touchSpaceController.swipe(Math.abs(ev.velocityX));
-                //
-                //     // if (isTouched) {
-                //     //     this._touchSpaceController.swipe(Math.abs(ev.velocityX));
-                //     //     swiped = true;
-                //     // }
-                //
-                //     break;
-                //
-                // case "swiperight":
-                // case "swipedown":
-                //     if (this._blockPanAndSwipeEvents) { break; }
-                //     if (this._isGestureIntercepted(ev)) { break; }
-                //
-                //     this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
-                //
-                //     // if (isTouched) {
-                //     //     this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
-                //     //     swiped = true;
-                //     // }
-                //
-                //     break;
-
                 case "panstart":
                     if (this._blockPanAndSwipeEvents) { break; }
                     if (this._isGestureIntercepted(ev)) { break; }
