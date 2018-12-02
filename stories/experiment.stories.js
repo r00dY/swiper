@@ -71,43 +71,25 @@ class PinchZoomable extends React.Component {
         this.resetZoom = this.resetZoom.bind(this);
     }
 
-    // _combineCurrentWithRelative(params) {
-    //     let s = params.scale / this._pinchStartEvent.scale;
-    //
-    //     let centerRelative = {
-    //         x: (1 / (s * 2)) + this._pinchStartCenterRelativePosition.x * (1 - 1 / s),
-    //         y: (1 / (s * 2)) + this._pinchStartCenterRelativePosition.y * (1 - 1 / s)
-    //     };
-    //
-    //     let tX = params.x / this.state.containerSize.width - this._pinchStartCenterRelativePosition.x;
-    //     let tY = params.y / this.state.containerSize.height - this._pinchStartCenterRelativePosition.y;
-    //
-    //     return {
-    //         x: centerRelative.x / this._currentParams.scale + this._currentParams.x - 1 / (2 * this._currentParams.scale) - tX / (s * this._currentParams.scale),
-    //         y: centerRelative.y / this._currentParams.scale + this._currentParams.y - 1 / (2 * this._currentParams.scale) - tY / (s * this._currentParams.scale),
-    //         scale: this._currentParams.scale * s
-    //     }
-    // }
-
     _updateParams(inputParams) {
-        let s = inputParams.scale / this._initialInputParams.scale;
+        let s = inputParams.scale / this._pinchStartValues.inputParams.scale;
 
         // this "short diff" algorithm will never work because we keep only diff here. We don' have info about absolute place and this is neccessay to keep consistent.
         
         let centerRelative = {
-            x: (1 / (s * 2)) + this._initialInputParams.x * (1 - 1 / s),
-            y: (1 / (s * 2)) + this._initialInputParams.y * (1 - 1 / s)
+            x: (1 / (s * 2)) + this._pinchStartValues.inputParams.x / this.state.containerSize.width * (1 - 1 / s),
+            y: (1 / (s * 2)) + this._pinchStartValues.inputParams.y / this.state.containerSize.height * (1 - 1 / s)
         };
 
-        let tX = inputParams.x / this.state.containerSize.width - this._initialInputParams.x;
-        let tY = inputParams.y / this.state.containerSize.height - this._initialInputParams.y;
-        // let tX = (inputParams.x - this._previousInputParams.x) / this.state.containerSize.width;
-        // let tY = (inputParams.y - this._previousInputParams.y) / this.state.containerSize.height;
+        // let tX = inputParams.x / this.state.containerSize.width - this._initialInputParams.x;
+        // let tY = inputParams.y / this.state.containerSize.height - this._initialInputParams.y;
+        let tX = (inputParams.x - this._pinchStartValues.inputParams.x) / this.state.containerSize.width;
+        let tY = (inputParams.y - this._pinchStartValues.inputParams.y) / this.state.containerSize.height;
 
         this._currentParams = {
-            x: centerRelative.x / this._lastParamsBeforeBeingPinched.scale + this._lastParamsBeforeBeingPinched.x - 1 / (2 * this._lastParamsBeforeBeingPinched.scale) - tX / (s * this._lastParamsBeforeBeingPinched.scale),
-            y: centerRelative.y / this._lastParamsBeforeBeingPinched.scale + this._lastParamsBeforeBeingPinched.y - 1 / (2 * this._lastParamsBeforeBeingPinched.scale) - tY / (s * this._lastParamsBeforeBeingPinched.scale),
-            scale: this._lastParamsBeforeBeingPinched.scale * s
+            x: centerRelative.x / this._pinchStartValues.params.scale + this._pinchStartValues.params.x - 1 / (2 * this._pinchStartValues.params.scale) - tX / (s * this._pinchStartValues.params.scale),
+            y: centerRelative.y / this._pinchStartValues.params.scale + this._pinchStartValues.params.y - 1 / (2 * this._pinchStartValues.params.scale) - tY / (s * this._pinchStartValues.params.scale),
+            scale: this._pinchStartValues.params.scale * s
         };
     }
 
@@ -121,14 +103,11 @@ class PinchZoomable extends React.Component {
         });
     }
 
-    _snapToBoundaries(params) {
+    _snapToBoundaries() {
         this._currentParams.scale = Math.max(1, this._currentParams.scale);
         this._currentParams.scale = Math.min(5, this._currentParams.scale);
 
         this._currentParams = Object.assign({}, standardSnapFunction(this._boundaries, this._currentParams));
-
-
-        // this._onMove(this._currentParams);
     }
 
     resetZoom() {
@@ -145,10 +124,9 @@ class PinchZoomable extends React.Component {
         if (this._isPinching) { return; }
         this._isPinching = true;
 
-        this._initialInputParams = {
-            x: inputParams.x / this.state.containerSize.width,
-            y: inputParams.y / this.state.containerSize.height,
-            scale: inputParams.scale
+        this._pinchStartValues = {
+            params: Object.assign({}, this._currentParams),
+            inputParams: inputParams
         };
     }
 
@@ -157,13 +135,14 @@ class PinchZoomable extends React.Component {
         this._onMove();
     }
 
-    pinchend(inputParams) {
-
+    pinchend() {
         if (!this._isPinching) { return; }
         this._isPinching = false;
 
-        this._lastParamsBeforeBeingPinched = this._currentParams;
-        this._initialInputParams = undefined;
+        this._snapToBoundaries();
+        this._onMove();
+
+        this._pinchStartValues = undefined;
     }
 
     getParams() {
@@ -263,44 +242,16 @@ class Test extends React.Component {
             // this.refs['ref0'].current.pinchend(params);
         });
 
-        this.touchSpace.addEventListener('doubletap', (params, center) => {
+        this.touchSpace.addEventListener('doubletap', (params) => {
 
             if (this.ref.current.getParams().scale > 1) {
                 this.ref.current.resetZoom();
             }
             else {
-                //
-                // console.log('double tap!', center, params);
-                //
-                // center.scale = 1;
-                // params.scale = 3;
-                //
-                // this.ref.current.pinchstart(center);
-                // this.ref.current.pinch(params);
-
-                this.ref.current.pinchstart({
-                    x: 400,
-                    y: 300,
-                    scale: 1
-                });
-
-                this.ref.current.pinch({
-                    x: 650,
-                    y: 450,
-                    scale: 1
-                });
-
-                // this.ref.current.pinchend();
-
-
-                // this.ref.current.goTo({
-                //     x: params.x,
-                //     y: params.y,
-                //     scale: 2
-                // });
+                this.ref.current.pinchstart(Object.assign({}, params, { scale: 1 }));
+                this.ref.current.pinch(Object.assign({}, params, { scale: 3 }));
+                this.ref.current.pinchend();
             }
-
-
         });
 
         this.touchSpace.isGestureIntercepted = (ev) => {
