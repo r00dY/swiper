@@ -44,11 +44,9 @@ class TouchSpaceExperiment {
 
         let tap = new Hammer.Tap({ event: 'singletap', taps: 1, time: 500 });
         let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
-        let swipe = new Hammer.Swipe({ direction: Hammer.DIRECTION_ALL });
         let pinch = new Hammer.Pinch();
 
-        this._mc.add([tap, pan, swipe, pinch]);
-        swipe.recognizeWith(pan);
+        this._mc.add([tap, pan, pinch]);
 
         this._blockPanAndSwipeEvents = false;
 
@@ -108,7 +106,6 @@ class TouchSpaceExperiment {
         });
 
         let isTouched = false;
-        let swiped = false;
 
         let stopPropagationCallback = (ev) => {
             ev.preventDefault();
@@ -135,7 +132,7 @@ class TouchSpaceExperiment {
             }
         };
 
-        this._mc.on('panup pandown panleft panright panstart panend swipe swipeleft swiperight swipeup swipedown', (ev) => {
+        this._mc.on('panup pandown panleft panright panstart panend', (ev) => {
 
             // Prevents weird Chrome bug (Android chrome too) with incorrect pan events showing up.
             // https://github.com/hammerjs/hammer.js/issues/1050
@@ -143,7 +140,7 @@ class TouchSpaceExperiment {
                 return;
             }
 
-            console.log('PAN', ev.type);
+            // console.log('PAN', ev.type);
             // If events are blocked after pinch, only one that can't be blocked is panend
             // if (this._blockPanAndSwipeEvents && ev.type !== "panend") {
             //     return;
@@ -152,33 +149,33 @@ class TouchSpaceExperiment {
             let delta = ev.deltaX;
 
             switch (ev.type) {
-                case "swipeleft":
-                case "swipeup":
-                    if (this._blockPanAndSwipeEvents) { break; }
-                    if (this._isGestureIntercepted(ev)) { break; }
-
-                    this._touchSpaceController.swipe(Math.abs(ev.velocityX));
-
-                    // if (isTouched) {
-                    //     this._touchSpaceController.swipe(Math.abs(ev.velocityX));
-                    //     swiped = true;
-                    // }
-
-                    break;
-
-                case "swiperight":
-                case "swipedown":
-                    if (this._blockPanAndSwipeEvents) { break; }
-                    if (this._isGestureIntercepted(ev)) { break; }
-
-                    this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
-
-                    // if (isTouched) {
-                    //     this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
-                    //     swiped = true;
-                    // }
-
-                    break;
+                // case "swipeleft":
+                // case "swipeup":
+                //     if (this._blockPanAndSwipeEvents) { break; }
+                //     if (this._isGestureIntercepted(ev)) { break; }
+                //
+                //     this._touchSpaceController.swipe(Math.abs(ev.velocityX));
+                //
+                //     // if (isTouched) {
+                //     //     this._touchSpaceController.swipe(Math.abs(ev.velocityX));
+                //     //     swiped = true;
+                //     // }
+                //
+                //     break;
+                //
+                // case "swiperight":
+                // case "swipedown":
+                //     if (this._blockPanAndSwipeEvents) { break; }
+                //     if (this._isGestureIntercepted(ev)) { break; }
+                //
+                //     this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
+                //
+                //     // if (isTouched) {
+                //     //     this._touchSpaceController.swipe(-Math.abs(ev.velocityX));
+                //     //     swiped = true;
+                //     // }
+                //
+                //     break;
 
                 case "panstart":
                     if (this._blockPanAndSwipeEvents) { break; }
@@ -206,14 +203,14 @@ class TouchSpaceExperiment {
                         if (isWindowScrolling) { break; }
 
                         isTouched = true;
-                        swiped = false;
+                        // swiped = false;
 
                         touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
 
                         this._touchSpaceController.panStart();
                     }
 
-                    if (isTouched && !swiped) {
+                    if (isTouched) {
                         this._touchSpaceController.panMove(delta);
                     }
 
@@ -232,7 +229,9 @@ class TouchSpaceExperiment {
                         }, 0);
 
                         isTouched = false;
-                        this._touchSpaceController.panEnd(false);
+
+                        console.log(ev.velocityX);
+                        this._touchSpaceController.panEnd(-ev.velocityX);
 
                         // if (!swiped) {
                         //     this._touchSpaceController.panEnd(false)

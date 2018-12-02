@@ -9,11 +9,14 @@ class TouchSpaceController {
         this.swiper.touchdown();
     }
 
-    panEnd(swiped) {
+    panEnd(velocityX) {
         this.swiper.touchup();
 
-        if (!swiped) {
+        if (Math.abs(velocityX) < 0.3 || velocityX === undefined) {
             this.swiper.snap(0, this.animated);
+        }
+        else {
+            this.swiper.snap(velocityX * 1000, this.animated);
         }
     }
 
@@ -21,9 +24,9 @@ class TouchSpaceController {
         this.swiper.moveTo(this._panStartPos - deltaX, false);
     }
 
-    swipe(velocityX) {
-        this.swiper.snap(velocityX * 1000, this.animated);
-    }
+    // swipe(velocityX) {
+    //     this.swiper.snap(velocityX * 1000, this.animated);
+    // }
 }
 
 export default TouchSpaceController;
