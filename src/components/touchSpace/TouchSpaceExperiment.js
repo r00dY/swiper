@@ -104,7 +104,7 @@ class TouchSpaceExperiment {
            }
 
            if (ev.type === "pinchend") {
-               this._runEventListeners('pinchend');
+               this._runEventListeners('pinchend', params);
 
                // Pan events are called after pinch end and single finger panning still works. We won't to block it until all fingers are released. Either pinch or pan.
                this._blockPanAndSwipeEvents = true;

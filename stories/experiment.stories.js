@@ -56,6 +56,9 @@ class PinchZoomable extends React.Component {
 
         // this._currentParams are current x, y and scale. They change after pinchend, not changing during pinchmove
         this._currentParams = { x: 0.5, y: 0.5, scale: 1 };
+        this._lastParamsBeforeBeingPinched = { x: 0.5, y: 0.5, scale: 1 };
+
+        // this._paramsBeforeSession = { x: 0.5, y: 0.5, scale: 1 };
 
         this.state = {
             transform: Object.assign({}, this._currentParams),
@@ -68,26 +71,44 @@ class PinchZoomable extends React.Component {
         this.resetZoom = this.resetZoom.bind(this);
     }
 
+    // _combineCurrentWithRelative(params) {
+    //     let s = params.scale / this._pinchStartEvent.scale;
+    //
+    //     let centerRelative = {
+    //         x: (1 / (s * 2)) + this._pinchStartCenterRelativePosition.x * (1 - 1 / s),
+    //         y: (1 / (s * 2)) + this._pinchStartCenterRelativePosition.y * (1 - 1 / s)
+    //     };
+    //
+    //     let tX = params.x / this.state.containerSize.width - this._pinchStartCenterRelativePosition.x;
+    //     let tY = params.y / this.state.containerSize.height - this._pinchStartCenterRelativePosition.y;
+    //
+    //     return {
+    //         x: centerRelative.x / this._currentParams.scale + this._currentParams.x - 1 / (2 * this._currentParams.scale) - tX / (s * this._currentParams.scale),
+    //         y: centerRelative.y / this._currentParams.scale + this._currentParams.y - 1 / (2 * this._currentParams.scale) - tY / (s * this._currentParams.scale),
+    //         scale: this._currentParams.scale * s
+    //     }
+    // }
+
     _updateParams(inputParams) {
-        let s = inputParams.scale / this._previousInputParams.scale;
+        let s = inputParams.scale / this._initialInputParams.scale;
 
         // this "short diff" algorithm will never work because we keep only diff here. We don' have info about absolute place and this is neccessay to keep consistent.
         
         let centerRelative = {
-            x: (1 / (s * 2)) + this._currentParams.x * (1 - 1 / s),
-            y: (1 / (s * 2)) + this._currentParams.y * (1 - 1 / s)
+            x: (1 / (s * 2)) + this._initialInputParams.x * (1 - 1 / s),
+            y: (1 / (s * 2)) + this._initialInputParams.y * (1 - 1 / s)
         };
 
-        let tX = (inputParams.x - this._previousInputParams.x) / this.state.containerSize.width;
-        let tY = (inputParams.y - this._previousInputParams.y) / this.state.containerSize.height;
+        let tX = inputParams.x / this.state.containerSize.width - this._initialInputParams.x;
+        let tY = inputParams.y / this.state.containerSize.height - this._initialInputParams.y;
+        // let tX = (inputParams.x - this._previousInputParams.x) / this.state.containerSize.width;
+        // let tY = (inputParams.y - this._previousInputParams.y) / this.state.containerSize.height;
 
-        let newParams = {
-            x: centerRelative.x / this._currentParams.scale + this._currentParams.x - 1 / (2 * this._currentParams.scale) - tX / (s * this._currentParams.scale),
-            y: centerRelative.y / this._currentParams.scale + this._currentParams.y - 1 / (2 * this._currentParams.scale) - tY / (s * this._currentParams.scale),
-            scale: this._currentParams.scale * s
+        this._currentParams = {
+            x: centerRelative.x / this._lastParamsBeforeBeingPinched.scale + this._lastParamsBeforeBeingPinched.x - 1 / (2 * this._lastParamsBeforeBeingPinched.scale) - tX / (s * this._lastParamsBeforeBeingPinched.scale),
+            y: centerRelative.y / this._lastParamsBeforeBeingPinched.scale + this._lastParamsBeforeBeingPinched.y - 1 / (2 * this._lastParamsBeforeBeingPinched.scale) - tY / (s * this._lastParamsBeforeBeingPinched.scale),
+            scale: this._lastParamsBeforeBeingPinched.scale * s
         };
-
-        this._currentParams = newParams;
     }
 
     _onMove() {
@@ -100,7 +121,7 @@ class PinchZoomable extends React.Component {
         });
     }
 
-    _snapToBoundaries() {
+    _snapToBoundaries(params) {
         this._currentParams.scale = Math.max(1, this._currentParams.scale);
         this._currentParams.scale = Math.min(5, this._currentParams.scale);
 
@@ -121,23 +142,28 @@ class PinchZoomable extends React.Component {
     }
 
     pinchstart(inputParams) {
-        console.log('pinchstart', inputParams);
-        this._previousInputParams = Object.assign({}, inputParams);
+        if (this._isPinching) { return; }
+        this._isPinching = true;
+
+        this._initialInputParams = {
+            x: inputParams.x / this.state.containerSize.width,
+            y: inputParams.y / this.state.containerSize.height,
+            scale: inputParams.scale
+        };
     }
 
     pinch(inputParams) {
-        console.log('pinch', inputParams);
         this._updateParams(inputParams);
-        // this._snapToBoundaries();
         this._onMove();
-
-        this._previousInputParams = inputParams;
     }
 
-    pinchend() {
-        this._snapToBoundaries();
-        this._onMove();
-        this._previousInputParams = undefined;
+    pinchend(inputParams) {
+
+        if (!this._isPinching) { return; }
+        this._isPinching = false;
+
+        this._lastParamsBeforeBeingPinched = this._currentParams;
+        this._initialInputParams = undefined;
     }
 
     getParams() {
@@ -300,7 +326,7 @@ class Test extends React.Component {
                         this.ref.current.pinch(params);
                         break;
                     case 'panend':
-                        this.ref.current.pinchend();
+                        this.ref.current.pinchend(params);
                     default:
                         break;
 
