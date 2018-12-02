@@ -10,11 +10,30 @@ import SimpleSliderContainer from "../src/react/SimpleSliderContainer";
  * 1. Algorithm of scale + translate doesn't work well. When I zoom in a point on edge in PhotoSwipe, then it works perfectly. there's some offset in mine algo.
  * 2.
  */
+
+let getRightmostX = function(boundaries, zoomArea) {
+
+    var targetParams = {
+        scale: zoomArea.scale
+    };
+
+    var half = 1 / (2 * zoomArea.scale);
+
+    zoomArea.top = zoomArea.y - half;
+    zoomArea.bottom = zoomArea.y + half;
+    zoomArea.left = zoomArea.x - half;
+    zoomArea.right = zoomArea.x + half;
+    zoomArea.width = half * 2;
+    zoomArea.height = half * 2;
+
+    return boundaries.left + boundaries.width - half;
+};
+
 let standardSnapFunction = function(boundaries, zoomArea) {
 
     var targetParams = {
         scale: zoomArea.scale
-    }
+    };
 
     var half = 1 / (2 * zoomArea.scale);
 
@@ -66,6 +85,7 @@ class PinchZoomable extends React.Component {
         this.pinch = this.pinch.bind(this);
         this.getParams = this.getParams.bind(this);
         this.resetZoom = this.resetZoom.bind(this);
+        this.isAlignedToRight = this.isAlignedToRight.bind(this);
     }
 
     _updateParams(inputParams) {
@@ -145,6 +165,10 @@ class PinchZoomable extends React.Component {
 
     getParams() {
         return this._currentParams;
+    }
+
+    isAlignedToRight() {
+        return this._currentParams.x - getRightmostX(this._boundaries, this._currentParams) > -0.01;
     }
 
     componentDidMount() {
@@ -250,6 +274,9 @@ class Test extends React.Component {
             }
         });
 
+
+        let panblocked = false;
+
         this.touchSpace.isGestureIntercepted = (ev) => {
 
             if (this.ref.current.getParams().scale > 1) {
@@ -264,21 +291,37 @@ class Test extends React.Component {
                     case 'panstart':
                         console.log('panstart');
                         this.ref.current.pinchstart(params);
+                        panblocked = false;
                         break;
                     case 'panleft':
+                        if (panblocked) { return false; }
+
+                        if (this.ref.current.isAlignedToRight()) {
+                            this.ref.current.pinchend();
+                            panblocked = true;
+                            return false;
+                        }
+
+                        this.ref.current.pinch(params);
+                        break;
+
+
                     case 'panright':
                     case 'panup':
                     case 'pandown':
-                        console.log('pan');
+                        if (panblocked) { return false; }
+
                         this.ref.current.pinch(params);
                         break;
                     case 'panend':
-                        console.log('panend');
+                        if (panblocked) { return false; }
+
                         this.ref.current.pinchend();
                     default:
                         break;
 
                 }
+
 
                 return true;
             }
