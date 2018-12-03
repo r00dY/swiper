@@ -107,16 +107,9 @@ class Zoomer extends React.Component {
     }
 
     _onMove() {
-
-        // let edge = getEdge(this._boundaries, this._currentParams);
-
-        // let x = this._currentParams.x;
-        // let y = this._currentParams.y;
-        // let scale = this._currentParams.scale;
-
         let t = standardSnapFunction(this._boundaries, this._currentParams);
 
-        let fun = (x) => 0.2 * Math.log(1 + x);
+        let fun = (x) => 0.05 * Math.log(1 + x * 10);
 
         // left
         let restX = 0;
@@ -137,19 +130,8 @@ class Zoomer extends React.Component {
             restY = -fun(-(this._currentParams.y - t.y));
         }
 
-        // console.log('---');
-        // console.log(x, y, scale);
-        //
-        // if (x > edge.right) { x = edge.right; }
-        // if (x < edge.left) { x = edge.left; }
-        // if (y > edge.bottom) { y = edge.bottom; }
-        // if (y < edge.top) { y = edge.top };
-        //
-        // console.log(x, y, scale);
-
         if (t.scale < 1) { t.scale = 1; }
         if (t.scale > 5) { t.scale = 5; }
-
 
         this.setState({
             transform: {
@@ -200,6 +182,10 @@ class Zoomer extends React.Component {
         if (!this._isPinching) { return; }
         this._isPinching = false;
 
+        this.setState({
+            animated: true
+        });
+
         this._snapToBoundaries();
         this._onMove();
 
@@ -240,7 +226,7 @@ class Zoomer extends React.Component {
             <div style={{
                 transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${this.state.transform.scale})`,
                 transformOrigin: "50% 50%",
-                transition: this.state.animated ? 'transform .15s ease-out' : ''
+                transition: this.state.animated ? 'transform .5s cubic-bezier(0.19, 1, 0.22, 1)' : ''
             }}>
                 {this.props.children}
             </div>
