@@ -57,21 +57,32 @@ class TouchSpaceExperiment {
                 let clientRect = this._touchSpace.getBoundingClientRect();
 
                 let params = {
-                    x: ev.center.x - clientRect.left,
-                    y: ev.center.y - clientRect.top,
+                    x: ((ev.center.x - clientRect.left) / clientRect.width - 0.5) * 3 + 0.5,
+                    y: ((ev.center.y - clientRect.top) / clientRect.height - 0.5) * 3 + 0.5
                 };
 
                 if (this._zoomer.getParams().scale > 1) {
-                    this._zoomer.movestart(Object.assign({}, params, { scale: this._zoomer.getParams().scale }), true);
-                    this._zoomer.move(Object.assign({}, params, { scale: 1 }));
-                    this._zoomer.moveend();
+                    this._zoomer.resetZoom();
+                    // this._zoomer.movestart(Object.assign({}, params, { scale: this._zoomer.getParams().scale }), true);
+                    // this._zoomer.move(Object.assign({}, params, { scale: 1 }));
+                    // this._zoomer.moveend();
+                    //
+                    // this._zoomer.animateTo(
+                    //     Object.assign({}, params, { scale: 1 }),
+                    //     { x: clientRect.width / 2, y: clientRect.height / 2, scale: 3 }
+                    // );
+
                 }
                 else {
 
-                    this._zoomer.animateTo(Object.assign({}, params, { scale: 3 }));
                     // this._zoomer.movestart(Object.assign({}, params, { scale: 1 }), true);
-                    // this._zoomer.move(Object.assign({}, params, { scale: 3 }));
+                    // this._zoomer.move({ x: clientRect.width / 2, y: clientRect.height / 2, scale: 3 });
                     // this._zoomer.moveend();
+
+                    this._zoomer.animateTo(
+                        Object.assign({}, params, { scale: this._zoomer.getParams().scale }),
+                        { x: 0.5, y: 0.5, scale: 3 }
+                    );
                 }
 
                 waiting = false;
@@ -95,8 +106,8 @@ class TouchSpaceExperiment {
 
             // we need to normalize clientX / clientY
             let params = {
-                x: ev.center.x - clientRect.left,
-                y: ev.center.y - clientRect.top,
+                x: (ev.center.x - clientRect.left) / clientRect.width,
+                y: (ev.center.y - clientRect.top) / clientRect.height,
                 scale: ev.scale
             };
 
@@ -177,9 +188,11 @@ class TouchSpaceExperiment {
                         break;
                     }
 
+                    let clientRect = this._touchSpace.getBoundingClientRect();
+
                     let zoomerParams = {
-                        x: ev.deltaX,
-                        y: ev.deltaY,
+                        x: ev.deltaX / clientRect.width,
+                        y: ev.deltaY / clientRect.height,
                         scale: 1
                     };
 

@@ -113,6 +113,36 @@ class Zoomer extends React.Component {
         };
     }
 
+    /**
+     * params - this is a name of unified parameters showing state of where zoomer is. These are relative values like { x: 0.5, y: 0.5, scale: 2 }. They're translation and scale in relative units.
+     * deltas - this is deltaX, deltaY and deltaS but RELATIVE TO params scale level.
+     *
+     * @param params
+     * @param deltas
+     * @private
+     */
+    _combineParamsWithInputDeltas(params, deltas) {
+
+        // TOOD: WHAT ARE REALLY DELTAS? RELATIVE TO WHAT?
+        console.log('deltas', deltas);
+        return {
+            x: params.x - deltas.x / deltas.scale / params.scale,
+            y: params.y - deltas.y / deltas.scale / params.scale,
+            scale: params.scale * deltas.scale
+        };
+
+        // let centerRelative = {
+        //     x: (1 / (s * 2)) + deltas.x * (1 - 1 / s),
+        //     y: (1 / (s * 2)) + deltas.y * (1 - 1 / s)
+        // };
+        //
+        // return {
+        //     x: centerRelative.x / params.scale + params.x - 1 / (2 * params.scale) - deltas.x / (s * params.scale),
+        //     y: centerRelative.y / params.scale + params.y - 1 / (2 * params.scale) - deltas.y / (s * params.scale),
+        //     scale: params.scale * s
+        // };
+    }
+
     animate(params) {
         this.animations.x.animate(this._currentParams.x, params.x, (x) => {
             this._currentParams.x = x;
@@ -123,31 +153,35 @@ class Zoomer extends React.Component {
     _onMove() {
 
         console.log('current params', this._currentParams);
-        let t = standardSnapFunction(this._boundaries, this._currentParams);
+        // let t = standardSnapFunction(this._boundaries, this._currentParams);
+        //
+        // let fun = (x) => 0.05 * Math.log(1 + x * 10);
+        //
+        // // left
+        // let restX = 0;
+        //
+        // if (this._currentParams.x - t.x > 0) {
+        //     restX = fun(this._currentParams.x - t.x);
+        // }
+        // else if (this._currentParams.x - t.x < 0) {
+        //     restX = -fun(-(this._currentParams.x - t.x));
+        // }
+        //
+        // let restY = 0;
+        //
+        // if (this._currentParams.y - t.y > 0) {
+        //     restY = fun(this._currentParams.y - t.y);
+        // }
+        // else if (this._currentParams.y - t.y < 0) {
+        //     restY = -fun(-(this._currentParams.y - t.y));
+        // }
+        //
+        // if (t.scale < 1) { t.scale = 1; }
+        // if (t.scale > 5) { t.scale = 5; }
 
-        let fun = (x) => 0.05 * Math.log(1 + x * 10);
-
-        // left
+        let t = this._currentParams;
         let restX = 0;
-
-        if (this._currentParams.x - t.x > 0) {
-            restX = fun(this._currentParams.x - t.x);
-        }
-        else if (this._currentParams.x - t.x < 0) {
-            restX = -fun(-(this._currentParams.x - t.x));
-        }
-
         let restY = 0;
-
-        if (this._currentParams.y - t.y > 0) {
-            restY = fun(this._currentParams.y - t.y);
-        }
-        else if (this._currentParams.y - t.y < 0) {
-            restY = -fun(-(this._currentParams.y - t.y));
-        }
-
-        if (t.scale < 1) { t.scale = 1; }
-        if (t.scale > 5) { t.scale = 5; }
 
         this.setState({
             transform: {
@@ -158,11 +192,18 @@ class Zoomer extends React.Component {
         });
     }
 
-    _snapToBoundaries() {
-        this._currentParams.scale = Math.max(1, this._currentParams.scale);
-        this._currentParams.scale = Math.min(5, this._currentParams.scale);
+    // _snapToBoundaries() {
+    //     this._currentParams.scale = Math.max(1, this._currentParams.scale);
+    //     this._currentParams.scale = Math.min(5, this._currentParams.scale);
+    //
+    //     this._currentParams = Object.assign({}, standardSnapFunction(this._boundaries, this._currentParams));
+    // }
 
-        this._currentParams = Object.assign({}, standardSnapFunction(this._boundaries, this._currentParams));
+    _snapToBoundaries(params) {
+        let result = Object.assign({}, standardSnapFunction(this._boundaries, params));
+        result.scale = Math.max(1, result.scale);
+        result.scale = Math.min(5, result.scale);
+        return result;
     }
 
     resetZoom() {
@@ -175,23 +216,31 @@ class Zoomer extends React.Component {
         this._onMove();
     }
 
-    movestart(inputParams, animated) {
+    movestart(inputParams) {
         if (this._isPinching) { return; }
         this._isPinching = true;
-
-        this.setState({
-            animated: animated
-        });
 
         this._pinchStartValues = {
             params: Object.assign({}, this._currentParams),
             inputParams: inputParams
         };
+
+        console.log('movestart', this._pinchStartValues);
     }
 
     move(inputParams) {
-        console.log('move', inputParams);
-        this._updateParams(inputParams);
+        // calculate movement relative deltas
+        let deltas = {
+            x: inputParams.x - this._pinchStartValues.inputParams.x,
+            y: inputParams.y - this._pinchStartValues.inputParams.y,
+            scale: inputParams.scale / this._pinchStartValues.inputParams.scale
+        };
+
+        this._currentParams = this._combineParamsWithInputDeltas(this._pinchStartValues.params, deltas);
+
+        console.log('move', inputParams, deltas, this._currentParams);
+
+
         this._onMove();
     }
 
@@ -199,60 +248,48 @@ class Zoomer extends React.Component {
         if (!this._isPinching) { return; }
         this._isPinching = false;
 
-        this.setState({
-            animated: true
-        });
-
-        // this._snapToBoundaries();
-        this._onMove();
-
         this._pinchStartValues = undefined;
 
         // this.snapToBoundaries2();
     }
 
 
-    animateTo(targetParams) {
+    animateTo(fromParams, toParams) {
 
-        // Let's create inputParams and targetParams.
-        let inputParams = Object.assign({}, this._currentParams);
-        inputParams.x *= this.state.containerSize.width;
-        inputParams.y *= this.state.containerSize.height;
+        // TODO: to fix this method.
 
-        console.log('animte to', inputParams);
-        // let targetParams = Object.assign({}, standardSnapFunction(this._boundaries, this._currentParams));
-        // targetParams.scale = Math.max(1, targetParams.scale);
-        // targetParams.scale = Math.min(5, targetParams.scale);
 
-        this.movestart(inputParams);
+        console.log('from/to params', fromParams, toParams);
+        // this.movestart(fromParams);
+        // this.move(toParams);
+        // this.moveend();
 
-        let newParams = Object.assign({}, inputParams);
+        // console.log('animate to', fromParams, toParams);
 
-        this.animations.x.animate(inputParams.x, targetParams.x, (x) => {
+        this.movestart(fromParams);
+
+        let newParams = Object.assign({}, fromParams);
+
+        this.animations.x.animate(fromParams.x, toParams.x, (x) => {
            newParams.x = x;
-            // console.log('move x', x, newParams);
-
             this.move(newParams);
         }, () => {
             this.moveend();
         });
 
-        this.animations.y.animate(inputParams.y, targetParams.y, (y) => {
+        this.animations.y.animate(fromParams.y, toParams.y, (y) => {
             newParams.y = y;
-            // console.log('move y', y, newParams);
             this.move(newParams);
         }, () => {
             this.moveend();
         });
 
-        this.animations.scale.animate(inputParams.scale, targetParams.scale, (scale) => {
+        this.animations.scale.animate(fromParams.scale, toParams.scale, (scale) => {
             newParams.scale = scale;
-            // console.log('move s', scale, newParams);
             this.move(newParams);
         }, () => {
             this.moveend();
         });
-
     }
 
     getParams() {
