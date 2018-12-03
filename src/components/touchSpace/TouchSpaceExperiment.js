@@ -67,9 +67,11 @@ class TouchSpaceExperiment {
                     this._zoomer.moveend();
                 }
                 else {
-                    this._zoomer.movestart(Object.assign({}, params, { scale: 1 }), true);
-                    this._zoomer.move(Object.assign({}, params, { scale: 3 }));
-                    this._zoomer.moveend();
+
+                    this._zoomer.animateTo(Object.assign({}, params, { scale: 3 }));
+                    // this._zoomer.movestart(Object.assign({}, params, { scale: 1 }), true);
+                    // this._zoomer.move(Object.assign({}, params, { scale: 3 }));
+                    // this._zoomer.moveend();
                 }
 
                 waiting = false;

@@ -1,4 +1,5 @@
 import React from "react";
+import AnimationEngine from 'src/animationEngines/AnimationEngine';
 
 let getZoomArea = function(zoomArea) {
 
@@ -80,6 +81,13 @@ class Zoomer extends React.Component {
         this.resetZoom = this.resetZoom.bind(this);
         this.isAlignedToRight = this.isAlignedToRight.bind(this);
         this.isAlignedToLeft = this.isAlignedToLeft.bind(this);
+        this.animateTo = this.animateTo.bind(this);
+
+        this.animations = {
+            x: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.5),
+            y: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.5),
+            scale: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.5)
+        };
     }
 
     _updateParams(inputParams) {
@@ -103,10 +111,18 @@ class Zoomer extends React.Component {
             y: centerRelative.y / initParams.scale + initParams.y - 1 / (2 * initParams.scale) - tY / (s * initParams.scale),
             scale: initParams.scale * s
         };
+    }
 
+    animate(params) {
+        this.animations.x.animate(this._currentParams.x, params.x, (x) => {
+            this._currentParams.x = x;
+            this._onMove();
+        })
     }
 
     _onMove() {
+
+        console.log('current params', this._currentParams);
         let t = standardSnapFunction(this._boundaries, this._currentParams);
 
         let fun = (x) => 0.05 * Math.log(1 + x * 10);
@@ -174,6 +190,7 @@ class Zoomer extends React.Component {
     }
 
     move(inputParams) {
+        console.log('move', inputParams);
         this._updateParams(inputParams);
         this._onMove();
     }
@@ -186,10 +203,56 @@ class Zoomer extends React.Component {
             animated: true
         });
 
-        this._snapToBoundaries();
+        // this._snapToBoundaries();
         this._onMove();
 
         this._pinchStartValues = undefined;
+
+        // this.snapToBoundaries2();
+    }
+
+
+    animateTo(targetParams) {
+
+        // Let's create inputParams and targetParams.
+        let inputParams = Object.assign({}, this._currentParams);
+        inputParams.x *= this.state.containerSize.width;
+        inputParams.y *= this.state.containerSize.height;
+
+        console.log('animte to', inputParams);
+        // let targetParams = Object.assign({}, standardSnapFunction(this._boundaries, this._currentParams));
+        // targetParams.scale = Math.max(1, targetParams.scale);
+        // targetParams.scale = Math.min(5, targetParams.scale);
+
+        this.movestart(inputParams);
+
+        let newParams = Object.assign({}, inputParams);
+
+        this.animations.x.animate(inputParams.x, targetParams.x, (x) => {
+           newParams.x = x;
+            // console.log('move x', x, newParams);
+
+            this.move(newParams);
+        }, () => {
+            this.moveend();
+        });
+
+        this.animations.y.animate(inputParams.y, targetParams.y, (y) => {
+            newParams.y = y;
+            // console.log('move y', y, newParams);
+            this.move(newParams);
+        }, () => {
+            this.moveend();
+        });
+
+        this.animations.scale.animate(inputParams.scale, targetParams.scale, (scale) => {
+            newParams.scale = scale;
+            // console.log('move s', scale, newParams);
+            this.move(newParams);
+        }, () => {
+            this.moveend();
+        });
+
     }
 
     getParams() {
@@ -226,7 +289,7 @@ class Zoomer extends React.Component {
             <div style={{
                 transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${this.state.transform.scale})`,
                 transformOrigin: "50% 50%",
-                transition: this.state.animated ? 'transform .5s cubic-bezier(0.19, 1, 0.22, 1)' : ''
+                transition: 'none'//this.state.animated ? 'transform .5s cubic-bezier(0.19, 1, 0.22, 1)' : ''
             }}>
                 {this.props.children}
             </div>
