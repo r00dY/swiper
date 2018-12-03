@@ -6,200 +6,7 @@ import TouchSpaceExperiment from "../src/components/touchSpace/TouchSpaceExperim
 import SimpleSlider from "../src/SimpleSlider";
 import SimpleSliderContainer from "../src/react/SimpleSliderContainer";
 
-/**
- * 1. Algorithm of scale + translate doesn't work well. When I zoom in a point on edge in PhotoSwipe, then it works perfectly. there's some offset in mine algo.
- * 2.
- */
-
-let getRightmostX = function(boundaries, zoomArea) {
-
-    var targetParams = {
-        scale: zoomArea.scale
-    };
-
-    var half = 1 / (2 * zoomArea.scale);
-
-    zoomArea.top = zoomArea.y - half;
-    zoomArea.bottom = zoomArea.y + half;
-    zoomArea.left = zoomArea.x - half;
-    zoomArea.right = zoomArea.x + half;
-    zoomArea.width = half * 2;
-    zoomArea.height = half * 2;
-
-    return boundaries.left + boundaries.width - half;
-};
-
-let standardSnapFunction = function(boundaries, zoomArea) {
-
-    var targetParams = {
-        scale: zoomArea.scale
-    };
-
-    var half = 1 / (2 * zoomArea.scale);
-
-    zoomArea.top = zoomArea.y - half;
-    zoomArea.bottom = zoomArea.y + half;
-    zoomArea.left = zoomArea.x - half;
-    zoomArea.right = zoomArea.x + half;
-    zoomArea.width = half * 2;
-    zoomArea.height = half * 2;
-
-    // X
-    if (zoomArea.width >= boundaries.width) { targetParams.x = boundaries.left + boundaries.width / 2; }
-    else if (zoomArea.left < boundaries.left) { targetParams.x = boundaries.left + half; }
-    else if (zoomArea.right > boundaries.left + boundaries.width) { targetParams.x = boundaries.left + boundaries.width - half; }
-    else { targetParams.x = zoomArea.x; }
-
-    // Y
-    if (zoomArea.height >= boundaries.height) { targetParams.y = boundaries.top + boundaries.height / 2; }
-    else if (zoomArea.top < boundaries.top) { targetParams.y = boundaries.top + half; }
-    else if (zoomArea.bottom > boundaries.top + boundaries.height) { targetParams.y = boundaries.top + boundaries.height - half; }
-    else { targetParams.y = zoomArea.y; }
-
-    return targetParams;
-};
-
-
-class PinchZoomable extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.containerRef = React.createRef();
-
-        this._boundaries = {
-            top: 0.25,
-            left: 0,
-            width: 1,
-            height: 0.5
-        };
-
-        // this._currentParams are current x, y and scale. They change after pinchend, not changing during pinchmove
-        this._currentParams = { x: 0.5, y: 0.5, scale: 1 };
-
-        this.state = {
-            transform: Object.assign({}, this._currentParams),
-        };
-
-        this.pinchstart = this.pinchstart.bind(this);
-        this.pinchend = this.pinchend.bind(this);
-        this.pinch = this.pinch.bind(this);
-        this.getParams = this.getParams.bind(this);
-        this.resetZoom = this.resetZoom.bind(this);
-        this.isAlignedToRight = this.isAlignedToRight.bind(this);
-    }
-
-    _updateParams(inputParams) {
-
-        // shorter variable names help make code below to be more readable
-        let initInputParams = this._pinchStartValues.inputParams;
-        let initParams = this._pinchStartValues.params;
-
-        let s = inputParams.scale / initInputParams.scale;
-
-        let centerRelative = {
-            x: (1 / (s * 2)) + initInputParams.x / this.state.containerSize.width * (1 - 1 / s),
-            y: (1 / (s * 2)) + initInputParams.y / this.state.containerSize.height * (1 - 1 / s)
-        };
-
-        let tX = (inputParams.x - initInputParams.x) / this.state.containerSize.width;
-        let tY = (inputParams.y - initInputParams.y) / this.state.containerSize.height;
-
-        this._currentParams = {
-            x: centerRelative.x / initParams.scale + initParams.x - 1 / (2 * initParams.scale) - tX / (s * initParams.scale),
-            y: centerRelative.y / initParams.scale + initParams.y - 1 / (2 * initParams.scale) - tY / (s * initParams.scale),
-            scale: initParams.scale * s
-        };
-    }
-
-    _onMove() {
-        this.setState({
-            transform: {
-                x: this._currentParams.x,
-                y: this._currentParams.y,
-                scale: this._currentParams.scale
-            }
-        });
-    }
-
-    _snapToBoundaries() {
-        this._currentParams.scale = Math.max(1, this._currentParams.scale);
-        this._currentParams.scale = Math.min(5, this._currentParams.scale);
-
-        this._currentParams = Object.assign({}, standardSnapFunction(this._boundaries, this._currentParams));
-    }
-
-    resetZoom() {
-        this._currentParams = {
-            x: 0.5,
-            y: 0.5,
-            scale: 1
-        };
-
-        this._onMove();
-    }
-
-    pinchstart(inputParams) {
-        if (this._isPinching) { return; }
-        this._isPinching = true;
-
-        this._pinchStartValues = {
-            params: Object.assign({}, this._currentParams),
-            inputParams: inputParams
-        };
-    }
-
-    pinch(inputParams) {
-        this._updateParams(inputParams);
-        this._onMove();
-    }
-
-    pinchend() {
-        if (!this._isPinching) { return; }
-        this._isPinching = false;
-
-        this._snapToBoundaries();
-        this._onMove();
-
-        this._pinchStartValues = undefined;
-    }
-
-    getParams() {
-        return this._currentParams;
-    }
-
-    isAlignedToRight() {
-        return this._currentParams.x - getRightmostX(this._boundaries, this._currentParams) > -0.01;
-    }
-
-    componentDidMount() {
-        this.setState({
-            containerSize: {
-                width: 800,//this.containerRef.current.clientWidth,
-                height: 600,//this.containerRef.current.clientHeight
-            }
-        });
-    }
-
-    render() {
-        let translateX = 0;
-        let translateY = 0;
-
-        if (this.state.containerSize) {
-            translateX =  (0.5 - this.state.transform.x) * this.state.transform.scale * this.state.containerSize.width;
-            translateY = (0.5 - this.state.transform.y) * this.state.transform.scale * this.state.containerSize.height;
-        }
-
-        return <div ref={this.containerRef} style={{overflow: "hidden"}}>
-            <div style={{
-                transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${this.state.transform.scale})`,
-                transformOrigin: "50% 50%"
-            }}>
-            {this.props.children}
-            </div>
-        </div>
-    }
-}
-
+import Zoomer from './Zoomer';
 
 class Test extends React.Component {
 
@@ -208,14 +15,6 @@ class Test extends React.Component {
 
         this.simpleSliderNodeRef = React.createRef();
         this.touchSpaceNode = React.createRef();
-
-        this.state = {
-            scale: 1
-        };
-
-        this.ref = React.createRef();
-
-        this.scaleRef = 1;
     }
 
     componentDidUpdate() {
@@ -231,113 +30,23 @@ class Test extends React.Component {
         this.slider.displayNoneAutomatically = false;
         this.slider.layout();
 
-        // We don't enable this.slider.touchSpace!!!
+        this.slider.addEventListener('activeSlidesChange', () => {
+            this.touchSpace.zoomer = this.refs[`ref${this.slider.activeSlides()[0]}`];
+        });
 
         // Let's create new touch space which is external.
         this.touchSpace = new TouchSpaceExperiment(this.slider, this.simpleSliderNodeRef.current);
+        this.touchSpace.zoomer = this.refs['ref0'];
         this.touchSpace.enable();
 
-        this.touchSpace.addEventListener('pinch', (params) => {
-            this.setState({
-               scale: params.scale * this.scaleRef
-            });
-            console.log('pinch', params);
-
-            // console.log(this.ref);
-            this.ref.current.pinch(params);
-            // this.refs['ref0'].current.pinch(params);
-        });
-
-        this.touchSpace.addEventListener('pinchstart', (params) => {
-            this.scaleRef = this.state.scale;
-
-            this.ref.current.pinchstart(params);
-        });
-
-        this.touchSpace.addEventListener('pinchend', (params) => {
-            this.setState({
-                scale: Math.max(this.state.scale, 1)
-            });
-
-            this.ref.current.pinchend(params);
-        });
-
-        this.touchSpace.addEventListener('doubletap', (params) => {
-
-            if (this.ref.current.getParams().scale > 1) {
-                this.ref.current.resetZoom();
-            }
-            else {
-                this.ref.current.pinchstart(Object.assign({}, params, { scale: 1 }));
-                this.ref.current.pinch(Object.assign({}, params, { scale: 3 }));
-                this.ref.current.pinchend();
-            }
-        });
-
-
-        let panblocked = false;
-
-        this.touchSpace.isGestureIntercepted = (ev) => {
-
-            if (this.ref.current.getParams().scale > 1) {
-
-                let params = {
-                    x: ev.deltaX,
-                    y: ev.deltaY,
-                    scale: 1
-                };
-
-                switch(ev.type) {
-                    case 'panstart':
-                        console.log('panstart');
-                        this.ref.current.pinchstart(params);
-                        panblocked = false;
-                        break;
-                    case 'panleft':
-                        if (panblocked) { return false; }
-
-                        if (this.ref.current.isAlignedToRight()) {
-                            this.ref.current.pinchend();
-                            panblocked = true;
-                            return false;
-                        }
-
-                        this.ref.current.pinch(params);
-                        break;
-
-
-                    case 'panright':
-                    case 'panup':
-                    case 'pandown':
-                        if (panblocked) { return false; }
-
-                        this.ref.current.pinch(params);
-                        break;
-                    case 'panend':
-                        if (panblocked) { return false; }
-
-                        this.ref.current.pinchend();
-                    default:
-                        break;
-
-                }
-
-
-                return true;
-            }
-
-            return false;
-        }
     }
 
     render() {
         return (
             <div style={{position: "relative"}}>
-                {/*<SimpleSliderContainer className={"swiper"} ref={this.simpleSliderNodeRef}>*/}
-
                 <div className={"swiper"} ref={this.simpleSliderNodeRef} style={{position: "relative"}}>
                     <div>
-                        <PinchZoomable ref={this.ref} style={{position: "relative"}}>
+                        <Zoomer ref={'ref0'} style={{position: "relative"}}>
                             <div className={"slideWithImage"}>
                                 <div style={{
                                     display: 'flex',
@@ -358,24 +67,21 @@ class Test extends React.Component {
                                     </div>
                                 </div>
                             </div>
-                        </PinchZoomable>
+                        </Zoomer>
 
-                        <PinchZoomable ref={'ref1'}>
+                        <Zoomer ref={'ref1'}>
                             <div className={"slideWithImage"}><img src={"https://via.placeholder.com/600x600"} draggable={false}/></div>
-                        </PinchZoomable>
+                        </Zoomer>
 
-                        <PinchZoomable ref={'ref2'}>
+                        <Zoomer ref={'ref2'}>
                             <div className={"slideWithImage"}><img src={"https://via.placeholder.com/600x600"} draggable={false}/></div>
-                        </PinchZoomable>
+                        </Zoomer>
 
-                        <PinchZoomable ref={'ref3'}>
+                        <Zoomer ref={'ref3'}>
                             <div className={"slideWithImage"}><img src={"https://via.placeholder.com/600x600"} draggable={false}/></div>
-                        </PinchZoomable>
+                        </Zoomer>
                     </div>
                 </div>
-
-                <div>Scale: {this.state.scale}</div>
-
             </div>
         );
     }
@@ -393,5 +99,29 @@ storiesOf('Experiment', module)
             <h1>Test</h1>
             <h1>Test</h1>
             <Test />
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
         </div>
     );
