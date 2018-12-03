@@ -180,15 +180,8 @@ class TouchSpaceExperiment {
                     };
 
                     if (SESSION === 'pan-swiper') {
-                        // In case of swiper mode, we want to stop gesture handling when it should be vertical browser scroll.
-                        if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
-                            this._mc.stop(true); // no more events until new session
-                            SESSION = null;
-                            return;
-                        }
-                        else {
-                            this._touchSpaceController.panMove(ev.deltaX);
-                        }
+
+                        this._touchSpaceController.panMove(ev.deltaX);
                     }
                     else if (SESSION === 'pan-zoomer') {
                         this._zoomer.move(zoomerParams);
@@ -208,6 +201,7 @@ class TouchSpaceExperiment {
                         else {
 
                             if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
+                                console.log('MC stop!!!');
                                 this._mc.stop(true); // no more events until new session
                                 return;
                             }
