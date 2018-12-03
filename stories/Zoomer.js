@@ -70,6 +70,7 @@ class Zoomer extends React.Component {
 
         this.state = {
             transform: Object.assign({}, this._currentParams),
+            isPinching: false
         };
 
         this.movestart = this.movestart.bind(this);
@@ -132,9 +133,13 @@ class Zoomer extends React.Component {
         this._onMove();
     }
 
-    movestart(inputParams) {
+    movestart(inputParams, animated) {
         if (this._isPinching) { return; }
         this._isPinching = true;
+
+        this.setState({
+            animated: animated
+        });
 
         this._pinchStartValues = {
             params: Object.assign({}, this._currentParams),
@@ -190,7 +195,8 @@ class Zoomer extends React.Component {
         return <div ref={this.containerRef} style={{overflow: "hidden"}}>
             <div style={{
                 transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${this.state.transform.scale})`,
-                transformOrigin: "50% 50%"
+                transformOrigin: "50% 50%",
+                transition: this.state.animated ? 'transform .15s ease-out' : ''
             }}>
                 {this.props.children}
             </div>
