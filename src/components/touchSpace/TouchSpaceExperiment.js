@@ -85,7 +85,7 @@ class TouchSpaceExperiment {
          */
         this._mc.on('pinch pinchstart pinchend pinchin pinchout', (ev) => {
 
-            // console.log('PINCH', ev.type, ev);
+            console.log('PINCH', ev.type, ev);
 
             let clientRect = this._touchSpace.getBoundingClientRect();
 
@@ -195,6 +195,7 @@ class TouchSpaceExperiment {
                     }
                     // Start new session!
                     else if (SESSION === null) {
+
                         if (
                             this._zoomer.getParams().scale > 1 &&
                             !(ev.type === 'panleft' && this._zoomer.isAlignedToRight()) &&
@@ -202,19 +203,15 @@ class TouchSpaceExperiment {
                         ) {
                             SESSION = 'pan-zoomer';
 
-                            // if (this._zoomer)
-                            if (ev.type === 'panleft' && this._zoomer.isAlignedToRight()) {
-                                SESSION = 'pan-swiper';
-
-                                this._touchSpace.addEventListener('click', stopPropagationCallback, true);
-                                this._touchSpaceController.panStart();
-                                break;
-                            }
-
-                            console.log('pan zoomer!');
                             this._zoomer.movestart(zoomerParams);
                         }
                         else {
+
+                            if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
+                                this._mc.stop(true); // no more events until new session
+                                return;
+                            }
+
                             SESSION = 'pan-swiper';
                             this._touchSpace.addEventListener('click', stopPropagationCallback, true);
                             this._touchSpaceController.panStart();
@@ -226,6 +223,8 @@ class TouchSpaceExperiment {
 
                 case "panend":
                 case "pancancel":
+
+                    this._blockPanAndSwipeEvents = false;
 
                     if (SESSION === 'pan-swiper') {
                         setTimeout(() => {
