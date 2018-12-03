@@ -1,6 +1,6 @@
 import React from "react";
 
-let normalizeZoomArea = function(zoomArea) {
+let getZoomArea = function(zoomArea) {
 
     let half = 1 / (2 * zoomArea.scale);
 
@@ -17,8 +17,8 @@ let normalizeZoomArea = function(zoomArea) {
     };
 };
 
-let getEdge = function(boundaries, zoomArea) {
-    zoomArea = normalizeZoomArea(zoomArea);
+let getEdge = function(boundaries, params) {
+    let zoomArea = getZoomArea(params);
 
     return {
         right: boundaries.left + boundaries.width - zoomArea.half,
@@ -28,13 +28,13 @@ let getEdge = function(boundaries, zoomArea) {
     };
 };
 
-let standardSnapFunction = function(boundaries, zoomArea) {
+let standardSnapFunction = function(boundaries, params) {
 
     let targetParams = {
-        scale: zoomArea.scale
+        scale: params.scale
     };
 
-    zoomArea = normalizeZoomArea(zoomArea);
+    let zoomArea = getZoomArea(params);
 
     // X
     if (zoomArea.width >= boundaries.width) { targetParams.x = boundaries.left + boundaries.width / 2; }
@@ -107,11 +107,55 @@ class Zoomer extends React.Component {
     }
 
     _onMove() {
+
+        // let edge = getEdge(this._boundaries, this._currentParams);
+
+        // let x = this._currentParams.x;
+        // let y = this._currentParams.y;
+        // let scale = this._currentParams.scale;
+
+        let t = standardSnapFunction(this._boundaries, this._currentParams);
+
+        let fun = (x) => 0.2 * Math.log(1 + x);
+
+        // left
+        let restX = 0;
+
+        if (this._currentParams.x - t.x > 0) {
+            restX = fun(this._currentParams.x - t.x);
+        }
+        else if (this._currentParams.x - t.x < 0) {
+            restX = -fun(-(this._currentParams.x - t.x));
+        }
+
+        let restY = 0;
+
+        if (this._currentParams.y - t.y > 0) {
+            restY = fun(this._currentParams.y - t.y);
+        }
+        else if (this._currentParams.y - t.y < 0) {
+            restY = -fun(-(this._currentParams.y - t.y));
+        }
+
+        // console.log('---');
+        // console.log(x, y, scale);
+        //
+        // if (x > edge.right) { x = edge.right; }
+        // if (x < edge.left) { x = edge.left; }
+        // if (y > edge.bottom) { y = edge.bottom; }
+        // if (y < edge.top) { y = edge.top };
+        //
+        // console.log(x, y, scale);
+
+        if (t.scale < 1) { t.scale = 1; }
+        if (t.scale > 5) { t.scale = 5; }
+
+
         this.setState({
             transform: {
-                x: this._currentParams.x,
-                y: this._currentParams.y,
-                scale: this._currentParams.scale
+                x: t.x + restX,
+                y: t.y + restY,
+                scale: t.scale
             }
         });
     }
