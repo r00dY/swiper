@@ -126,6 +126,7 @@ class TouchSpaceExperiment {
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
+                    this._zoomer.snap();
                     SESSION = null;
                     this._blockPanAndSwipeEvents = true;
                     break;
