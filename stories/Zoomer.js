@@ -1,73 +1,6 @@
 import React from "react";
 import AnimationEngine from 'src/animationEngines/AnimationEngine';
-
-let getZoomArea = function (zoomArea) {
-
-    let half = 1 / (2 * zoomArea.scale);
-
-    return {
-        top: zoomArea.y - half,
-        bottom: zoomArea.y + half,
-        left: zoomArea.x - half,
-        right: zoomArea.x + half,
-        width: half * 2,
-        height: half * 2,
-        half: half,
-        x: zoomArea.x,
-        y: zoomArea.y
-    };
-};
-
-let getEdge = function (boundaries, params) {
-    let zoomArea = getZoomArea(params);
-
-    return {
-        right: boundaries.left + boundaries.width - zoomArea.half,
-        left: boundaries.left + zoomArea.half,
-        top: boundaries.top + zoomArea.half,
-        bottom: boundaries.top + boundaries.height - zoomArea.half
-    };
-};
-
-let standardSnapFunction = function (boundaries, params) {
-
-    let targetParams = {
-        scale: params.scale
-    };
-
-    let zoomArea = getZoomArea(params);
-
-    // X
-    if (zoomArea.width >= boundaries.width) {
-        targetParams.x = boundaries.left + boundaries.width / 2;
-    }
-    else if (zoomArea.left < boundaries.left) {
-        targetParams.x = boundaries.left + zoomArea.half;
-    }
-    else if (zoomArea.right > boundaries.left + boundaries.width) {
-        targetParams.x = boundaries.left + boundaries.width - zoomArea.half;
-    }
-    else {
-        targetParams.x = zoomArea.x;
-    }
-
-    // Y
-    if (zoomArea.height >= boundaries.height) {
-        targetParams.y = boundaries.top + boundaries.height / 2;
-    }
-    else if (zoomArea.top < boundaries.top) {
-        targetParams.y = boundaries.top + zoomArea.half;
-    }
-    else if (zoomArea.bottom > boundaries.top + boundaries.height) {
-        targetParams.y = boundaries.top + boundaries.height - zoomArea.half;
-    }
-    else {
-        targetParams.y = zoomArea.y;
-    }
-
-    return targetParams;
-};
-
+import standardSnapFunction from './standardSnapFunction';
 
 class Zoomer extends React.Component {
     constructor(props) {
@@ -89,9 +22,7 @@ class Zoomer extends React.Component {
             height: 600,
         };
 
-        this._boundaries = {
-            top: 150,
-            left: 0,
+        this._itemSize = {
             width: 800,
             height: 300,
         };
@@ -101,10 +32,8 @@ class Zoomer extends React.Component {
             // isPinching: false
         };
 
-
         this.isAlignedToRight = this.isAlignedToRight.bind(this);
         this.isAlignedToLeft = this.isAlignedToLeft.bind(this);
-        this.animateTo = this.animateTo.bind(this);
         this.getPos = this.getPos.bind(this);
 
         this.animations = {
@@ -127,35 +56,31 @@ class Zoomer extends React.Component {
 
     _onMove() {
 
-        // let t = standardSnapFunction(this._boundaries, this._currentParams);
-        //
-        // let fun = (x) => 0.05 * Math.log(1 + x * 10);
-        //
-        // // left
-        // let restX = 0;
-        //
-        // if (this._currentParams.x - t.x > 0) {
-        //     restX = fun(this._currentParams.x - t.x);
-        // }
-        // else if (this._currentParams.x - t.x < 0) {
-        //     restX = -fun(-(this._currentParams.x - t.x));
-        // }
-        //
-        // let restY = 0;
-        //
-        // if (this._currentParams.y - t.y > 0) {
-        //     restY = fun(this._currentParams.y - t.y);
-        // }
-        // else if (this._currentParams.y - t.y < 0) {
-        //     restY = -fun(-(this._currentParams.y - t.y));
-        // }
-        //
-        // if (t.scale < 1) { t.scale = 1; }
-        // if (t.scale > 5) { t.scale = 5; }
+        let t = standardSnapFunction(this._pos, this._containerSize, this._itemSize);
 
-        let t = this._pos;
+        let fun = (x) => 0.05 * Math.log(1 + x * 10);
+
+        // left
         let restX = 0;
+
+        if (this._pos.x - t.x > 0) {
+            restX = fun((this._pos.x - t.x) / this.state.containerSize.width) * this.state.containerSize.width;
+        }
+        else if (this._pos.x - t.x < 0) {
+            restX = -fun(-(this._pos.x - t.x) / this.state.containerSize.width) * this.state.containerSize.width;
+        }
+
         let restY = 0;
+
+        if (this._pos.y - t.y > 0) {
+            restY = fun((this._pos.y - t.y) / this.state.containerSize.height) * this.state.containerSize.height;
+        }
+        else if (this._pos.y - t.y < 0) {
+            restY = -fun(-(this._pos.y - t.y) / this.state.containerSize.height) * this.state.containerSize.height;
+        }
+
+        if (t.scale < 1) { t.scale = 1; }
+        if (t.scale > 5) { t.scale = 5; }
 
         this.setState({
             transform: {
@@ -166,43 +91,53 @@ class Zoomer extends React.Component {
         });
     }
 
-    moveTo(pos, animated) {
+    snap() {
+        let t = standardSnapFunction(this._pos, this._containerSize, this._itemSize);
+        this.moveTo(t, true);
+    }
+
+    _updatePos(pos) {
+        this._pos = Object.assign({}, pos);
+        this._onMove();
+    }
+
+    moveTo(pos, animated, snap) {
         animated = animated || false;
+        snap = snap || false;
+
+        this.animations.x.killAnimation();
+        this.animations.y.killAnimation();
+        this.animations.scale.killAnimation();
+
+        let newPos = Object.assign({}, pos);
+        if (snap) {
+            newPos = standardSnapFunction(newPos, this._containerSize, this._itemSize);
+        }
 
         if (!animated) {
-            this._pos = Object.assign({}, pos);
-            this._onMove();
+            this._updatePos(newPos);
         }
         else {
 
             let newParams = Object.assign({}, this._pos);
 
-            this.animations.x.animate(this._pos.x, pos.x, (x) => {
+            this.animations.x.animate(this._pos.x, newPos.x, (x) => {
                 newParams.x = x;
-                console.log('X step', newParams)
-                this.moveTo(newParams);
+                this._updatePos(newParams);
             });
 
-            this.animations.y.animate(this._pos.y, pos.y, (y) => {
+            this.animations.y.animate(this._pos.y, newPos.y, (y) => {
                 newParams.y = y;
-                console.log('Y step', newParams);
-                this.moveTo(newParams);
+                this._updatePos(newParams);
             });
 
-            this.animations.scale.animate(this._pos.scale, pos.scale, (scale) => {
+            this.animations.scale.animate(this._pos.scale, newPos.scale, (scale) => {
                 newParams.scale = scale;
-                console.log('scale step', newParams);
-                this.moveTo(newParams);
+                this._updatePos(newParams);
             });
 
 
         }
-    }
-
-    animateTo(fromParams, toParams) {
-
-        this.movestart(fromParams);
-
     }
 
     isAlignedToRight() {

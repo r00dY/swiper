@@ -57,7 +57,7 @@ class TouchSpaceExperiment {
                         x: 0,
                         y: 0,
                         scale: 1
-                    }, true);
+                    }, true, true);
 
                 }
                 else {
@@ -67,7 +67,7 @@ class TouchSpaceExperiment {
                         x: -(ev.center.x - (clientRect.left + clientRect.width / 2)) * 3,
                         y: -(ev.center.y - (clientRect.top + clientRect.height / 2)) * 3,
                         scale: 3
-                    }, true);
+                    }, true, true);
                 }
 
                 waiting = false;
@@ -244,6 +244,7 @@ class TouchSpaceExperiment {
                         this._touchSpaceController.panEnd(-ev.velocityX);
                     }
                     else if (SESSION === 'pan-zoomer') {
+                        this._zoomer.snap();
                         // this._zoomer.moveend();
                     }
 
