@@ -57,12 +57,12 @@ class TouchSpaceExperiment {
                 let clientRect = this._touchSpace.getBoundingClientRect();
 
                 let params = {
-                    x: ((ev.center.x - clientRect.left) / clientRect.width - 0.5) * 3 + 0.5,
-                    y: ((ev.center.y - clientRect.top) / clientRect.height - 0.5) * 3 + 0.5
+                    x: (((ev.center.x - clientRect.left) / clientRect.width - 0.5) * -3 + 0.5),
+                    y: (((ev.center.y - clientRect.top) / clientRect.height - 0.5) * -3 + 0.5)
                 };
 
                 if (this._zoomer.getParams().scale > 1) {
-                    this._zoomer.resetZoom();
+                    // this._zoomer.resetZoom();
                     // this._zoomer.movestart(Object.assign({}, params, { scale: this._zoomer.getParams().scale }), true);
                     // this._zoomer.move(Object.assign({}, params, { scale: 1 }));
                     // this._zoomer.moveend();
@@ -71,6 +71,11 @@ class TouchSpaceExperiment {
                     //     Object.assign({}, params, { scale: 1 }),
                     //     { x: clientRect.width / 2, y: clientRect.height / 2, scale: 3 }
                     // );
+                    this._zoomer.animateToParams({
+                        x: 0.5,
+                        y: 0.5,
+                        scale: 1
+                    });
 
                 }
                 else {
@@ -79,10 +84,11 @@ class TouchSpaceExperiment {
                     // this._zoomer.move({ x: clientRect.width / 2, y: clientRect.height / 2, scale: 3 });
                     // this._zoomer.moveend();
 
-                    this._zoomer.animateTo(
-                        Object.assign({}, params, { scale: this._zoomer.getParams().scale }),
-                        { x: 0.5, y: 0.5, scale: 3 }
-                    );
+                    this._zoomer.animateToParams(Object.assign({}, params, { scale: 3}));
+                    // this._zoomer.animateTo(
+                    //     Object.assign({}, params, { scale: this._zoomer.getParams().scale }),
+                    //     { x: 0.5, y: 0.5, scale: 3 }
+                    // );
                 }
 
                 waiting = false;

@@ -82,6 +82,7 @@ class Zoomer extends React.Component {
         this.isAlignedToRight = this.isAlignedToRight.bind(this);
         this.isAlignedToLeft = this.isAlignedToLeft.bind(this);
         this.animateTo = this.animateTo.bind(this);
+        this.animateToParams = this.animateToParams.bind(this);
 
         this.animations = {
             x: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.5),
@@ -124,7 +125,6 @@ class Zoomer extends React.Component {
     _combineParamsWithInputDeltas(params, deltas) {
 
         // TOOD: WHAT ARE REALLY DELTAS? RELATIVE TO WHAT?
-        console.log('deltas', deltas);
         return {
             x: params.x - deltas.x / deltas.scale / params.scale,
             y: params.y - deltas.y / deltas.scale / params.scale,
@@ -152,7 +152,6 @@ class Zoomer extends React.Component {
 
     _onMove() {
 
-        console.log('current params', this._currentParams);
         // let t = standardSnapFunction(this._boundaries, this._currentParams);
         //
         // let fun = (x) => 0.05 * Math.log(1 + x * 10);
@@ -224,12 +223,11 @@ class Zoomer extends React.Component {
             params: Object.assign({}, this._currentParams),
             inputParams: inputParams
         };
-
-        console.log('movestart', this._pinchStartValues);
     }
 
     move(inputParams) {
         // calculate movement relative deltas
+
         let deltas = {
             x: inputParams.x - this._pinchStartValues.inputParams.x,
             y: inputParams.y - this._pinchStartValues.inputParams.y,
@@ -237,9 +235,6 @@ class Zoomer extends React.Component {
         };
 
         this._currentParams = this._combineParamsWithInputDeltas(this._pinchStartValues.params, deltas);
-
-        console.log('move', inputParams, deltas, this._currentParams);
-
 
         this._onMove();
     }
@@ -253,42 +248,51 @@ class Zoomer extends React.Component {
         // this.snapToBoundaries2();
     }
 
+    animateToParams(params) {
+
+        let fromParams = Object.assign({}, this._currentParams);
+        let toParams = params;
+
+        this.animateTo(fromParams, toParams);
+    }
 
     animateTo(fromParams, toParams) {
-
-        // TODO: to fix this method.
-
-
-        console.log('from/to params', fromParams, toParams);
-        // this.movestart(fromParams);
-        // this.move(toParams);
-        // this.moveend();
-
-        // console.log('animate to', fromParams, toParams);
 
         this.movestart(fromParams);
 
         let newParams = Object.assign({}, fromParams);
-
+        let endCounter = 3;
         this.animations.x.animate(fromParams.x, toParams.x, (x) => {
            newParams.x = x;
+           console.log('X step', newParams)
             this.move(newParams);
         }, () => {
-            this.moveend();
+            endCounter--;
+            if (endCounter === 0) { this.moveend(); }
+            // console.log('X end');
+            // this.moveend();
         });
 
         this.animations.y.animate(fromParams.y, toParams.y, (y) => {
             newParams.y = y;
+            console.log('Y step', newParams);
             this.move(newParams);
         }, () => {
-            this.moveend();
+            console.log('Y end');
+            endCounter--;
+            if (endCounter === 0) { this.moveend(); }
+            // this.moveend();
         });
 
         this.animations.scale.animate(fromParams.scale, toParams.scale, (scale) => {
             newParams.scale = scale;
+            console.log('scale step', newParams);
             this.move(newParams);
         }, () => {
-            this.moveend();
+            console.log('scale end');
+            endCounter--;
+            if (endCounter === 0) { this.moveend(); }
+            // this.moveend();
         });
     }
 
