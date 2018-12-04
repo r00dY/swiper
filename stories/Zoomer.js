@@ -79,9 +79,6 @@ class Zoomer extends React.Component {
             restY = -fun(-(this._pos.y - t.y) / this.state.containerSize.height) * this.state.containerSize.height;
         }
 
-        if (t.scale < 1) { t.scale = 1; }
-        if (t.scale > 5) { t.scale = 5; }
-
         this.setState({
             transform: {
                 x: t.x + restX,
@@ -92,7 +89,12 @@ class Zoomer extends React.Component {
     }
 
     snap() {
-        let t = standardSnapFunction(this._pos, this._containerSize, this._itemSize);
+        let t = Object.assign({}, this._pos);
+        if (t.scale > 5) { t.scale = 5; }
+        if (t.scale < 1) { t.scale = 1; }
+
+        t = standardSnapFunction(t, this._containerSize, this._itemSize);
+
         this.moveTo(t, true);
     }
 

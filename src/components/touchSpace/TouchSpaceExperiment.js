@@ -104,6 +104,17 @@ class TouchSpaceExperiment {
                     let relativeScale = ev.scale / pinchStartEv.scale;
                     let fullScale = pinchStartPos.scale * relativeScale;
 
+                    let fun = (x) => 0.05 * Math.log(1 + x * 10);
+
+                    if (fullScale > 5) {
+                        let rest = fullScale - 5;
+                        fullScale = 5 + fun(rest);
+
+                    } else if (fullScale < 1) {
+                        let rest = 1 - fullScale;
+                        fullScale = 1 - fun(rest);
+                    }
+
                     // Coords of touch point (no matter which zoom/translation we have). It's just touch point coords relative to touch space.
                     let touchPointCoords = {
                         x: pinchStartEv.center.x - (touchSpaceRect.left + touchSpaceRect.width / 2),
@@ -122,7 +133,7 @@ class TouchSpaceExperiment {
                         scale: fullScale
                     };
 
-                    this._zoomer.moveTo(newPos);
+                    this._zoomer.moveTo(newPos, false, true);
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
