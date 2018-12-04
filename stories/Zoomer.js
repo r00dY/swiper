@@ -148,13 +148,11 @@ class Zoomer extends React.Component {
     }
 
     isAlignedToRight() {
-        return false;
-        return this._currentParams.x - getEdge(this._boundaries, this._currentParams).right > -0.01;
+        return /* right edge */ (this._pos.x + this._itemSize.width * this._pos.scale / 2) < this._containerSize.width / 2 + 1;
     }
 
     isAlignedToLeft() {
-        return false;
-        return this._currentParams.x - getEdge(this._boundaries, this._currentParams).left < 0.01;
+        return /* left edge */ (this._pos.x - this._itemSize.width * this._pos.scale / 2) > -this._containerSize.width / 2 - 1;
     }
 
     componentDidMount() {
