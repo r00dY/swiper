@@ -2,6 +2,11 @@ import React from "react";
 import AnimationEngine from 'src/animationEngines/AnimationEngine';
 import standardSnapFunction from './standardSnapFunction';
 
+/**
+ * TODO: animation of velocity (panend with velocity)
+ * TODO: pretty zoom in animation. When we animate from posA to posB, we don't want to have this weird "zoom bump". Left / right / bottom / top edges should be calculated with ease, and scale and center should be calculate from them!
+ */
+
 class Zoomer extends React.Component {
     constructor(props) {
         super(props);
@@ -88,7 +93,7 @@ class Zoomer extends React.Component {
         });
     }
 
-    snap() {
+    snap(velocity) {
         let t = Object.assign({}, this._pos);
         if (t.scale > 5) { t.scale = 5; }
         if (t.scale < 1) { t.scale = 1; }
