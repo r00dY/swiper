@@ -23,6 +23,7 @@ class TouchSpaceExperiment {
 
     set zoomer(zoomer) {
         this._zoomer = zoomer;
+
     }
 
     enable() {
@@ -39,13 +40,10 @@ class TouchSpaceExperiment {
 
         this._mc.add([tap, pan, pinch]);
 
-
         let SESSION = null; // pan / pinch
-
 
         this._blockPanAndSwipeEvents = false;
         let waiting = false;
-
 
         /**
          * DOUBLE TAP
@@ -54,41 +52,22 @@ class TouchSpaceExperiment {
 
             if (waiting) {
 
-                let clientRect = this._touchSpace.getBoundingClientRect();
-
-                let params = {
-                    x: (((ev.center.x - clientRect.left) / clientRect.width - 0.5) * -3 + 0.5),
-                    y: (((ev.center.y - clientRect.top) / clientRect.height - 0.5) * -3 + 0.5)
-                };
-
-                if (this._zoomer.getParams().scale > 1) {
-                    // this._zoomer.resetZoom();
-                    // this._zoomer.movestart(Object.assign({}, params, { scale: this._zoomer.getParams().scale }), true);
-                    // this._zoomer.move(Object.assign({}, params, { scale: 1 }));
-                    // this._zoomer.moveend();
-                    //
-                    // this._zoomer.animateTo(
-                    //     Object.assign({}, params, { scale: 1 }),
-                    //     { x: clientRect.width / 2, y: clientRect.height / 2, scale: 3 }
-                    // );
-                    this._zoomer.animateToParams({
-                        x: 0.5,
-                        y: 0.5,
+                if (this._zoomer.getPos().scale > 1.01) {
+                    this._zoomer.moveTo({
+                        x: 0,
+                        y: 0,
                         scale: 1
-                    });
+                    }, true);
 
                 }
                 else {
+                    let clientRect = this._touchSpace.getBoundingClientRect();
 
-                    // this._zoomer.movestart(Object.assign({}, params, { scale: 1 }), true);
-                    // this._zoomer.move({ x: clientRect.width / 2, y: clientRect.height / 2, scale: 3 });
-                    // this._zoomer.moveend();
-
-                    this._zoomer.animateToParams(Object.assign({}, params, { scale: 3}));
-                    // this._zoomer.animateTo(
-                    //     Object.assign({}, params, { scale: this._zoomer.getParams().scale }),
-                    //     { x: 0.5, y: 0.5, scale: 3 }
-                    // );
+                    this._zoomer.moveTo({
+                        x: -(ev.center.x - (clientRect.left + clientRect.width / 2)) * 3,
+                        y: -(ev.center.y - (clientRect.top + clientRect.height / 2)) * 3,
+                        scale: 3
+                    }, true);
                 }
 
                 waiting = false;
@@ -104,33 +83,50 @@ class TouchSpaceExperiment {
         /**
          * PINCH
          */
+
+        let pinchStartEv, pinchStartPos; // we need this, because sometimes hammer gives initial scale not 1, but sth like 4 or 5, god knows why
+
         this._mc.on('pinch pinchstart pinchend pinchin pinchout', (ev) => {
-
-            console.log('PINCH', ev.type, ev);
-
-            let clientRect = this._touchSpace.getBoundingClientRect();
-
-            // we need to normalize clientX / clientY
-            let params = {
-                x: (ev.center.x - clientRect.left) / clientRect.width,
-                y: (ev.center.y - clientRect.top) / clientRect.height,
-                scale: ev.scale
-            };
 
             switch(ev.type) {
                 case 'pinchstart':
                     SESSION = 'pinch';
-                    this._zoomer.movestart(params);
+                    pinchStartEv = ev;
+                    pinchStartPos = Object.assign({}, this._zoomer.getPos());
                     break;
                 case 'pinchin':
                 case 'pinchout':
                 case 'pinchmove':
-                    this._zoomer.move(params);
+                    if (SESSION !== 'pinch') { break; }
+
+                    let touchSpaceRect = this._touchSpace.getBoundingClientRect();
+
+                    let relativeScale = ev.scale / pinchStartEv.scale;
+                    let fullScale = pinchStartPos.scale * relativeScale;
+
+                    // Coords of touch point (no matter which zoom/translation we have). It's just touch point coords relative to touch space.
+                    let touchPointCoords = {
+                        x: pinchStartEv.center.x - (touchSpaceRect.left + touchSpaceRect.width / 2),
+                        y: pinchStartEv.center.y - (touchSpaceRect.top + touchSpaceRect.height / 2)
+                    };
+
+                    // Normalized zoom point coordinates (when scale = 1, x = 0 and y = 0). No matter the position.
+                    let zoomPointCoordsNormalized = {
+                        x: (touchPointCoords.x - pinchStartPos.x) / pinchStartPos.scale,
+                        y: (touchPointCoords.y - pinchStartPos.y) / pinchStartPos.scale
+                    };
+
+                    let newPos = {
+                        x: -zoomPointCoordsNormalized.x * fullScale + touchPointCoords.x + ev.deltaX,
+                        y: -zoomPointCoordsNormalized.y * fullScale + touchPointCoords.y + ev.deltaY,
+                        scale: fullScale
+                    };
+
+                    this._zoomer.moveTo(newPos);
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
                     SESSION = null;
-                    this._zoomer.moveend();
                     this._blockPanAndSwipeEvents = true;
                     break;
                 default:
@@ -169,6 +165,8 @@ class TouchSpaceExperiment {
         //     }
         // };
 
+        let panStartPos;
+
         this._mc.on('panup pandown panleft panright panstart panend pancancel', (ev) => {
 
             console.log('PAN EVENT', ev.type, SESSION);
@@ -194,32 +192,27 @@ class TouchSpaceExperiment {
                         break;
                     }
 
-                    let clientRect = this._touchSpace.getBoundingClientRect();
-
-                    let zoomerParams = {
-                        x: ev.deltaX / clientRect.width,
-                        y: ev.deltaY / clientRect.height,
-                        scale: 1
-                    };
-
                     if (SESSION === 'pan-swiper') {
-
                         this._touchSpaceController.panMove(ev.deltaX);
                     }
                     else if (SESSION === 'pan-zoomer') {
-                        this._zoomer.move(zoomerParams);
+                        this._zoomer.moveTo({
+                            x: panStartPos.x + ev.deltaX,
+                            y: panStartPos.y + ev.deltaY,
+                            scale: panStartPos.scale
+                        });
                     }
                     // Start new session!
                     else if (SESSION === null) {
 
                         if (
-                            this._zoomer.getParams().scale > 1 &&
+                            this._zoomer.getPos().scale > 1 &&
                             !(ev.type === 'panleft' && this._zoomer.isAlignedToRight()) &&
                             !(ev.type === 'panright' && this._zoomer.isAlignedToLeft())
                         ) {
                             SESSION = 'pan-zoomer';
 
-                            this._zoomer.movestart(zoomerParams);
+                            panStartPos = Object.assign({}, this._zoomer.getPos());
                         }
                         else {
 
@@ -251,7 +244,7 @@ class TouchSpaceExperiment {
                         this._touchSpaceController.panEnd(-ev.velocityX);
                     }
                     else if (SESSION === 'pan-zoomer') {
-                        this._zoomer.moveend();
+                        // this._zoomer.moveend();
                     }
 
                     SESSION = null;

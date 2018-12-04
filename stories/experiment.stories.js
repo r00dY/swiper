@@ -38,7 +38,6 @@ class Test extends React.Component {
         this.touchSpace = new TouchSpaceExperiment(this.slider, this.simpleSliderNodeRef.current);
         this.touchSpace.zoomer = this.refs['ref0'];
         this.touchSpace.enable();
-
     }
 
     render() {
