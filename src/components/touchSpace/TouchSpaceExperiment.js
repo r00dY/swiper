@@ -104,6 +104,7 @@ class TouchSpaceExperiment {
                     let relativeScale = ev.scale / pinchStartEv.scale;
                     let fullScale = pinchStartPos.scale * relativeScale;
 
+                    // Scale snapping must be here first. Otherwise, calculations below would give wrong coordinates.
                     let fun = (x) => 0.05 * Math.log(1 + x * 10);
 
                     if (fullScale > 5) {
@@ -133,7 +134,7 @@ class TouchSpaceExperiment {
                         scale: fullScale
                     };
 
-                    this._zoomer.moveTo(newPos, false, true);
+                    this._zoomer.moveTo(newPos);
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
