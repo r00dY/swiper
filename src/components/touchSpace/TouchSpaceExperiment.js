@@ -49,7 +49,7 @@ class TouchSpaceExperiment {
                         x: 0,
                         y: 0,
                         scale: 1
-                    }, true, true);
+                    }, true);
                 }
                 else {
                     let clientRect = this._touchSpace.getBoundingClientRect();
@@ -57,7 +57,7 @@ class TouchSpaceExperiment {
                     this._zoomer.zoomToPoint({
                         x: ev.center.x - clientRect.left,
                         y: ev.center.y - clientRect.top
-                    }, false);
+                    }, true);
                 }
 
                 waiting = false;
@@ -166,7 +166,7 @@ class TouchSpaceExperiment {
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
-                    this._zoomer.snap();
+                    this._zoomer.snap(true);
                     SESSION = null;
                     this._blockPanAndSwipeEvents = true;
                     break;
@@ -259,7 +259,6 @@ class TouchSpaceExperiment {
                             SESSION = 'pan-zoomer';
 
                             panPreviousCenter = ev.center;
-                            // panStartPos = Object.assign({}, this._zoomer.getPos());
                         }
                         else {
 
@@ -289,7 +288,7 @@ class TouchSpaceExperiment {
                         this._touchSpaceController.panEnd(-ev.velocityX);
                     }
                     else if (SESSION === 'pan-zoomer') {
-                        this._zoomer.snap(false);
+                        this._zoomer.snap(true);
                     }
 
                     SESSION = null;

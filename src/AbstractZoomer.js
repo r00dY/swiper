@@ -109,13 +109,41 @@ class Zoomer  {
      *
      * @param pos
      */
-    moveTo(pos) {
+    moveTo(pos, animated) {
         if (this._isPinching) {
             return false;
         }
 
+        if (typeof animated === 'undefined') { animated = false; }
+
         this._killAnimations();
-        this._updatePos(pos);
+
+        if (animated) {
+            let animationX = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+            let animationY = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+            let animationScale = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+
+            animationX.animate(this._pos.x, pos.x, (x) => {
+                this._updatePos(Object.assign(this._pos, { x: x }));
+            });
+
+            animationY.animate(this._pos.y, pos.y, (y) => {
+                this._updatePos(Object.assign(this._pos, { y: y }));
+            });
+
+            animationScale.animate(this._pos.scale, pos.scale, (scale) => {
+                this._updatePos(Object.assign(this._pos, { scale: scale }));
+            });
+
+            this._animations.push(animationX);
+            this._animations.push(animationY);
+            this._animations.push(animationScale);
+        }
+        else {
+            this._updatePos(pos);
+        }
+
+
 
         return true;
     }
@@ -128,22 +156,13 @@ class Zoomer  {
             return false;
         }
 
-        if (typeof animated === 'undefined') { animated = true; }
-
-        if (animated) {
-
-        }
-        else {
-            this.moveTo(this._getSnappedPos(this._pos));
-        }
+        this.moveTo(this._getSnappedPos(this._pos), animated);
 
         return true;
     }
 
     /**
      * "Double tap" method.
-     *
-     * So far works only for zooming from scale: 1.
      *
      * @param containerCoords - coordinates relative to container top/left.
      */
@@ -158,22 +177,15 @@ class Zoomer  {
             return false;
         }
 
-        if (typeof animated === 'undefined') { animated = true; }
+        let targetPointNormalizedCoords = this._getNormalizedPointCoordinates(containerCoords);
 
-        if (animated) {
+        this.moveTo(this._getSnappedPos({
+            x: -targetPointNormalizedCoords.x * this._zoomScale,
+            y: -targetPointNormalizedCoords.y * this._zoomScale,
+            scale: this._zoomScale
+        }), animated);
 
-        }
-        else {
-            let targetPointNormalizedCoords = this._getNormalizedPointCoordinates(containerCoords);
-
-            this.moveTo(this._getSnappedPos({
-                x: -targetPointNormalizedCoords.x * this._zoomScale,
-                y: -targetPointNormalizedCoords.y * this._zoomScale,
-                scale: this._zoomScale
-            }));
-
-            return true;
-        }
+        return true;
     }
 
     /**

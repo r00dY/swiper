@@ -8,20 +8,10 @@ class ReactZoomer extends React.Component {
         this.containerRef = React.createRef();
         this.itemRef = React.createRef();
 
-        this.state = {
-            x: 0,
-            y: 0,
-            scale: 1
-        };
-
         this.zoomer = new AbstractZoomer();
 
         this.zoomer.addEventListener('move', (coords) => {
-            this.setState({
-                x: coords.x,
-                y: coords.y,
-                scale: coords.scale
-            });
+            this.itemRef.current.style.transform = `translateX(${coords.x}px) translateY(${coords.y}px) scale(${coords.scale})`;
         });
     }
 
@@ -52,7 +42,6 @@ class ReactZoomer extends React.Component {
                 ref={this.containerRef}
             >
                 <div ref={this.itemRef} style={{
-                    transform: `translateX(${this.state.x}px) translateY(${this.state.y}px) scale(${this.state.scale})`,
                     transformOrigin: "50% 50%",
                     transition: 'none',
                     height: "100%",
