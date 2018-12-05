@@ -7,6 +7,110 @@ import EventSystem from './helpers/EventSystem';
  * TODO: pretty zoom in animation. When we animate from posA to posB, we don't want to have this weird "zoom bump". Left / right / bottom / top edges should be calculated with ease, and scale and center should be calculate from them!
  */
 
+/**
+ * NOTES TO MAINTAINER OF THE CODE
+ *
+ * this._pos is always simply translateX, translateY and scale (applied in that order, scale AFTER translation).
+ * this._coords is different from this._pos only in case of edge non-linearity. In this case this._coords is REAL position, and this._pos is linear position from which non-linear this._coords is calculated.
+ *
+ * Zoomer has two types of movement: pinching and standard. They're very different.
+ *
+ * Standard movements
+ *
+ * These are movements which are STATELESS in a way that zoomer doesn't remember history. Every call is a new call. They work similar to move/snap methods in AbstractSlider.
+ * Methods for standard movement: moveTo, snap, zoomToPoint
+ * moveTo method applies non-linearity. This means that if you call moveTo method with some position, this position will have edge non-linear effects applied and real position might be different from argument position.
+ * This gives us nice overscroll effect when panning.
+ *
+ * Pinching movements
+ *
+ * Pinch movement is combined of a session and is combined of 4 consecutive stages:
+ * - pinchstart
+ * - pinchmove (might be many of them)
+ * - pinchend
+ * - pinchend snap animation finished
+ *
+ * Pinching has a history, it remembers from where the movement started.
+ *
+ * Why history?
+ *
+ * Imagine position x=-100, y=-100, scale=10, when scaleMax = 5. Try to snap this.
+ *
+ * It turns out there are infinite number of positions to which snapping would be correct. Each of these positions would be different depending on from which point movement started.
+ *
+ * Look at the following image
+ *
+ * Viewport is small and biggest square is current position (around 6x scale).
+ * Now we want to snap big one into smaller one.
+ *
+ * It turns out that position only is not enough to snap correctly, because depending on starting point (A / B), different position would be appropriate.
+ *
+ +----------------------------------------------------------------------------------------------------+
+ |                                                                                                    |
+ |                                         Current position (to be snapped)                           |
+ |                                                                                                    |
+ |                                                                                                    |
+ |                                                                                                    |
+ |                                                                                                    |
+ |                                                                                                    |
+ |                                                                                                    |
+ |                      +-----------------------------------------------------+                       |
+ |                      |                                                     |                       |
+ |                      |                                                     |                       |
+ |                      |                                                     |                       |
+ |              +-----------------------------------------------------+       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                 +------------------+        |       |                       |
+ |              |       |                 |    VIEWPORT      |        |       |                       |
+ |              |       |                 |                  |        |       |                       |
+ |              |       |                 |                  |        |       |                       |
+ |              |       |                 |                  |        |       |                       |
+ |              |       |                 |        B         |        |       |                       |
+ |              |       |                 |                  |        |       |                       |
+ |              |       |                 |                  |        |       |                       |
+ |              |       |                 |   A              |        |       |                       |
+ |              |       |                 |                  |        |       |                       |
+ |              |       |                 +------------------+        |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       |  Snap 2 version (B)                         |       |                       |
+ |              |       |                                             |       |                       |
+ |              |       +-----------------------------------------------------+                       |
+ |              |                                                     |                               |
+ |              |  SNAP 1 version (A)                                 |                               |
+ |              |                                                     |                               |
+ |              +-----------------------------------------------------+                               |
+ |                                                                                                    |
+ |                                                                                                    |
+ |                                                                                                    |
+ +----------------------------------------------------------------------------------------------------+
+ *
+ * That's why we decided to have a history.
+ *
+ * NON LINEARITIES
+ *
+ * Pinch session disables edge non-linearities. There was a reason for that.
+ *
+ * First, it's easy to implement.
+ * Second, when you start pinching you pick one point. The one between your fingers - reference point.
+ * If we allowed for non-linearity on edges, then the reference point sometimes "falls from" being between fingers.
+ * We could probably do this effect, but not too much time for now. We copied PhotoSwipe logic and it seems fine and usable.
+ *
+ * There is one HUGE consequence of this. The pos => coords function behind edges is different for pinch and panning.
+ * This means that we cannot simply switch between them.
+ * That's why we don't allow for panning until pinch snap animation finishes. Pinch move can go far away from center (not like pan because of non-linearity). If we decided to switch pinch to pan, then pan would be super unnatural.
+ * We should start interpret pan events as soon as pinching finished.
+ *
+ * However, when pan snap animation is in progress, we can start pinching. It's because it's super natural position for pinch.
+ * That's why we have code that copies coords to pos during pinchstart.
+ *
+ */
 class Zoomer  {
     constructor() {
         /**
@@ -99,7 +203,7 @@ class Zoomer  {
 
         this._killAnimations();
 
-        // coords == pos during pinching (lack of edge non-linearities), so we must transform potentnailly non linear coordinates to the linear ones
+        // coords == pos during pinching (lack of edge non-linearities), so we must transform potentnailly non linear coordinates to the linear ones. Described in docs at the top.
         this._pos = Object.assign({}, this._coords);
 
         this._pinchStartContainerCoords = containerCoords;
@@ -422,117 +526,6 @@ class Zoomer  {
         this._runEventListeners('move', this._coords);
     }
 
-    //
-    // _onMove() {
-    //
-    //     let t = standardSnapFunction(this._pos, this._containerSize, this._itemSize);
-    //
-    //     let fun = (x) => 0.05 * Math.log(1 + x * 10);
-    //
-    //     // scale
-    //
-    //     let restScale = 0;
-    //
-    //     if (this._pos.scale > t.scale) {
-    //         restScale = fun(this._pos.scale - t.scale)
-    //     } else if (this._pos.scale < t.scale) {
-    //         restScale = -fun(-(this._pos.scale - t.scale))
-    //     }
-    //
-    //     console.log('restScale', restScale);
-    //     // x
-    //     let restX = 0;
-    //
-    //     if (this._pos.x - t.x > 0) {
-    //         restX = fun((this._pos.x - t.x) / this.state.containerSize.width) * this.state.containerSize.width;
-    //     }
-    //     else if (this._pos.x - t.x < 0) {
-    //         restX = -fun(-(this._pos.x - t.x) / this.state.containerSize.width) * this.state.containerSize.width;
-    //     }
-    //
-    //     // y
-    //     let restY = 0;
-    //
-    //     if (this._pos.y - t.y > 0) {
-    //         restY = fun((this._pos.y - t.y) / this.state.containerSize.height) * this.state.containerSize.height;
-    //     }
-    //     else if (this._pos.y - t.y < 0) {
-    //         restY = -fun(-(this._pos.y - t.y) / this.state.containerSize.height) * this.state.containerSize.height;
-    //     }
-    //
-    //     // t = this._pos;
-    //     // restX = 0;
-    //     // restY = 0;
-    //     // restScale = 0;
-    //     this.setState({
-    //         transform: {
-    //             x: t.x + restX,
-    //             y: t.y + restY,
-    //             scale: t.scale + restScale
-    //         }
-    //     });
-    // }
-    //
-    // snap(velocity) {
-    //     let t = Object.assign({}, this._pos);
-    //     if (t.scale > 5) { t.scale = 5; }
-    //     if (t.scale < 1) { t.scale = 1; }
-    //
-    //     t = standardSnapFunction(t, this._containerSize, this._itemSize);
-    //
-    //     this.moveTo(t, true);
-    // }
-    //
-    // _updatePos(pos) {
-    //     this._pos = Object.assign({}, pos);
-    //     this._onMove();
-    // }
-    //
-    // moveTo(pos, animated) {
-    //     animated = animated || false;
-    //
-    //     this.animations.x.killAnimation();
-    //     this.animations.y.killAnimation();
-    //     this.animations.scale.killAnimation();
-    //
-    //     let newPos = Object.assign({}, pos);
-    //
-    //     // If new position is animated then we want to snap target position before animation.
-    //     // If we didn't do it, we would animate to target position that is not snapped, but still not linear (from _onMove)
-    //     // Such movement is unnatural and weird. Movement to snapped position is always cool.
-    //     // If movement is not animated, it's probably a tiny movement from panning or pinching.
-    //     // Such movements shouldn't be snapped to let non-linearity play its role.
-    //
-    //     if (animated) {
-    //         newPos = standardSnapFunction(newPos, this._containerSize, this._itemSize);
-    //     }
-    //
-    //     if (!animated) {
-    //         this._updatePos(newPos);
-    //     }
-    //     else {
-    //
-    //         let newParams = Object.assign({}, this._pos);
-    //
-    //         this.animations.x.animate(this._pos.x, newPos.x, (x) => {
-    //             newParams.x = x;
-    //             this._updatePos(newParams);
-    //         });
-    //
-    //         this.animations.y.animate(this._pos.y, newPos.y, (y) => {
-    //             newParams.y = y;
-    //             this._updatePos(newParams);
-    //         });
-    //
-    //         this.animations.scale.animate(this._pos.scale, newPos.scale, (scale) => {
-    //             newParams.scale = scale;
-    //             this._updatePos(newParams);
-    //         });
-    //
-    //
-    //     }
-    // }
-    //
     isAlignedToRight() {
         return /* right edge */ (this._pos.x + this._itemSize.width * this._pos.scale / 2) < this._containerSize.width / 2 + 10;
     }

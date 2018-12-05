@@ -312,65 +312,6 @@ class TouchSpaceExperiment {
                     break;
             }
 
-
-
-                    // this is important! When panning is in progress, we should enable panup pandown to avoid "jumping" of slider when sliding more vertically than horizontally.
-                    // However, if we gave up returning when _isTouched is false, Android would too eagerly start "panning" instead of waiting for scroll.
-                    // if (!isTouched) {
-                    //
-                    //     console.log('force stop!');
-                    //     // this works with pan-y :-)
-                    //     this._mc.stop(true);
-                    //
-                    //     return;
-                    // }
-            //
-            //     case "panleft":
-            //     case "panright":
-            //         if (this._blockPanAndSwipeEvents) { break; }
-            //
-            //
-            //
-            //
-            //
-            //         if (SESSION === 'pinch') { break; }
-            //
-            //         if (!isTouched) {
-            //             // If wasn't already detected and window is scrolling then break
-            //             // if (isWindowScrolling) { break; }
-            //
-            //             isTouched = true;
-            //
-            //             touchSpace.addEventListener('click', stopPropagationCallback, true); // we must add 3rd parameter as 'true' to get this event during capture phase. Otherwise, clicks inside the slider will be triggered before they get to stopPropagtionCallback
-            //
-            //             this._touchSpaceController.panStart();
-            //         }
-            //
-            //         if (isTouched) {
-            //             this._touchSpaceController.panMove(delta);
-            //         }
-            //
-            //         break;
-            //
-            //     case "panend":
-            //     case "pancancel":
-            //         this._blockPanAndSwipeEvents = false;
-            //
-            //         if (SESSION === 'pinch') { break; }
-            //
-            //         if (isTouched) {
-            //
-            //             // Remove panning class when we're not touching slider
-            //             setTimeout(() => {
-            //                 touchSpace.removeEventListener('click', stopPropagationCallback, true);
-            //             }, 0);
-            //
-            //             isTouched = false;
-            //
-            //             this._touchSpaceController.panEnd(-ev.velocityX);
-            //         }
-            //         break;
-            // }
         });
     }
 
