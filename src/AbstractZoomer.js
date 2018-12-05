@@ -26,6 +26,7 @@ class Zoomer  {
 
         this._minScale = 1;
         this._maxScale = 5;
+        this._zoomScale = 3;
 
         this._overscrollFunction = (x) => 0.05 * Math.log(1 + x * 10);
 
@@ -79,6 +80,14 @@ class Zoomer  {
         return this._maxScale;
     }
 
+    set zoomScale(zoomScale) {
+        this._zoomScale = zoomScale;
+    }
+
+    get zoomScale() {
+        return this._zoomScale;
+    }
+
     set overscrollFunction(fun) {
         this._overscrollFunction = fun;
     }
@@ -107,6 +116,65 @@ class Zoomer  {
 
         this._killAnimations();
         this._updatePos(pos);
+
+        return true;
+    }
+
+    /**
+     * "Double tap" method.
+     *
+     * So far works only for zooming from scale: 1.
+     *
+     * @param containerCoords - coordinates relative to container top/left.
+     */
+    zoomToPoint(containerCoords, animated) {
+
+        /**
+         * Can't do it while pinching.
+         *
+         * It's because pinching has no non-linearities. Imagie we zoomToPoint, pinching snap animation is canceled. We're in the zoom snap area without non-linearities, and zoomToPoint animation goes through this region. Then we start panning. We'd get situation when we start panning starting in pinching-non-linear area which is a mistake.
+         */
+        if (this._isPinching) {
+            return false;
+        }
+
+        if (typeof animated === 'undefined') { animated = true; }
+
+        if (animated) {
+
+        }
+        else {
+            let targetPointNormalizedCoords = this._getNormalizedPointCoordinates(containerCoords);
+
+            this.moveTo(this._getSnappedPos({
+                x: -targetPointNormalizedCoords.x * this._zoomScale,
+                y: -targetPointNormalizedCoords.y * this._zoomScale,
+                scale: this._zoomScale
+            }));
+
+            return true;
+        }
+    }
+
+    /**
+     * Very useful helper method. Takes container coords (relative to top/left of container and in container units), and transforms them to normalized point coords (as if scale=1, x=0, y=0).
+     *
+     * @param containerCoords
+     * @private
+     */
+    _getNormalizedPointCoordinates(containerCoords) {
+
+        // Transform coorinates from relative to top/left of container to relative to its center (easier to calculate later).
+        let touchPointCoords = {
+            x: this._containerSize.width / 2 - containerCoords.x,
+            y: this._containerSize.height / 2 - containerCoords.y
+        };
+
+        // Normalized zoom point coordinates (when scale = 1, x = 0 and y = 0). No matter the position.
+        return {
+            x: -(touchPointCoords.x - this._pos.x) / this._pos.scale,
+            y: -(touchPointCoords.y - this._pos.y) / this._pos.scale
+        };
     }
 
     _killAnimations() {
@@ -129,7 +197,7 @@ class Zoomer  {
      * @returns {{scale: number}}
      * @private
      */
-    _getXYSnappedPos(pos) {
+    _getSnappedPos(pos) {
 
         let newPos = {
             scale: pos.scale,
@@ -208,7 +276,7 @@ class Zoomer  {
         }
         else {
 
-            let t = this._getXYSnappedPos(pos);
+            let t = this._getSnappedPos(pos);
 
             // x
             let restX = 0;

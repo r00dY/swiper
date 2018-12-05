@@ -19,6 +19,10 @@ function getZoomerWithoutEdgeEffects() {
 
     zoomer.overscrollFunction = (x) => 0; // Let's disable non-linearities at all
 
+    zoomer.minScale = 1;
+    zoomer.maxScale = 5;
+    zoomer.zoomScale = 4;
+
     return zoomer;
 }
 
@@ -383,5 +387,47 @@ describe("AbstractZoomer", function() {
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
     });
+
+    /**
+     * ZOOM TO POINT
+     */
+
+    it("zooms properly to center point", function() {
+        let zoomer = getZoomerWithoutEdgeEffects();
+        zoomer.zoomToPoint({
+            x: 500, // center point (in container coordinates)
+            y: 1000
+        }, false);
+
+        expect(zoomer.coords.x).toBe(0);
+        expect(zoomer.coords.y).toBe(0);
+        expect(zoomer.coords.scale).toBe(4);
+    });
+
+    it("zooms properly without any snapping involved", function() {
+        let zoomer = getZoomerWithoutEdgeEffects();
+        zoomer.zoomToPoint({
+            x: 500 + 50, // center point (in container coordinates) plus delta (50,50)
+            y: 1000 + 50
+        }, false);
+
+        expect(zoomer.coords.x).toBe(-50*4);
+        expect(zoomer.coords.y).toBe(-50*4);
+        expect(zoomer.coords.scale).toBe(4);
+    });
+
+    it("zooms properly with snapping", function() {
+        let zoomer = getZoomerWithoutEdgeEffects();
+        zoomer.zoomToPoint({
+            x: 500 + 500/2, // bottom right point of item
+            y: 1000 + 1500/2
+        }, false);
+
+        expect(zoomer.coords.x).toBe(-500);
+        expect(zoomer.coords.y).toBe(-2000);
+        expect(zoomer.coords.scale).toBe(4);
+    });
+
+
 
 });
