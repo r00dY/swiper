@@ -6,7 +6,7 @@ import TouchSpaceExperiment from "../src/components/touchSpace/TouchSpaceExperim
 import SimpleSlider from "../src/SimpleSlider";
 import SimpleSliderContainer from "../src/react/SimpleSliderContainer";
 
-import Zoomer from './Zoomer';
+import ReactZoomer from '../src/react/ReactZoomer';
 
 class Test extends React.Component {
 
@@ -31,13 +31,20 @@ class Test extends React.Component {
         this.slider.layout();
 
         this.slider.addEventListener('activeSlidesChange', () => {
-            this.touchSpace.zoomer = this.refs[`ref${this.slider.activeSlides()[0]}`];
+            this.touchSpace.zoomer = this.refs[`ref${this.slider.activeSlides()[0]}`].zoomer;
         });
 
+        // this.slider.touchSpace.enable();
         // Let's create new touch space which is external.
         this.touchSpace = new TouchSpaceExperiment(this.slider, this.simpleSliderNodeRef.current);
-        this.touchSpace.zoomer = this.refs['ref0'];
+        this.touchSpace.zoomer = this.refs['ref0'].zoomer;
         this.touchSpace.enable();
+
+        this.refs['ref0'].zoomer.itemSize = {
+            width: 800,
+            height: 300
+        };
+
     }
 
     render() {
@@ -45,40 +52,78 @@ class Test extends React.Component {
             <div style={{position: "relative"}}>
                 <div className={"swiper"} ref={this.simpleSliderNodeRef} style={{position: "relative"}}>
                     <div>
-                        <Zoomer ref={'ref0'} style={{position: "relative"}}>
-                            <div className={"slideWithImage"}>
+                        <ReactZoomer ref={'ref0'} style={{
+                            height: "600px"
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: "100%",
+                                width: "100%"
+                            }}>
                                 <div style={{
+                                    backgroundColor: "red",
+                                    fontSize: "300px",
+                                    height: "300px",
+                                    width: "100%",
                                     display: 'flex',
                                     justifyContent: 'center',
-                                    alignItems: 'center',
-                                    height: "600px"}}>
-
-                                    <div style={{
-                                        backgroundColor: "red",
-                                        fontSize: "300px",
-                                        height: "300px",
-                                        width: "100%",
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    }}>
-                                        XXX
-                                    </div>
+                                    alignItems: 'center'
+                                }}>
+                                    XXX
                                 </div>
                             </div>
-                        </Zoomer>
+                        </ReactZoomer>
 
-                        <Zoomer ref={'ref1'}>
-                            <div className={"slideWithImage"}><img src={"https://via.placeholder.com/600x600"} draggable={false}/></div>
-                        </Zoomer>
+                        <ReactZoomer ref={'ref1'} style={{
+                            height: "600px"
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: "100%",
+                                width: "100%"
+                            }}>
+                                <div style={{
+                                    backgroundColor: "blue",
+                                    fontSize: "300px",
+                                    height: "400px",
+                                    width: "100%",
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                    ABC
+                                </div>
+                            </div>
+                        </ReactZoomer>
 
-                        <Zoomer ref={'ref2'}>
-                            <div className={"slideWithImage"}><img src={"https://via.placeholder.com/600x600"} draggable={false}/></div>
-                        </Zoomer>
+                        <ReactZoomer ref={'ref2'} style={{
+                            height: "600px"
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                height: "100%",
+                                width: "100%"
+                            }}>
+                                <div style={{
+                                    backgroundColor: "yellow",
+                                    fontSize: "300px",
+                                    height: "600px",
+                                    width: "200px",
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                    R
+                                </div>
+                            </div>
+                        </ReactZoomer>
 
-                        <Zoomer ref={'ref3'}>
-                            <div className={"slideWithImage"}><img src={"https://via.placeholder.com/600x600"} draggable={false}/></div>
-                        </Zoomer>
                     </div>
                 </div>
             </div>

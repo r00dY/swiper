@@ -328,6 +328,7 @@ class Zoomer  {
             this._runEventListeners('move', this._coords);
         }
     }
+
     //
     // _onMove() {
     //
@@ -439,13 +440,13 @@ class Zoomer  {
     //     }
     // }
     //
-    // isAlignedToRight() {
-    //     return /* right edge */ (this._pos.x + this._itemSize.width * this._pos.scale / 2) < this._containerSize.width / 2 + 1;
-    // }
-    //
-    // isAlignedToLeft() {
-    //     return /* left edge */ (this._pos.x - this._itemSize.width * this._pos.scale / 2) > -this._containerSize.width / 2 - 1;
-    // }
+    isAlignedToRight() {
+        return /* right edge */ (this._pos.x + this._itemSize.width * this._pos.scale / 2) < this._containerSize.width / 2 + 1;
+    }
+
+    isAlignedToLeft() {
+        return /* left edge */ (this._pos.x - this._itemSize.width * this._pos.scale / 2) > -this._containerSize.width / 2 - 1;
+    }
 
 }
 

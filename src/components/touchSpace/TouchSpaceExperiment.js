@@ -13,17 +13,10 @@ class TouchSpaceExperiment {
         this._touchSpace = touchSpace;
 
         this._inited = false;
-
-        EventSystem.register(this);
-        EventSystem.addEvent(this, 'pinch');
-        EventSystem.addEvent(this, 'pinchstart');
-        EventSystem.addEvent(this, 'pinchend');
-        EventSystem.addEvent(this, 'doubletap');
     }
 
     set zoomer(zoomer) {
         this._zoomer = zoomer;
-
     }
 
     enable() {
@@ -32,7 +25,6 @@ class TouchSpaceExperiment {
 
         let touchSpace = this._touchSpace;
 
-
         this._mc = new Hammer.Manager(touchSpace);
         let tap = new Hammer.Tap({ event: 'singletap', taps: 1, time: 500 });
         let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
@@ -40,7 +32,7 @@ class TouchSpaceExperiment {
 
         this._mc.add([tap, pan, pinch]);
 
-        let SESSION = null; // pan / pinch
+        let SESSION = null; // "pinch" (zoomer), "pan-zoomer" (zoomer), "pan-swiper" (swiper)
 
         this._blockPanAndSwipeEvents = false;
         let waiting = false;
@@ -52,22 +44,20 @@ class TouchSpaceExperiment {
 
             if (waiting) {
 
-                if (this._zoomer.getPos().scale > 1.01) {
+                if (this._zoomer.pos.scale > 1.01) {
                     this._zoomer.moveTo({
                         x: 0,
                         y: 0,
                         scale: 1
                     }, true, true);
-
                 }
                 else {
                     let clientRect = this._touchSpace.getBoundingClientRect();
 
-                    this._zoomer.moveTo({
-                        x: -(ev.center.x - (clientRect.left + clientRect.width / 2)) * 3,
-                        y: -(ev.center.y - (clientRect.top + clientRect.height / 2)) * 3,
-                        scale: 3
-                    }, true, true);
+                    this._zoomer.zoomToPoint({
+                        x: ev.center.x - clientRect.left,
+                        y: ev.center.y - clientRect.top
+                    }, false);
                 }
 
                 waiting = false;
@@ -216,7 +206,7 @@ class TouchSpaceExperiment {
         //     }
         // };
 
-        let panStartPos;
+        let panPreviousCenter;
 
         this._mc.on('panup pandown panleft panright panstart panend pancancel', (ev) => {
 
@@ -247,11 +237,16 @@ class TouchSpaceExperiment {
                         this._touchSpaceController.panMove(ev.deltaX);
                     }
                     else if (SESSION === 'pan-zoomer') {
+
+                        let panNewCenter = ev.center;
+
                         this._zoomer.moveTo({
-                            x: panStartPos.x + ev.deltaX,
-                            y: panStartPos.y + ev.deltaY,
-                            scale: panStartPos.scale
+                            x: this._zoomer.pos.x + (panNewCenter.x - panPreviousCenter.x),
+                            y: this._zoomer.pos.y + (panNewCenter.y - panPreviousCenter.y),
+                            scale: this._zoomer.pos.scale
                         });
+
+                        panPreviousCenter = panNewCenter;
                     }
                     // Start new session!
                     else if (SESSION === null) {
@@ -263,7 +258,8 @@ class TouchSpaceExperiment {
                         ) {
                             SESSION = 'pan-zoomer';
 
-                            panStartPos = Object.assign({}, this._zoomer.getPos());
+                            panPreviousCenter = ev.center;
+                            // panStartPos = Object.assign({}, this._zoomer.getPos());
                         }
                         else {
 
@@ -278,9 +274,7 @@ class TouchSpaceExperiment {
                             this._touchSpaceController.panStart();
                         }
                     }
-
                     break;
-
 
                 case "panend":
                 case "pancancel":
@@ -295,8 +289,7 @@ class TouchSpaceExperiment {
                         this._touchSpaceController.panEnd(-ev.velocityX);
                     }
                     else if (SESSION === 'pan-zoomer') {
-                        this._zoomer.snap();
-                        // this._zoomer.moveend();
+                        this._zoomer.snap(false);
                     }
 
                     SESSION = null;

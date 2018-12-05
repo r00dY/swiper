@@ -142,7 +142,7 @@ describe("AbstractZoomer", function() {
             scale: 4
         });
         zoomer.snap(false);
-        
+
         expect(zoomer.coords.x).toBe(-100);
         expect(zoomer.coords.y).toBe(0);
     });
@@ -455,6 +455,7 @@ describe("AbstractZoomer", function() {
         expect(zoomer.coords.y).toBe(-2000);
         expect(zoomer.coords.scale).toBe(4);
     });
+
 
 
 
