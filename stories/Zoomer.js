@@ -65,7 +65,18 @@ class Zoomer extends React.Component {
 
         let fun = (x) => 0.05 * Math.log(1 + x * 10);
 
-        // left
+        // scale
+
+        let restScale = 0;
+
+        if (this._pos.scale > t.scale) {
+            restScale = fun(this._pos.scale - t.scale)
+        } else if (this._pos.scale < t.scale) {
+            restScale = -fun(-(this._pos.scale - t.scale))
+        }
+
+        console.log('restScale', restScale);
+        // x
         let restX = 0;
 
         if (this._pos.x - t.x > 0) {
@@ -75,6 +86,7 @@ class Zoomer extends React.Component {
             restX = -fun(-(this._pos.x - t.x) / this.state.containerSize.width) * this.state.containerSize.width;
         }
 
+        // y
         let restY = 0;
 
         if (this._pos.y - t.y > 0) {
@@ -84,11 +96,15 @@ class Zoomer extends React.Component {
             restY = -fun(-(this._pos.y - t.y) / this.state.containerSize.height) * this.state.containerSize.height;
         }
 
+        // t = this._pos;
+        // restX = 0;
+        // restY = 0;
+        // restScale = 0;
         this.setState({
             transform: {
                 x: t.x + restX,
                 y: t.y + restY,
-                scale: t.scale
+                scale: t.scale + restScale
             }
         });
     }
@@ -108,16 +124,22 @@ class Zoomer extends React.Component {
         this._onMove();
     }
 
-    moveTo(pos, animated, snap) {
+    moveTo(pos, animated) {
         animated = animated || false;
-        snap = snap || false;
 
         this.animations.x.killAnimation();
         this.animations.y.killAnimation();
         this.animations.scale.killAnimation();
 
         let newPos = Object.assign({}, pos);
-        if (snap) {
+
+        // If new position is animated then we want to snap target position before animation.
+        // If we didn't do it, we would animate to target position that is not snapped, but still not linear (from _onMove)
+        // Such movement is unnatural and weird. Movement to snapped position is always cool.
+        // If movement is not animated, it's probably a tiny movement from panning or pinching.
+        // Such movements shouldn't be snapped to let non-linearity play its role.
+
+        if (animated) {
             newPos = standardSnapFunction(newPos, this._containerSize, this._itemSize);
         }
 

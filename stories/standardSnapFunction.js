@@ -23,15 +23,15 @@ function standardSnapFunction (pos, containerSize, itemSize)  {
     let newPos = {
         scale: pos.scale
     };
-    //
-    // if (newPos.scale < 1) {
-    //     newPos.scale = 1;
-    // }
-    // else if (newPos.scale > 5) {
-    //     newPos.scale = 5;
-    // }
 
-    let itemArea = getItemArea(pos, itemSize);
+    if (newPos.scale < 1) {
+        newPos.scale = 1;
+    }
+    else if (newPos.scale > 5) {
+        newPos.scale = 5;
+    }
+
+    let itemArea = getItemArea(Object.assign({}, pos, { scale: newPos.scale }), itemSize);
 
     // X
     if (itemArea.width <= containerSize.width) {

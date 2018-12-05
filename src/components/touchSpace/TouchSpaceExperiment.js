@@ -105,16 +105,16 @@ class TouchSpaceExperiment {
                     let fullScale = pinchStartPos.scale * relativeScale;
 
                     // Scale snapping must be here first. Otherwise, calculations below would give wrong coordinates.
-                    let fun = (x) => 0.05 * Math.log(1 + x * 10);
+                    // let fun = (x) => 0.05 * Math.log(1 + x * 10);
 
-                    if (fullScale > 5) {
-                        let rest = fullScale - 5;
-                        fullScale = 5 + fun(rest);
-
-                    } else if (fullScale < 1) {
-                        let rest = 1 - fullScale;
-                        fullScale = 1 - fun(rest);
-                    }
+                    // if (fullScale > 5) {
+                    //     let rest = fullScale - 5;
+                    //     fullScale = 5 + fun(rest);
+                    //
+                    // } else if (fullScale < 1) {
+                    //     let rest = 1 - fullScale;
+                    //     fullScale = 1 - fun(rest);
+                    // }
 
                     // Coords of touch point (no matter which zoom/translation we have). It's just touch point coords relative to touch space.
                     let touchPointCoords = {
@@ -127,6 +127,31 @@ class TouchSpaceExperiment {
                         x: (touchPointCoords.x - pinchStartPos.x) / pinchStartPos.scale,
                         y: (touchPointCoords.y - pinchStartPos.y) / pinchStartPos.scale
                     };
+
+                    // Here, fullScale might be even 10 or 20.
+                    // If we grab point in top-right corner, center goes far to left and bottom.
+                    // Then, scale is "trimmed" by snap function but in reference to CENTER!
+                    // "snapping scale" needs reference, based on reference, it might snap to different coords.
+
+                    // maybe moveTo should have reference point? Wouldn't that solve many problems?
+
+                    // right now zoomer has no memory, has just moveTo (moving center point).
+                    // there's no concept of "Session" and memory. Aaaand, well, that's wrong.
+                    // because of above-mentioned arguments, snapping might behave differently for
+                    // totally the same coordinates. That's why only POINT from moveTo is not enough.
+                    // we need to have some access to history and session.
+
+                    // we should get back to moveStart, move and moveEnd.
+
+                    // there might be stateless moveTo for panning.
+
+                    // Photoswipe works great:
+                    // - non-linearities are not existent in pinching session. Session finish with END OF SNAP.
+                    // - new pinching session is allowed even if previous is snapping. That's because of consistent non-linearities.
+                    // - new panning session is allowed after pinching snap finishes!
+
+                    // So API should be really 1:1 to gestures available.
+                    // It's not simple and generic but only one that seems to be reasonable at this point.
 
                     let newPos = {
                         x: -zoomPointCoordsNormalized.x * fullScale + touchPointCoords.x + ev.deltaX,
