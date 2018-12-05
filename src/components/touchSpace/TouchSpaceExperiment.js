@@ -150,8 +150,21 @@ class TouchSpaceExperiment {
                     // - new pinching session is allowed even if previous is snapping. That's because of consistent non-linearities.
                     // - new panning session is allowed after pinching snap finishes!
 
+                    // Snapping during pinch-zooming is actually a nightmare.
+                    // So many cases when you start pinching not on the image, or when you pinch+pinchmove.
+                    // It's very hard to find an intuitive solution for users.
+                    // Sometimes it looks nice but to be honest... in some edge cases is totally illogical.
+                    // PhotoSwipe solution with disabling XY non-linearities (only scale) is really slick.
+                    // Most users don't pinch+pinchmove anyway.
+                    // Most users pinch on photo fragment. It always work with this approach perfectly and with little to no code.
+
+
+
+
+
                     // So API should be really 1:1 to gestures available.
                     // It's not simple and generic but only one that seems to be reasonable at this point.
+                    // Please document above problems
 
                     let newPos = {
                         x: -zoomPointCoordsNormalized.x * fullScale + touchPointCoords.x + ev.deltaX,
