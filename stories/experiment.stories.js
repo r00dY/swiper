@@ -55,7 +55,6 @@ class Test extends React.Component {
             width: 400,
             height: 600
         };
-
     }
 
     render() {

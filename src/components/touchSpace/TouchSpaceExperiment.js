@@ -74,99 +74,113 @@ class TouchSpaceExperiment {
          * PINCH
          */
 
-        let pinchStartEv, pinchStartPos; // we need this, because sometimes hammer gives initial scale not 1, but sth like 4 or 5, god knows why
+        let pinchStartScale; // we need this, because sometimes hammer gives initial scale not 1, but sth like 4 or 5, god knows why
 
         this._mc.on('pinch pinchstart pinchend pinchin pinchout', (ev) => {
 
             switch(ev.type) {
                 case 'pinchstart':
                     SESSION = 'pinch';
-                    pinchStartEv = ev;
-                    pinchStartPos = Object.assign({}, this._zoomer.getPos());
+
+                    let clientRect = this._touchSpace.getBoundingClientRect();
+
+                    console.log('pinch start');
+
+                    this._zoomer.pinchstart({
+                        x: ev.center.x - clientRect.left,
+                        y: ev.center.y - clientRect.top
+                    });
+
+                    pinchStartScale = ev.scale;
                     break;
                 case 'pinchin':
                 case 'pinchout':
                 case 'pinchmove':
                     if (SESSION !== 'pinch') { break; }
 
-                    let touchSpaceRect = this._touchSpace.getBoundingClientRect();
 
-                    let relativeScale = ev.scale / pinchStartEv.scale;
-                    let fullScale = pinchStartPos.scale * relativeScale;
+                    console.log('pinch move');
+                    this._zoomer.pinchmove({
+                        x: ev.deltaX,
+                        y: ev.deltaY,
+                        scale: ev.scale / pinchStartScale
+                    });
 
-                    // Scale snapping must be here first. Otherwise, calculations below would give wrong coordinates.
-                    // let fun = (x) => 0.05 * Math.log(1 + x * 10);
 
-                    // if (fullScale > 5) {
-                    //     let rest = fullScale - 5;
-                    //     fullScale = 5 + fun(rest);
+                    // // Scale snapping must be here first. Otherwise, calculations below would give wrong coordinates.
+                    // // let fun = (x) => 0.05 * Math.log(1 + x * 10);
                     //
-                    // } else if (fullScale < 1) {
-                    //     let rest = 1 - fullScale;
-                    //     fullScale = 1 - fun(rest);
-                    // }
-
-                    // Coords of touch point (no matter which zoom/translation we have). It's just touch point coords relative to touch space.
-                    let touchPointCoords = {
-                        x: pinchStartEv.center.x - (touchSpaceRect.left + touchSpaceRect.width / 2),
-                        y: pinchStartEv.center.y - (touchSpaceRect.top + touchSpaceRect.height / 2)
-                    };
-
-                    // Normalized zoom point coordinates (when scale = 1, x = 0 and y = 0). No matter the position.
-                    let zoomPointCoordsNormalized = {
-                        x: (touchPointCoords.x - pinchStartPos.x) / pinchStartPos.scale,
-                        y: (touchPointCoords.y - pinchStartPos.y) / pinchStartPos.scale
-                    };
-
-                    // Here, fullScale might be even 10 or 20.
-                    // If we grab point in top-right corner, center goes far to left and bottom.
-                    // Then, scale is "trimmed" by snap function but in reference to CENTER!
-                    // "snapping scale" needs reference, based on reference, it might snap to different coords.
-
-                    // maybe moveTo should have reference point? Wouldn't that solve many problems?
-
-                    // right now zoomer has no memory, has just moveTo (moving center point).
-                    // there's no concept of "Session" and memory. Aaaand, well, that's wrong.
-                    // because of above-mentioned arguments, snapping might behave differently for
-                    // totally the same coordinates. That's why only POINT from moveTo is not enough.
-                    // we need to have some access to history and session.
-
-                    // we should get back to moveStart, move and moveEnd.
-
-                    // there might be stateless moveTo for panning.
-
-                    // Photoswipe works great:
-                    // - non-linearities are not existent in pinching session. Session finish with END OF SNAP.
-                    // - new pinching session is allowed even if previous is snapping. That's because of consistent non-linearities.
-                    // - new panning session is allowed after pinching snap finishes!
-
-                    // Snapping during pinch-zooming is actually a nightmare.
-                    // So many cases when you start pinching not on the image, or when you pinch+pinchmove.
-                    // It's very hard to find an intuitive solution for users.
-                    // Sometimes it looks nice but to be honest... in some edge cases is totally illogical.
-                    // PhotoSwipe solution with disabling XY non-linearities (only scale) is really slick.
-                    // Most users don't pinch+pinchmove anyway.
-                    // Most users pinch on photo fragment. It always work with this approach perfectly and with little to no code.
-
-
-
-
-
-                    // So API should be really 1:1 to gestures available.
-                    // It's not simple and generic but only one that seems to be reasonable at this point.
-                    // Please document above problems
-
-                    let newPos = {
-                        x: -zoomPointCoordsNormalized.x * fullScale + touchPointCoords.x + ev.deltaX,
-                        y: -zoomPointCoordsNormalized.y * fullScale + touchPointCoords.y + ev.deltaY,
-                        scale: fullScale
-                    };
-
-                    this._zoomer.moveTo(newPos);
+                    // // if (fullScale > 5) {
+                    // //     let rest = fullScale - 5;
+                    // //     fullScale = 5 + fun(rest);
+                    // //
+                    // // } else if (fullScale < 1) {
+                    // //     let rest = 1 - fullScale;
+                    // //     fullScale = 1 - fun(rest);
+                    // // }
+                    //
+                    // // Coords of touch point (no matter which zoom/translation we have). It's just touch point coords relative to touch space.
+                    // let touchPointCoords = {
+                    //     x: pinchStartEv.center.x - (touchSpaceRect.left + touchSpaceRect.width / 2),
+                    //     y: pinchStartEv.center.y - (touchSpaceRect.top + touchSpaceRect.height / 2)
+                    // };
+                    //
+                    // // Normalized zoom point coordinates (when scale = 1, x = 0 and y = 0). No matter the position.
+                    // let zoomPointCoordsNormalized = {
+                    //     x: (touchPointCoords.x - pinchStartPos.x) / pinchStartPos.scale,
+                    //     y: (touchPointCoords.y - pinchStartPos.y) / pinchStartPos.scale
+                    // };
+                    //
+                    // // Here, fullScale might be even 10 or 20.
+                    // // If we grab point in top-right corner, center goes far to left and bottom.
+                    // // Then, scale is "trimmed" by snap function but in reference to CENTER!
+                    // // "snapping scale" needs reference, based on reference, it might snap to different coords.
+                    //
+                    // // maybe moveTo should have reference point? Wouldn't that solve many problems?
+                    //
+                    // // right now zoomer has no memory, has just moveTo (moving center point).
+                    // // there's no concept of "Session" and memory. Aaaand, well, that's wrong.
+                    // // because of above-mentioned arguments, snapping might behave differently for
+                    // // totally the same coordinates. That's why only POINT from moveTo is not enough.
+                    // // we need to have some access to history and session.
+                    //
+                    // // we should get back to moveStart, move and moveEnd.
+                    //
+                    // // there might be stateless moveTo for panning.
+                    //
+                    // // Photoswipe works great:
+                    // // - non-linearities are not existent in pinching session. Session finish with END OF SNAP.
+                    // // - new pinching session is allowed even if previous is snapping. That's because of consistent non-linearities.
+                    // // - new panning session is allowed after pinching snap finishes!
+                    //
+                    // // Snapping during pinch-zooming is actually a nightmare.
+                    // // So many cases when you start pinching not on the image, or when you pinch+pinchmove.
+                    // // It's very hard to find an intuitive solution for users.
+                    // // Sometimes it looks nice but to be honest... in some edge cases is totally illogical.
+                    // // PhotoSwipe solution with disabling XY non-linearities (only scale) is really slick.
+                    // // Most users don't pinch+pinchmove anyway.
+                    // // Most users pinch on photo fragment. It always work with this approach perfectly and with little to no code.
+                    //
+                    //
+                    //
+                    //
+                    //
+                    // // So API should be really 1:1 to gestures available.
+                    // // It's not simple and generic but only one that seems to be reasonable at this point.
+                    // // Please document above problems
+                    //
+                    // let newPos = {
+                    //     x: -zoomPointCoordsNormalized.x * fullScale + touchPointCoords.x + ev.deltaX,
+                    //     y: -zoomPointCoordsNormalized.y * fullScale + touchPointCoords.y + ev.deltaY,
+                    //     scale: fullScale
+                    // };
+                    //
+                    // this._zoomer.moveTo(newPos);
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
-                    this._zoomer.snap(true);
+                    console.log('pinch end');
+                    this._zoomer.pinchend();
                     SESSION = null;
                     this._blockPanAndSwipeEvents = true;
                     break;

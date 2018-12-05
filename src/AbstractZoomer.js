@@ -32,12 +32,6 @@ class Zoomer  {
 
         EventSystem.register(this);
         EventSystem.addEvent(this, 'move');
-
-        // this.animations = {
-        //     x: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.5),
-        //     y: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.5),
-        //     scale: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.5)
-        // };
     }
 
     set containerSize(containerSize) {
@@ -94,6 +88,93 @@ class Zoomer  {
 
     get coords() {
         return this._coords;
+    }
+
+
+    /**
+     * Pinching session methods
+     */
+    pinchstart(containerCoords) {
+        this._isPinching = true;
+
+        this._killAnimations();
+
+        // coords == pos during pinching (lack of edge non-linearities), so we must transform potentnailly non linear coordinates to the linear ones
+        this._pos = Object.assign({}, this._coords);
+
+        this._pinchStartContainerCoords = containerCoords;
+        this._pinchStartPos = Object.assign({}, this._pos);
+    }
+
+    pinchmove(deltas) {
+        if (!this._isPinching) { return; }
+
+        let fullScale = this._pinchStartPos.scale * deltas.scale;
+
+        // Non-linearity of pinch scale.
+        if (fullScale > this._maxScale) {
+            fullScale = this._maxScale + this._overscrollFunction(fullScale - this._maxScale);
+        } else if (fullScale < this._minScale) {
+            fullScale = this._minScale - this._overscrollFunction(-(fullScale - this._minScale));
+        }
+
+        let referencePointCoordsNormalized = this._getNormalizedPointCoordinates(this._pinchStartContainerCoords, this._pinchStartPos);
+
+        this._updatePos({
+            x: -referencePointCoordsNormalized.x * fullScale + (this._pinchStartContainerCoords.x - this._containerSize.width / 2) + deltas.x,
+            y: -referencePointCoordsNormalized.y * fullScale + (this._pinchStartContainerCoords.y - this._containerSize.height / 2) + deltas.y,
+            scale: fullScale
+        });
+    }
+
+    pinchend() {
+        if (!this._isPinching) { return; }
+
+        let newPos = this._getSnappedPos(this._pos);
+
+        // If we need to snap
+        if (newPos.x !== this._pos.x || newPos.y !== this._pos.y || newPos.scale !== this._pos.scale) {
+
+            let animationX = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+            let animationY = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+            let animationScale = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+
+            let counter = 3;
+
+            let onFinishAnimation = () => {
+                this._isPinching = false;
+            };
+
+            animationX.animate(this._pos.x, newPos.x, (x) => {
+                this._updatePos(Object.assign(this._pos, { x: x }));
+            }, () => {
+                counter--;
+                if (counter === 0) { onFinishAnimation() };
+            });
+
+            animationY.animate(this._pos.y, newPos.y, (y) => {
+                this._updatePos(Object.assign(this._pos, { y: y }));
+            }, () => {
+                counter--;
+                if (counter === 0) { onFinishAnimation() };
+
+            });
+
+            animationScale.animate(this._pos.scale, newPos.scale, (scale) => {
+                this._updatePos(Object.assign(this._pos, { scale: scale }));
+            }, () => {
+                counter--;
+                if (counter === 0) { onFinishAnimation() };
+            });
+
+            this._animations.push(animationX);
+            this._animations.push(animationY);
+            this._animations.push(animationScale);
+        }
+        else {
+            this._isPinching = false;
+        }
+
     }
 
     /**
@@ -177,7 +258,7 @@ class Zoomer  {
             return false;
         }
 
-        let targetPointNormalizedCoords = this._getNormalizedPointCoordinates(containerCoords);
+        let targetPointNormalizedCoords = this._getNormalizedPointCoordinates(containerCoords, this._pos);
 
         this.moveTo(this._getSnappedPos({
             x: -targetPointNormalizedCoords.x * this._zoomScale,
@@ -194,18 +275,18 @@ class Zoomer  {
      * @param containerCoords
      * @private
      */
-    _getNormalizedPointCoordinates(containerCoords) {
+    _getNormalizedPointCoordinates(containerCoords, pos) {
 
         // Transform coorinates from relative to top/left of container to relative to its center (easier to calculate later).
         let touchPointCoords = {
-            x: this._containerSize.width / 2 - containerCoords.x,
-            y: this._containerSize.height / 2 - containerCoords.y
+            x: containerCoords.x - this._containerSize.width / 2,
+            y: containerCoords.y - this._containerSize.height / 2
         };
 
         // Normalized zoom point coordinates (when scale = 1, x = 0 and y = 0). No matter the position.
         return {
-            x: -(touchPointCoords.x - this._pos.x) / this._pos.scale,
-            y: -(touchPointCoords.y - this._pos.y) / this._pos.scale
+            x: (touchPointCoords.x - pos.x) / pos.scale,
+            y: (touchPointCoords.y - pos.y) / pos.scale
         };
     }
 
@@ -303,8 +384,8 @@ class Zoomer  {
     _updatePos(pos) {
 
         if (this._isPinching) {
-
-
+            this._pos = pos;
+            this._coords = pos;
         }
         else {
             let t = this._getSnappedPos(pos);
@@ -336,9 +417,9 @@ class Zoomer  {
             };
 
             this._pos = pos;
-
-            this._runEventListeners('move', this._coords);
         }
+
+        this._runEventListeners('move', this._coords);
     }
 
     //
