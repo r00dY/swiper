@@ -24,6 +24,7 @@ class Test extends React.Component {
     componentDidMount() {
         this.slider = new SimpleSlider(this.simpleSliderNodeRef.current);
         this.slider.slideSizeFunction = () => 800;
+        this.slider.slideMarginFunction = () => 20;
         this.slider.slideSnapOffsetFunction = () => 0;
         this.slider.leftOffsetFunction = () => 0;
         this.slider.rightOffsetFunction = () => 0;
@@ -45,6 +46,16 @@ class Test extends React.Component {
             height: 300
         };
 
+        this.refs['ref1'].zoomer.itemSize = {
+            width: 800,
+            height: 400
+        };
+
+        this.refs['ref2'].zoomer.itemSize = {
+            width: 400,
+            height: 600
+        };
+
     }
 
     render() {
@@ -60,7 +71,8 @@ class Test extends React.Component {
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 height: "100%",
-                                width: "100%"
+                                width: "100%",
+                                overflow: "hidden"
                             }}>
                                 <div style={{
                                     backgroundColor: "red",
@@ -84,7 +96,8 @@ class Test extends React.Component {
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 height: "100%",
-                                width: "100%"
+                                width: "100%",
+                                overflow: "hidden"
                             }}>
                                 <div style={{
                                     backgroundColor: "blue",
@@ -108,13 +121,14 @@ class Test extends React.Component {
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 height: "100%",
-                                width: "100%"
+                                width: "100%",
+                                overflow: "hidden"
                             }}>
                                 <div style={{
                                     backgroundColor: "yellow",
                                     fontSize: "300px",
                                     height: "600px",
-                                    width: "200px",
+                                    width: "400px",
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center'
