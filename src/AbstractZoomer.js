@@ -120,6 +120,26 @@ class Zoomer  {
         return true;
     }
 
+    snap(animated) {
+        /**
+         *  Can't do while pinching. This method is the one "without history", works like slider, and during pinching other rules are in place
+         */
+        if (this._isPinching) {
+            return false;
+        }
+
+        if (typeof animated === 'undefined') { animated = true; }
+
+        if (animated) {
+
+        }
+        else {
+            this.moveTo(this._getSnappedPos(this._pos));
+        }
+
+        return true;
+    }
+
     /**
      * "Double tap" method.
      *
@@ -275,36 +295,35 @@ class Zoomer  {
 
         }
         else {
-
             let t = this._getSnappedPos(pos);
 
             // x
             let restX = 0;
 
-            if (this._pos.x - t.x > 0) {
-                restX = this._overscrollFunction((this._pos.x - t.x) / this._containerSize.width) * this._containerSize.width;
+            if (pos.x - t.x > 0) {
+                restX = this._overscrollFunction((pos.x - t.x) / this._containerSize.width) * this._containerSize.width;
             }
-            else if (this._pos.x - t.x < 0) {
-                restX = -this._overscrollFunction(-(this._pos.x - t.x) / this._containerSize.width) * this._containerSize.width;
+            else if (pos.x - t.x < 0) {
+                restX = -this._overscrollFunction(-(pos.x - t.x) / this._containerSize.width) * this._containerSize.width;
             }
 
             // y
             let restY = 0;
 
-            if (this._pos.y - t.y > 0) {
-                restY = this._overscrollFunction((this._pos.y - t.y) / this._containerSize.height) * this._containerSize.height;
+            if (pos.y - t.y > 0) {
+                restY = this._overscrollFunction((pos.y - t.y) / this._containerSize.height) * this._containerSize.height;
             }
-            else if (this._pos.y - t.y < 0) {
-                restY = -this._overscrollFunction(-(this._pos.y - t.y) / this._containerSize.height) * this._containerSize.height;
+            else if (pos.y - t.y < 0) {
+                restY = -this._overscrollFunction(-(pos.y - t.y) / this._containerSize.height) * this._containerSize.height;
             }
-
-            // console.log('rest', restX, restY, t.x, t.y);
 
             this._coords = {
                 x: t.x + restX,
                 y: t.y + restY,
                 scale: t.scale
             };
+
+            this._pos = pos;
 
             this._runEventListeners('move', this._coords);
         }

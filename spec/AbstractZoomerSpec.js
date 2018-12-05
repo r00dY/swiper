@@ -17,7 +17,7 @@ function getZoomerWithoutEdgeEffects() {
         height: 1500
     };
 
-    zoomer.overscrollFunction = (x) => 0; // Let's disable non-linearities at all
+    // zoomer.overscrollFunction = (x) => 0; // Let's disable non-linearities at all
 
     zoomer.minScale = 1;
     zoomer.maxScale = 5;
@@ -42,6 +42,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 1
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -57,6 +58,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 1
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -69,6 +71,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 1
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -81,6 +84,7 @@ describe("AbstractZoomer", function() {
             y: -100,
             scale: 1
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -93,6 +97,7 @@ describe("AbstractZoomer", function() {
             y: 100,
             scale: 1
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -105,13 +110,14 @@ describe("AbstractZoomer", function() {
             y: 500,
             scale: 1
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
     });
 
 
-    /**
+     /**
      * POSITIVE ZOOM
      */
 
@@ -122,6 +128,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -134,7 +141,8 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 4
         });
-
+        zoomer.snap(false);
+        
         expect(zoomer.coords.x).toBe(-100);
         expect(zoomer.coords.y).toBe(0);
     });
@@ -148,6 +156,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(-500);
         expect(zoomer.coords.y).toBe(0);
@@ -160,6 +169,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(100);
         expect(zoomer.coords.y).toBe(0);
@@ -172,6 +182,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(500);
         expect(zoomer.coords.y).toBe(0);
@@ -186,6 +197,7 @@ describe("AbstractZoomer", function() {
             y: -100,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(-100);
@@ -198,6 +210,7 @@ describe("AbstractZoomer", function() {
             y: -4000,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(-2000);
@@ -210,6 +223,7 @@ describe("AbstractZoomer", function() {
             y: 100,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(100);
@@ -222,6 +236,7 @@ describe("AbstractZoomer", function() {
             y: 4000,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(2000);
@@ -234,6 +249,7 @@ describe("AbstractZoomer", function() {
             y: 100,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(100);
         expect(zoomer.coords.y).toBe(100);
@@ -246,6 +262,7 @@ describe("AbstractZoomer", function() {
             y: 4000,
             scale: 4
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(500);
         expect(zoomer.coords.y).toBe(2000);
@@ -263,6 +280,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -275,6 +293,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -287,6 +306,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -299,6 +319,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -311,6 +332,7 @@ describe("AbstractZoomer", function() {
             y: 0,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -323,6 +345,7 @@ describe("AbstractZoomer", function() {
             y: -100,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -335,6 +358,7 @@ describe("AbstractZoomer", function() {
             y: -4000,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -347,6 +371,7 @@ describe("AbstractZoomer", function() {
             y: 100,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -359,6 +384,7 @@ describe("AbstractZoomer", function() {
             y: 4000,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -371,6 +397,7 @@ describe("AbstractZoomer", function() {
             y: 100,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
@@ -383,6 +410,7 @@ describe("AbstractZoomer", function() {
             y: 4000,
             scale: 0.5
         });
+        zoomer.snap(false);
 
         expect(zoomer.coords.x).toBe(0);
         expect(zoomer.coords.y).toBe(0);
