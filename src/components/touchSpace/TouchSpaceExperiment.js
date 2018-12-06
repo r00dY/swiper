@@ -50,130 +50,323 @@ class TouchSpaceExperiment {
 
 
 
-        
+        let state = {
+            type: "init"
+        };
 
+        let changeStateToInit = () => {
+            console.log('change state to init');
+            state = {
+                type: "init"
+            };
+        };
 
+        let changeStateToPinch = (touches) => {
+            console.log('change state to pinch');
+            state = {
+                type: "pinch"
+            };
+        };
 
+        let changeStateToSingleTouchInit = (touch) => {
+            console.log('change state to single-touch-init', touch);
+            state = {
+                type: "single-touch-init",
+                startPoint: {
+                    x: touch.clientX,
+                    y: touch.clientY
+                }
+            };
+        };
 
+        let changeStateToNativeScroll = () => {
+            console.log('change state to native-scroll');
+            state = {
+                type: "native-scroll"
+            }
+        };
+
+        let changeStateToPanSwiper = (startPoint) => {
+            console.log('change state to pan-swiper', startPoint);
+            state = {
+                type: "pan-swiper",
+                startPoint: Object.assign({}, startPoint),
+                previousPoint: Object.assign({}, startPoint, { time: new Date().getTime() }),
+                velocity: {
+                    x: 0,
+                    y: 0
+                }
+            };
+
+            this._touchSpaceController.panStart();
+        };
 
         let preventDefault = (ev) => {
             ev.stopPropagation();
             ev.preventDefault();
         };
 
+        let processNewEvent = (ev) => {
 
+            // console.log('new event', ev);
 
-        touchSpace.ontouchstart = (ev) => {
-            /**
-             * If one finger then we don't yet know which session, we just have single-finger session initialized.
-             *
-             * If more than one finger, it is obvious it's pinch zoom.
-             */
-            if (ev.touches.length === 1) {
-                session = {
-                    type: "single-finger-init",
-                    ref: {
-                        x: ev.touches[0].clientX,
-                        y: ev.touches[0].clientY
+            switch(state.type) {
+                case "init":
+                    switch(ev.type) {
+                        case "touchstart":
+
+                            if (ev.touches.length === 1) {
+                                changeStateToSingleTouchInit(ev.touches[0]);
+                            }
+                            else {
+                                changeStateToPinch(ev.touches);
+                            }
+                            break;
+
+                        // other events that touchstart are ignored in null state
+                        default:
+                            break;
                     }
-                };
+                    break;
+
+                case "single-touch-init":
+                    switch(ev.type) {
+                        case "touchstart":
+                            changeStateToPinch(ev.touches);
+                            break;
+                        case "touchmove":
+                            preventDefault(ev);
+
+                            let touch = ev.touches[0];
+
+                            if (Math.abs(touch.clientY - state.startPoint.y) > 10) {
+                                changeStateToNativeScroll();
+                            }
+                            else if (Math.abs(touch.clientX - state.startPoint.x) > 10) {
+                                changeStateToPanSwiper({
+                                    x: touch.clientX,
+                                    y: touch.clientY
+                                });
+                            }
+                            break;
+                        case "touchend":
+                        case "touchcancel":
+
+                            changeStateToInit();
+
+                    }
+                    break;
+
+                case "native-scroll":
+                    // do not prevent default, simply do nothing!
+
+                    switch(ev.type) {
+                        case "touchstart":
+                            break;
+                        case "touchmove":
+                            break;
+                        case "touchend":
+                        case "touchcancel":
+                            changeStateToInit();
+                            break;
+                    }
+
+                    break;
+
+                case "pinch":
+                    preventDefault(ev);
+
+                    switch(ev.type) {
+                        case "touchstart":
+                            // do nothing, keep pinching with old 2 fingers
+                            break;
+
+                        case "touchmove":
+                            // keep pinching!
+                            break;
+
+                        case "touchend":
+                        case "touchcancel":
+                            if (ev.touches.length >= 2) {
+                                // keep pinching!
+                                break;
+                            }
+                            else if (ev.touches.length === 1) {
+                                changeStateToSingleTouchInit(ev.touches[0]);
+                            }
+                            else {
+                                changeStateToInit();
+                            }
+                            break;
+                    }
+
+                    break;
+
+                case "pan-swiper":
+                    preventDefault(ev);
+
+                    switch(ev.type) {
+                        case "touchstart":
+                            // do nothing, keep moving with old touch
+                            break;
+
+                        case "touchmove":
+
+                            this._touchSpaceController.panMove(ev.touches[0].clientX - state.startPoint.x);
+
+                            state.velocity = {
+                                x: (ev.touches[0].clientX - state.previousPoint.x) / (new Date().getTime() - state.previousPoint.time),
+                                y: (ev.touches[0].clientY - state.previousPoint.y) / (new Date().getTime() - state.previousPoint.time)
+                            };
+                            state.previousPoint = {
+                                x: ev.touches[0].clientX,
+                                y: ev.touches[0].clientY,
+                                time: new Date().getTime()
+                            };
+
+                            // keep pinching!
+                            break;
+
+                        case "touchend":
+                        case "touchcancel":
+                            if (ev.touches.length >= 1) {
+                                // keep pinching! (always first touch)
+                            }
+                            else {
+                                this._touchSpaceController.panEnd(-state.velocity.x);
+                                changeStateToInit();
+                            }
+                            break;
+                    }
+                    break;
+
             }
-            else {
-                session = {
-                    type: "pinch"
-                };
-            }
-
-        };
-
-        touchSpace.ontouchmove = (ev) => {
-
-            if (session.type === "pinch") {
-                preventDefault(ev);
-            }
-            else if (session.type === "single-finger-init") {
-                preventDefault(ev);
-
-                if (Math.abs(ev.touches[0].clientY - session.ref.y) > 10) {
-                    session = {
-                        type: "native-scroll"
-                    };
-
-                    console.log('go to native scroll!', session);
-                }
-                else if (Math.abs(ev.touches[0].clientX - session.ref.x) > 10) {
-                    session = {
-                        type: "pan-swiper",
-                        ref: Object.assign({}, session.ref),
-                        previous: {
-                            x: ev.touches[0].clientX,
-                            y: ev.touches[0].clientY,
-                            time: new Date().getTime()
-                        },
-                        velocity: {
-                            x: 0,
-                            y: 0
-                        }
-                    };
-
-                    console.log('go to panning!', session);
-
-                    this._touchSpaceController.panStart();
-                }
-            }
-            else if (session.type === "native-scroll") {
-
-            }
-            else if (session.type === "pan-swiper") {
-                preventDefault(ev);
-
-                this._touchSpaceController.panMove(ev.touches[0].clientX - session.ref.x);
-                session.velocity = {
-                    x: (ev.touches[0].clientX - session.previous.x) / (new Date().getTime() - session.previous.time),
-                    y: (ev.touches[0].clientY - session.previous.y) / (new Date().getTime() - session.previous.time)
-                };
-                session.previous = {
-                    x: ev.touches[0].clientX,
-                    y: ev.touches[0].clientY,
-                    time: new Date().getTime()
-                };
-            }
-        };
-
-        touchSpace.ontouchend = (ev) => {
-            if (session.type === "pinch") {
-
-            }
-            else if (session.type === "native-scroll") {
-                session = null;
-
-            }
-            else if (session.type === "pan-swiper") {
-
-                this._touchSpaceController.panEnd(-session.velocity.x);
-
-                session = null;
-            }
 
 
-        };
+        }
 
-        touchSpace.ontouchcancel = (ev) => {
-            // preventDefault(ev);
+        touchSpace.ontouchstart = processNewEvent;
+        touchSpace.ontouchmove = processNewEvent;
+        touchSpace.ontouchend = processNewEvent;
+        touchSpace.ontouchcancel = processNewEvent;
 
-            if (session === "pinch") {
 
-            }
-            else if (session === "native-scroll") {
-                session = null;
 
-            }
-            else if (session === "pan-swiper") {
-                session = null;
 
-                this._touchSpaceController.panEnd();
-            }
-        };
+
+        //
+        //
+        // touchSpace.ontouchstart = (ev) => {
+        //     /**
+        //      * If one finger then we don't yet know which session, we just have single-finger session initialized.
+        //      *
+        //      * If more than one finger, it is obvious it's pinch zoom.
+        //      */
+        //     if (ev.touches.length === 1) {
+        //         session = {
+        //             type: "single-finger-init",
+        //             ref: {
+        //                 x: ev.touches[0].clientX,
+        //                 y: ev.touches[0].clientY
+        //             }
+        //         };
+        //     }
+        //     else {
+        //         session = {
+        //             type: "pinch"
+        //         };
+        //     }
+        //
+        // };
+        //
+        // touchSpace.ontouchmove = (ev) => {
+        //
+        //     if (session.type === "pinch") {
+        //         preventDefault(ev);
+        //     }
+        //     else if (session.type === "single-finger-init") {
+        //         preventDefault(ev);
+        //
+        //         if (Math.abs(ev.touches[0].clientY - session.ref.y) > 10) {
+        //             session = {
+        //                 type: "native-scroll"
+        //             };
+        //
+        //             console.log('go to native scroll!', session);
+        //         }
+        //         else if (Math.abs(ev.touches[0].clientX - session.ref.x) > 10) {
+        //             session = {
+        //                 type: "pan-swiper",
+        //                 ref: Object.assign({}, session.ref),
+        //                 previous: {
+        //                     x: ev.touches[0].clientX,
+        //                     y: ev.touches[0].clientY,
+        //                     time: new Date().getTime()
+        //                 },
+        //                 velocity: {
+        //                     x: 0,
+        //                     y: 0
+        //                 }
+        //             };
+        //
+        //             console.log('go to panning!', session);
+        //
+        //             this._touchSpaceController.panStart();
+        //         }
+        //     }
+        //     else if (session.type === "native-scroll") {
+        //
+        //     }
+        //     else if (session.type === "pan-swiper") {
+        //         preventDefault(ev);
+        //
+        //         this._touchSpaceController.panMove(ev.touches[0].clientX - session.ref.x);
+        //         session.velocity = {
+        //             x: (ev.touches[0].clientX - session.previous.x) / (new Date().getTime() - session.previous.time),
+        //             y: (ev.touches[0].clientY - session.previous.y) / (new Date().getTime() - session.previous.time)
+        //         };
+        //         session.previous = {
+        //             x: ev.touches[0].clientX,
+        //             y: ev.touches[0].clientY,
+        //             time: new Date().getTime()
+        //         };
+        //     }
+        // };
+        //
+        // touchSpace.ontouchend = (ev) => {
+        //     if (session.type === "pinch") {
+        //
+        //     }
+        //     else if (session.type === "native-scroll") {
+        //         session = null;
+        //
+        //     }
+        //     else if (session.type === "pan-swiper") {
+        //
+        //         this._touchSpaceController.panEnd(-session.velocity.x);
+        //
+        //         session = null;
+        //     }
+        //
+        //
+        // };
+        //
+        // touchSpace.ontouchcancel = (ev) => {
+        //     // preventDefault(ev);
+        //
+        //     if (session === "pinch") {
+        //
+        //     }
+        //     else if (session === "native-scroll") {
+        //         session = null;
+        //
+        //     }
+        //     else if (session === "pan-swiper") {
+        //         session = null;
+        //
+        //         this._touchSpaceController.panEnd();
+        //     }
+        // };
 
 
         /**
