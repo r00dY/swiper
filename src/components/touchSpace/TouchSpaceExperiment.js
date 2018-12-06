@@ -106,6 +106,9 @@ class TouchSpaceExperiment {
             ev.preventDefault();
         };
 
+        /**
+         * STATE MACHINE BABY <3!
+         */
         let processNewEvent = (ev) => {
 
             // console.log('new event', ev);
@@ -192,7 +195,10 @@ class TouchSpaceExperiment {
                                 break;
                             }
                             else if (ev.touches.length === 1) {
-                                changeStateToSingleTouchInit(ev.touches[0]);
+                                changeStateToPanSwiper({
+                                    x: ev.touches[0].clientX,
+                                    y: ev.touches[0].clientY
+                                });
                             }
                             else {
                                 changeStateToInit();
@@ -211,7 +217,6 @@ class TouchSpaceExperiment {
                             break;
 
                         case "touchmove":
-
                             this._touchSpaceController.panMove(ev.touches[0].clientX - state.startPoint.x);
 
                             state.velocity = {
@@ -243,7 +248,7 @@ class TouchSpaceExperiment {
             }
 
 
-        }
+        };
 
         touchSpace.ontouchstart = processNewEvent;
         touchSpace.ontouchmove = processNewEvent;
