@@ -147,38 +147,46 @@ class Test extends React.Component {
 storiesOf('Experiment', module)
     .add('test', () =>
         <div className='ReactSlider__example'>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <Test />
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
-            <h1>Test</h1>
+
+            <div style={{
+                border: "1px solid black",
+                height: "40vh",
+                overflowY: "scroll",
+                width: "100%"
+            }}>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <Test />
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+                <h1>Test</h1>
+            </div>
         </div>
     );

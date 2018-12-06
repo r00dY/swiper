@@ -27,14 +27,16 @@ class TouchSpaceExperiment {
 
         this._mc = new Hammer.Manager(touchSpace);
         let tap = new Hammer.Tap({ event: 'singletap', taps: 1, time: 500 });
-        let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_ALL, threshold: 10 });
+        let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20 });
         let pinch = new Hammer.Pinch();
 
         this._mc.add([tap, pan, pinch]);
 
         let SESSION = null; // "pinch" (zoomer), "pan-zoomer" (zoomer), "pan-swiper" (swiper)
 
-        this._blockPanAndSwipeEvents = false;
+        this._blockPanEvents = false;
+        this._blockPinchEvents = false;
+
         let waiting = false;
 
         /**
@@ -78,6 +80,12 @@ class TouchSpaceExperiment {
 
         this._mc.on('pinch pinchstart pinchend pinchin pinchout', (ev) => {
 
+            if (this._blockPinchEvents) {
+                return;
+            }
+
+            console.log('pinch', ev.type);
+
             switch(ev.type) {
                 case 'pinchstart':
                     SESSION = 'pinch';
@@ -98,7 +106,6 @@ class TouchSpaceExperiment {
                 case 'pinchmove':
                     if (SESSION !== 'pinch') { break; }
 
-
                     console.log('pinch move');
                     this._zoomer.pinchmove({
                         x: ev.deltaX,
@@ -106,83 +113,13 @@ class TouchSpaceExperiment {
                         scale: ev.scale / pinchStartScale
                     });
 
-
-                    // // Scale snapping must be here first. Otherwise, calculations below would give wrong coordinates.
-                    // // let fun = (x) => 0.05 * Math.log(1 + x * 10);
-                    //
-                    // // if (fullScale > 5) {
-                    // //     let rest = fullScale - 5;
-                    // //     fullScale = 5 + fun(rest);
-                    // //
-                    // // } else if (fullScale < 1) {
-                    // //     let rest = 1 - fullScale;
-                    // //     fullScale = 1 - fun(rest);
-                    // // }
-                    //
-                    // // Coords of touch point (no matter which zoom/translation we have). It's just touch point coords relative to touch space.
-                    // let touchPointCoords = {
-                    //     x: pinchStartEv.center.x - (touchSpaceRect.left + touchSpaceRect.width / 2),
-                    //     y: pinchStartEv.center.y - (touchSpaceRect.top + touchSpaceRect.height / 2)
-                    // };
-                    //
-                    // // Normalized zoom point coordinates (when scale = 1, x = 0 and y = 0). No matter the position.
-                    // let zoomPointCoordsNormalized = {
-                    //     x: (touchPointCoords.x - pinchStartPos.x) / pinchStartPos.scale,
-                    //     y: (touchPointCoords.y - pinchStartPos.y) / pinchStartPos.scale
-                    // };
-                    //
-                    // // Here, fullScale might be even 10 or 20.
-                    // // If we grab point in top-right corner, center goes far to left and bottom.
-                    // // Then, scale is "trimmed" by snap function but in reference to CENTER!
-                    // // "snapping scale" needs reference, based on reference, it might snap to different coords.
-                    //
-                    // // maybe moveTo should have reference point? Wouldn't that solve many problems?
-                    //
-                    // // right now zoomer has no memory, has just moveTo (moving center point).
-                    // // there's no concept of "Session" and memory. Aaaand, well, that's wrong.
-                    // // because of above-mentioned arguments, snapping might behave differently for
-                    // // totally the same coordinates. That's why only POINT from moveTo is not enough.
-                    // // we need to have some access to history and session.
-                    //
-                    // // we should get back to moveStart, move and moveEnd.
-                    //
-                    // // there might be stateless moveTo for panning.
-                    //
-                    // // Photoswipe works great:
-                    // // - non-linearities are not existent in pinching session. Session finish with END OF SNAP.
-                    // // - new pinching session is allowed even if previous is snapping. That's because of consistent non-linearities.
-                    // // - new panning session is allowed after pinching snap finishes!
-                    //
-                    // // Snapping during pinch-zooming is actually a nightmare.
-                    // // So many cases when you start pinching not on the image, or when you pinch+pinchmove.
-                    // // It's very hard to find an intuitive solution for users.
-                    // // Sometimes it looks nice but to be honest... in some edge cases is totally illogical.
-                    // // PhotoSwipe solution with disabling XY non-linearities (only scale) is really slick.
-                    // // Most users don't pinch+pinchmove anyway.
-                    // // Most users pinch on photo fragment. It always work with this approach perfectly and with little to no code.
-                    //
-                    //
-                    //
-                    //
-                    //
-                    // // So API should be really 1:1 to gestures available.
-                    // // It's not simple and generic but only one that seems to be reasonable at this point.
-                    // // Please document above problems
-                    //
-                    // let newPos = {
-                    //     x: -zoomPointCoordsNormalized.x * fullScale + touchPointCoords.x + ev.deltaX,
-                    //     y: -zoomPointCoordsNormalized.y * fullScale + touchPointCoords.y + ev.deltaY,
-                    //     scale: fullScale
-                    // };
-                    //
-                    // this._zoomer.moveTo(newPos);
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
                     console.log('pinch end');
                     this._zoomer.pinchend();
                     SESSION = null;
-                    this._blockPanAndSwipeEvents = true;
+                    this._blockPanEvents = true;
                     break;
                 default:
                     break;
@@ -201,24 +138,98 @@ class TouchSpaceExperiment {
         };
 
         // At this point in time we manually subscribe to touch events to detect whether user is scrolling the window. If deltaY is big and deltaX is so small that panleft/panright wasn't triggered yet it means that we're scrolling vertically and swiping left/right should be blocked.
-        // let refScreenY;
-        // let refClientY;
-        //
-        // let isWindowScrolling;
-        //
-        // touchSpace.ontouchstart = (ev) => {
-        //     isWindowScrolling = false;
-        //     refScreenY = ev.touches[0].screenY;
-        //     refClientY = ev.touches[0].clientY;
-        // };
-        //
-        // touchSpace.ontouchmove = (ev) => {
-        //     if (isWindowScrolling) { return; }
-        //
-        //     if (Math.abs(ev.touches[0].clientY - refClientY) > 10 || Math.abs(ev.touches[0].screenY - refScreenY) > 10) {
-        //         isWindowScrolling = true;
-        //     }
-        // };
+        let refClientY;
+        let refClientX;
+
+        let touchDetection = 0; // 0 - not detected, 1 - pinch, 2 - up / down, 3 - left / right
+
+        this._blockPanEvents = true;
+        this._blockPinchEvents = true;
+
+        let preventDefault = (ev) => {
+
+            if (touchDetection === 0 || touchDetection === 1 || touchDetection === 3 ) {
+                console.log('prevent default');
+                ev.stopPropagation();
+                ev.preventDefault();
+            }
+            else {
+
+            }
+
+            // if (touchDetection !== 2) {
+            //     ev.preventDefault();
+            //     // ev.stopPropagation();
+            //     console.log('prevent default!', ev);
+            // }
+        };
+
+        touchSpace.ontouchstart = (ev) => {
+            // preventDefault(ev);
+
+            touchDetection = 0;
+            refClientY = ev.touches[0].clientY;
+            refClientX = ev.touches[0].clientX;
+
+            if (ev.touches.length === 1) {
+                console.log('start of touching');
+            }
+            else {
+                touchDetection = 1;
+                this._blockPinchEvents = false;
+                console.log('more than 1 touch -> PINCHING');
+            }
+
+            // this._blockPanEvents = true;
+            // this._blockPinchEvents = true;
+        };
+
+        touchSpace.ontouchmove = (ev) => {
+            preventDefault(ev);
+
+            if (touchDetection === 0) {
+
+                // Check if scrolling up / down
+                if (Math.abs(ev.touches[0].clientY - refClientY) > 10) {
+                    touchDetection = 2;
+                    console.log('up / down -> SCROLLING')
+
+                    // console.log('scrolling up / down!');
+                    // isWindowScrolling = true;
+                    this._mc.stop();
+                }
+                else if (Math.abs(ev.touches[0].clientX - refClientX) > 10) {
+                    touchDetection = 3;
+
+                    this._blockPanEvents = false;
+
+                    console.log('left / right -> PANNING')
+                }
+            }
+
+        };
+
+        touchSpace.ontouchend = (ev) => {
+            // preventDefault(ev);
+
+            if (ev.touches.length === 0) {
+                console.log('end of touching');
+                touchDetection = 0;
+                this._blockPanEvents = true;
+                this._blockPinchEvents = true;
+            }
+        };
+
+        touchSpace.ontouchcancel = (ev) => {
+            // preventDefault(ev);
+
+            if (ev.touches.length === 0) {
+                touchDetection = 0;
+                this._blockPanEvents = true;
+                this._blockPinchEvents = true;
+                console.log('end of touching');
+            }
+        };
 
         let panPreviousCenter;
 
@@ -234,7 +245,7 @@ class TouchSpaceExperiment {
 
             switch (ev.type) {
                 case "panstart":
-                    if (this._blockPanAndSwipeEvents) {
+                    if (this._blockPanEvents) {
                         break;
                     }
                     break;
@@ -243,7 +254,7 @@ class TouchSpaceExperiment {
                 case "pandown":
                 case "panleft":
                 case "panright":
-                    if (this._blockPanAndSwipeEvents) {
+                    if (this._blockPanEvents) {
                         break;
                     }
 
@@ -266,7 +277,7 @@ class TouchSpaceExperiment {
                     else if (SESSION === null) {
 
                         if (
-                            this._zoomer.getPos().scale > 1 &&
+                            this._zoomer.pos.scale > 1 &&
                             !(ev.type === 'panleft' && this._zoomer.isAlignedToRight()) &&
                             !(ev.type === 'panright' && this._zoomer.isAlignedToLeft())
                         ) {
@@ -277,8 +288,8 @@ class TouchSpaceExperiment {
                         else {
 
                             if (Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
-                                console.log('MC stop!!!');
-                                this._mc.stop(true); // no more events until new session
+                                // console.log('MC stop!!!');
+                                // this._mc.stop(true); // no more events until new session
                                 return;
                             }
 
@@ -291,8 +302,11 @@ class TouchSpaceExperiment {
 
                 case "panend":
                 case "pancancel":
+                    if (this._blockPanEvents) {
+                        break;
+                    }
 
-                    this._blockPanAndSwipeEvents = false;
+                    // this._blockPanEvents = false;
 
                     if (SESSION === 'pan-swiper') {
                         setTimeout(() => {
