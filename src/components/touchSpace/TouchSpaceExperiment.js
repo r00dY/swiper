@@ -37,11 +37,13 @@ class TouchSpaceExperiment {
         this._blockPanEvents = false;
         this._blockPinchEvents = false;
 
-        let waiting = false;
+        this._touchSpace.style.touchAction = "pan-up";
 
         /**
          * DOUBLE TAP
          */
+        let waiting = false;
+
         this._mc.on('singletap', (ev) => {
 
             if (waiting) {
@@ -88,38 +90,34 @@ class TouchSpaceExperiment {
 
             switch(ev.type) {
                 case 'pinchstart':
-                    SESSION = 'pinch';
-
-                    let clientRect = this._touchSpace.getBoundingClientRect();
-
-                    console.log('pinch start');
-
-                    this._zoomer.pinchstart({
-                        x: ev.center.x - clientRect.left,
-                        y: ev.center.y - clientRect.top
-                    });
-
-                    pinchStartScale = ev.scale;
                     break;
                 case 'pinchin':
                 case 'pinchout':
                 case 'pinchmove':
-                    if (SESSION !== 'pinch') { break; }
+                    if (SESSION === 'pinch') {
+                        this._zoomer.pinchmove({
+                            x: ev.deltaX,
+                            y: ev.deltaY,
+                            scale: ev.scale / pinchStartScale
+                        });
+                    }
+                    else {
+                        SESSION = 'pinch';
 
-                    console.log('pinch move');
-                    this._zoomer.pinchmove({
-                        x: ev.deltaX,
-                        y: ev.deltaY,
-                        scale: ev.scale / pinchStartScale
-                    });
+                        let clientRect = this._touchSpace.getBoundingClientRect();
 
+                        this._zoomer.pinchstart({
+                            x: ev.center.x - clientRect.left,
+                            y: ev.center.y - clientRect.top
+                        });
+
+                        pinchStartScale = ev.scale;
+                    }
                     break;
                 case 'pinchend':
                 case 'pinchcancel':
-                    console.log('pinch end');
                     this._zoomer.pinchend();
                     SESSION = null;
-                    this._blockPanEvents = true;
                     break;
                 default:
                     break;
@@ -147,21 +145,10 @@ class TouchSpaceExperiment {
         this._blockPinchEvents = true;
 
         let preventDefault = (ev) => {
-
             if (touchDetection === 0 || touchDetection === 1 || touchDetection === 3 ) {
-                console.log('prevent default');
                 ev.stopPropagation();
                 ev.preventDefault();
             }
-            else {
-
-            }
-
-            // if (touchDetection !== 2) {
-            //     ev.preventDefault();
-            //     // ev.stopPropagation();
-            //     console.log('prevent default!', ev);
-            // }
         };
 
         touchSpace.ontouchstart = (ev) => {
@@ -230,6 +217,9 @@ class TouchSpaceExperiment {
                 console.log('end of touching');
             }
         };
+
+
+
 
         let panPreviousCenter;
 
