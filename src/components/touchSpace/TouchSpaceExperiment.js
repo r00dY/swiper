@@ -20,24 +20,161 @@ class TouchSpaceExperiment {
     }
 
     enable() {
-        if (this._inited) { return; }
+        if (this._inited) {
+            return;
+        }
         this._inited = true;
 
         let touchSpace = this._touchSpace;
 
         this._mc = new Hammer.Manager(touchSpace);
-        let tap = new Hammer.Tap({ event: 'singletap', taps: 1, time: 500 });
-        let pan = new Hammer.Pan({ direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20 });
+        let tap = new Hammer.Tap({event: 'singletap', taps: 1, time: 500});
+        let pan = new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
         let pinch = new Hammer.Pinch();
 
-        this._mc.add([tap, pan, pinch]);
+        this._mc.add([tap]);
+        // this._mc.add([tap, pan, pinch]);
+
 
         let SESSION = null; // "pinch" (zoomer), "pan-zoomer" (zoomer), "pan-swiper" (swiper)
+        this._touchSpace.style.touchAction = "pan-y"; // for touchAction-compatible browsers
 
-        this._blockPanEvents = false;
-        this._blockPinchEvents = false;
+        let touchDetection = 0; // 0 - not detected, 1 - pinch, 2 - up / down, 3 - left / right
 
-        this._touchSpace.style.touchAction = "pan-up";
+
+        let session = null;
+
+
+        // At this point in time we manually subscribe to touch events to detect whether user is scrolling the window. If deltaY is big and deltaX is so small that panleft/panright wasn't triggered yet it means that we're scrolling vertically and swiping left/right should be blocked.
+
+
+
+
+        
+
+
+
+
+
+        let preventDefault = (ev) => {
+            ev.stopPropagation();
+            ev.preventDefault();
+        };
+
+
+
+        touchSpace.ontouchstart = (ev) => {
+            /**
+             * If one finger then we don't yet know which session, we just have single-finger session initialized.
+             *
+             * If more than one finger, it is obvious it's pinch zoom.
+             */
+            if (ev.touches.length === 1) {
+                session = {
+                    type: "single-finger-init",
+                    ref: {
+                        x: ev.touches[0].clientX,
+                        y: ev.touches[0].clientY
+                    }
+                };
+            }
+            else {
+                session = {
+                    type: "pinch"
+                };
+            }
+
+        };
+
+        touchSpace.ontouchmove = (ev) => {
+
+            if (session.type === "pinch") {
+                preventDefault(ev);
+            }
+            else if (session.type === "single-finger-init") {
+                preventDefault(ev);
+
+                if (Math.abs(ev.touches[0].clientY - session.ref.y) > 10) {
+                    session = {
+                        type: "native-scroll"
+                    };
+
+                    console.log('go to native scroll!', session);
+                }
+                else if (Math.abs(ev.touches[0].clientX - session.ref.x) > 10) {
+                    session = {
+                        type: "pan-swiper",
+                        ref: Object.assign({}, session.ref),
+                        previous: {
+                            x: ev.touches[0].clientX,
+                            y: ev.touches[0].clientY,
+                            time: new Date().getTime()
+                        },
+                        velocity: {
+                            x: 0,
+                            y: 0
+                        }
+                    };
+
+                    console.log('go to panning!', session);
+
+                    this._touchSpaceController.panStart();
+                }
+            }
+            else if (session.type === "native-scroll") {
+
+            }
+            else if (session.type === "pan-swiper") {
+                preventDefault(ev);
+
+                this._touchSpaceController.panMove(ev.touches[0].clientX - session.ref.x);
+                session.velocity = {
+                    x: (ev.touches[0].clientX - session.previous.x) / (new Date().getTime() - session.previous.time),
+                    y: (ev.touches[0].clientY - session.previous.y) / (new Date().getTime() - session.previous.time)
+                };
+                session.previous = {
+                    x: ev.touches[0].clientX,
+                    y: ev.touches[0].clientY,
+                    time: new Date().getTime()
+                };
+            }
+        };
+
+        touchSpace.ontouchend = (ev) => {
+            if (session.type === "pinch") {
+
+            }
+            else if (session.type === "native-scroll") {
+                session = null;
+
+            }
+            else if (session.type === "pan-swiper") {
+
+                this._touchSpaceController.panEnd(-session.velocity.x);
+
+                session = null;
+            }
+
+
+        };
+
+        touchSpace.ontouchcancel = (ev) => {
+            // preventDefault(ev);
+
+            if (session === "pinch") {
+
+            }
+            else if (session === "native-scroll") {
+                session = null;
+
+            }
+            else if (session === "pan-swiper") {
+                session = null;
+
+                this._touchSpaceController.panEnd();
+            }
+        };
+
 
         /**
          * DOUBLE TAP
@@ -88,7 +225,7 @@ class TouchSpaceExperiment {
 
             console.log('pinch', ev.type);
 
-            switch(ev.type) {
+            switch (ev.type) {
                 case 'pinchstart':
                     break;
                 case 'pinchin':
@@ -128,98 +265,11 @@ class TouchSpaceExperiment {
         /**
          * PAN
          */
-        let isTouched = false;
 
         let stopPropagationCallback = (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
         };
-
-        // At this point in time we manually subscribe to touch events to detect whether user is scrolling the window. If deltaY is big and deltaX is so small that panleft/panright wasn't triggered yet it means that we're scrolling vertically and swiping left/right should be blocked.
-        let refClientY;
-        let refClientX;
-
-        let touchDetection = 0; // 0 - not detected, 1 - pinch, 2 - up / down, 3 - left / right
-
-        this._blockPanEvents = true;
-        this._blockPinchEvents = true;
-
-        let preventDefault = (ev) => {
-            if (touchDetection === 0 || touchDetection === 1 || touchDetection === 3 ) {
-                ev.stopPropagation();
-                ev.preventDefault();
-            }
-        };
-
-        touchSpace.ontouchstart = (ev) => {
-            // preventDefault(ev);
-
-            touchDetection = 0;
-            refClientY = ev.touches[0].clientY;
-            refClientX = ev.touches[0].clientX;
-
-            if (ev.touches.length === 1) {
-                console.log('start of touching');
-            }
-            else {
-                touchDetection = 1;
-                this._blockPinchEvents = false;
-                console.log('more than 1 touch -> PINCHING');
-            }
-
-            // this._blockPanEvents = true;
-            // this._blockPinchEvents = true;
-        };
-
-        touchSpace.ontouchmove = (ev) => {
-            preventDefault(ev);
-
-            if (touchDetection === 0) {
-
-                // Check if scrolling up / down
-                if (Math.abs(ev.touches[0].clientY - refClientY) > 10) {
-                    touchDetection = 2;
-                    console.log('up / down -> SCROLLING')
-
-                    // console.log('scrolling up / down!');
-                    // isWindowScrolling = true;
-                    this._mc.stop();
-                }
-                else if (Math.abs(ev.touches[0].clientX - refClientX) > 10) {
-                    touchDetection = 3;
-
-                    this._blockPanEvents = false;
-
-                    console.log('left / right -> PANNING')
-                }
-            }
-
-        };
-
-        touchSpace.ontouchend = (ev) => {
-            // preventDefault(ev);
-
-            if (ev.touches.length === 0) {
-                console.log('end of touching');
-                touchDetection = 0;
-                this._blockPanEvents = true;
-                this._blockPinchEvents = true;
-            }
-        };
-
-        touchSpace.ontouchcancel = (ev) => {
-            // preventDefault(ev);
-
-            if (ev.touches.length === 0) {
-                touchDetection = 0;
-                this._blockPanEvents = true;
-                this._blockPinchEvents = true;
-                console.log('end of touching');
-            }
-        };
-
-
-
 
         let panPreviousCenter;
 
@@ -320,7 +370,9 @@ class TouchSpaceExperiment {
     }
 
     disable() {
-        if (!this._inited) { return; }
+        if (!this._inited) {
+            return;
+        }
         this._inited = false;
 
         if (this._mc) {
