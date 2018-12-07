@@ -206,13 +206,50 @@ class TouchSpaceExperiment {
 
                             let touch = ev.touches[0];
 
-                            let absDelta = {
-                                y: Math.abs(touch.clientY - state.startPoint.y),
-                                x: Math.abs(touch.clientX - state.startPoint.x)
+                            let delta = {
+                                y: touch.clientY - state.startPoint.y,
+                                x: touch.clientX - state.startPoint.x
                             };
 
                             if (this._zoomer.pos.scale > 1.05) {
-                                changeStateToPanZoomer(touch);
+
+                                // pan right
+                                if (delta.x > 10) {
+                                    if (this._zoomer.isAlignedToLeft()) {
+                                        changeStateToPanSwiper(touch);
+                                    } else {
+                                        changeStateToPanZoomer(touch);
+                                    }
+                                }
+
+                                // pan left
+                                else if (delta.x < -10) {
+                                    if (this._zoomer.isAlignedToRight()) {
+                                        changeStateToPanSwiper(touch);
+                                    } else {
+                                        changeStateToPanZoomer(touch);
+                                    }
+                                }
+
+                                // pan down
+                                else if (delta.y > 10) {
+
+                                    if (this._zoomer.isAlignedToTop()) {
+                                        changeStateToNativeScroll();
+                                    } else {
+                                        changeStateToPanZoomer(touch);
+                                    }
+                                }
+
+                                // pan up
+                                else if (delta.y < -10) {
+                                    if (this._zoomer.isAlignedToBottom()) {
+                                        changeStateToNativeScroll();
+                                    } else {
+                                        changeStateToPanZoomer(touch);
+                                    }
+                                }
+
                                 break;
                             }
 
@@ -233,12 +270,12 @@ class TouchSpaceExperiment {
                              *
                              * This makes touch-action not that much useful.
                              */
-                            if (absDelta.x > 10) {
+                            if (Math.abs(delta.x) > 10) {
                                 changeStateToPanSwiper(touch);
                                 break;
                             }
 
-                            if (absDelta.y > 10) {
+                            if (Math.abs(delta.y) > 10) {
                                 changeStateToNativeScroll();
                                 break;
                             }
@@ -395,10 +432,7 @@ class TouchSpaceExperiment {
                             break;
                     }
                     break;
-
             }
-
-
         };
 
         touchSpace.ontouchstart = processNewEvent;
