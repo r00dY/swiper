@@ -48,6 +48,8 @@ class TouchSpaceExperiment {
         // At this point in time we manually subscribe to touch events to detect whether user is scrolling the window. If deltaY is big and deltaX is so small that panleft/panright wasn't triggered yet it means that we're scrolling vertically and swiping left/right should be blocked.
 
 
+
+
         let state = null;
 
         let changeStateToInit = () => {
@@ -59,11 +61,40 @@ class TouchSpaceExperiment {
             // this._touchSpace.style.touchAction = "pan-y"; // for touchAction-compatible browsers
         };
 
-        let changeStateToPinch = (touches) => {
+        let calculateCenterFrom2Touches = (touch1, touch2) => {
+            return {
+                x: (touch1.clientX + touch2.clientX) / 2,
+                y: (touch1.clientY + touch2.clientY) / 2
+            };
+        };
+
+        let calculateDeltasBetween2Points = (point1, point2) => {
+            return {
+                x: point1.x - point2.x,
+                y: point1.y - point2.y
+            };
+        };
+
+        let calculateDistanceBetween2Touches = (touch1, touch2) => {
+            return Math.sqrt(Math.pow(touch1.clientX - touch2.clientX, 2) + Math.pow(touch1.clientY - touch2.clientY, 2));
+        };
+
+        let changeStateToPinch = (touch1, touch2) => {
             console.log('change state to pinch');
             state = {
-                type: "pinch"
+                type: "pinch",
+                startTouch1: touch1,
+                startTouch2: touch2
             };
+
+            let clientRect = this._touchSpace.getBoundingClientRect();
+
+            let center = calculateCenterFrom2Touches(touch1, touch2);
+
+            this._zoomer.pinchstart({
+                x: center.x - clientRect.left,
+                y: center.y - clientRect.top
+            });
         };
 
         let changeStateToSingleTouchInit = (touch) => {
@@ -113,7 +144,7 @@ class TouchSpaceExperiment {
 
         let findTouchWithIdentifier = (ev, identifier) => {
             for (let i = 0; i < ev.touches.length; i++) {
-                if (ev.touches[i].identifier === state.identifier) {
+                if (ev.touches[i].identifier === identifier) {
                     return ev.touches[i];
                 }
             }
@@ -134,7 +165,7 @@ class TouchSpaceExperiment {
                                 changeStateToSingleTouchInit(ev.touches[0]);
                             }
                             else {
-                                changeStateToPinch(ev.touches);
+                                changeStateToPinch(ev.touches[0], ev.touches[1]);
                             }
                             break;
 
@@ -147,7 +178,7 @@ class TouchSpaceExperiment {
                 case "single-touch-init":
                     switch (ev.type) {
                         case "touchstart":
-                            changeStateToPinch(ev.touches);
+                            changeStateToPinch(ev.touches[0], ev.touches[1]);
                             break;
                         case "touchmove":
                             preventDefault(ev);
@@ -220,19 +251,45 @@ class TouchSpaceExperiment {
                             break;
 
                         case "touchmove":
+
+                            let touch1 = findTouchWithIdentifier(ev, state.startTouch1.identifier);
+                            let touch2 = findTouchWithIdentifier(ev, state.startTouch2.identifier);
+
+                            let deltas = calculateDeltasBetween2Points(
+                                calculateCenterFrom2Touches(touch1, touch2),
+                                calculateCenterFrom2Touches(state.startTouch1, state.startTouch2)
+                            );
+
+                            deltas.scale = Math.abs(calculateDistanceBetween2Touches(touch1, touch2) / calculateDistanceBetween2Touches(state.startTouch1, state.startTouch2));
+
+                            this._zoomer.pinchmove(deltas);
+
                             // keep pinching!
                             break;
 
                         case "touchend":
                         case "touchcancel":
                             if (ev.touches.length >= 2) {
-                                // keep pinching!
+
+                                let touch1 = findTouchWithIdentifier(ev, state.startTouch1.identifier);
+                                let touch2 = findTouchWithIdentifier(ev, state.startTouch2.identifier);
+
+                                if (touch1 === null || touch2 === null) { // some of old touches got lost :(
+                                    this._zoomer.pinchend();
+                                    changeStateToPinch(ev.touches[0], ev.touches[1]) // let's take new points
+                                    break;
+                                }
+                                else {
+                                    // keep pinching
+                                }
                                 break;
                             }
                             else if (ev.touches.length === 1) {
+                                this._zoomer.pinchend();
                                 changeStateToPanSwiper(ev.touches[0]);
                             }
                             else {
+                                this._zoomer.pinchend();
                                 changeStateToInit();
                             }
                             break;
