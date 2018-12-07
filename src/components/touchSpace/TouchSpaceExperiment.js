@@ -4,6 +4,10 @@ import EventSystem from '../../helpers/EventSystem';
 // Default TouchSpace uses hammer.js as gestures engine.
 const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
 
+/**
+ * TODO: prevent link clicking (stopPropagation in previous version)
+ */
+
 class TouchSpaceExperiment {
 
     constructor(swiper, touchSpace) {
