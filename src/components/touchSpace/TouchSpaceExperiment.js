@@ -6,6 +6,11 @@ const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
 
 /**
  * TODO: prevent link clicking (stopPropagation in previous version)
+ * TODO: mouse events
+ * TODO: mouse+touch screens
+ * TODO: nice animation of snapToPoint
+ * TODO: animation of velocity
+ * TODO: tap / double tap gesture for snap to point
  */
 
 class TouchSpaceExperiment {
