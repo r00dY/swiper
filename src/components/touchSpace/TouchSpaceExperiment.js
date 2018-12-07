@@ -11,6 +11,7 @@ const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
  * TODO: nice animation of snapToPoint
  * TODO: animation of velocity
  * TODO: tap / double tap gesture for snap to point
+ *
  * TODO: iOS blocking of scroll.
  * TODO: Android touch-action (will prevent native browser actions to fire).
  */
@@ -18,6 +19,11 @@ const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
 function getWindowForElement(element) {
     let doc = element.ownerDocument || element;
     return (doc.defaultView || doc.parentWindow || window);
+}
+
+function isiOS() {
+    let userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    return (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream);
 }
 
 class TouchSpaceExperiment {
@@ -73,6 +79,29 @@ class TouchSpaceExperiment {
             state = {
                 type: "init"
             };
+
+            if (isiOS()) {
+
+            }
+            else { // touch-action compatible browser
+
+                let touchAction = "pan-y";
+                if (this._zoomer.pos.scale > 1.05) {
+                    if (this._zoomer.isAlignedToTop()) {
+                        touchAction = "pan-up";
+                    }
+                    else if (this._zoomer.isAlignedToBottom()) {
+                        touchAction = "pan-down";
+                    }
+                    else {
+                        touchAction = "none";
+                    }
+                }
+
+                console.log('touch action: ', touchAction);
+                this._touchSpace.style.touchAction = touchAction;
+
+            }
 
             // this._touchSpace.style.touchAction = "pan-y"; // for touchAction-compatible browsers
         };
