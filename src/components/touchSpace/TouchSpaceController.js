@@ -6,6 +6,7 @@ class TouchSpaceController {
 
     panStart() {
         this._panStartPos = this.swiper.pos;
+        this.swiper.stopMovement();
         this.swiper.touchdown();
     }
 

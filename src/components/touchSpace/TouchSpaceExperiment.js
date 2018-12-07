@@ -84,12 +84,18 @@ class TouchSpaceExperiment {
             }
         };
 
-        let changeStateToPanSwiper = (startPoint) => {
-            console.log('change state to pan-swiper', startPoint);
+        let changeStateToPanSwiper = (touch) => {
+            let startPoint = {
+                x: touch.clientX,
+                y: touch.clientY,
+                time: new Date().getTime()
+            };
+
             state = {
                 type: "pan-swiper",
-                startPoint: Object.assign({}, startPoint),
-                previousPoint: Object.assign({}, startPoint, {time: new Date().getTime()}),
+                startPoint: startPoint,
+                identifier: touch.identifier,
+                previousPoint: Object.assign({}, startPoint),
                 velocity: {
                     x: 0,
                     y: 0
@@ -105,12 +111,19 @@ class TouchSpaceExperiment {
             ev.preventDefault();
         };
 
+        let findTouchWithIdentifier = (ev, identifier) => {
+            for (let i = 0; i < ev.touches.length; i++) {
+                if (ev.touches[i].identifier === state.identifier) {
+                    return ev.touches[i];
+                }
+            }
+            return null;
+        };
+
         /**
          * STATE MACHINE BABY <3!
          */
         let processNewEvent = (ev) => {
-
-            console.log('new event', ev.type);
 
             switch (state.type) {
                 case "init":
@@ -164,10 +177,7 @@ class TouchSpaceExperiment {
                              * This makes touch-action not that much useful.
                              */
                             if (absDelta.x > 10) {
-                                changeStateToPanSwiper({
-                                    x: touch.clientX,
-                                    y: touch.clientY
-                                });
+                                changeStateToPanSwiper(touch);
                                 break;
                             }
 
@@ -220,10 +230,7 @@ class TouchSpaceExperiment {
                                 break;
                             }
                             else if (ev.touches.length === 1) {
-                                changeStateToPanSwiper({
-                                    x: ev.touches[0].clientX,
-                                    y: ev.touches[0].clientY
-                                });
+                                changeStateToPanSwiper(ev.touches[0]);
                             }
                             else {
                                 changeStateToInit();
@@ -238,19 +245,24 @@ class TouchSpaceExperiment {
 
                     switch (ev.type) {
                         case "touchstart":
+
+                            console.log('new touch');
                             // do nothing, keep moving with old touch
                             break;
 
                         case "touchmove":
-                            this._touchSpaceController.panMove(ev.touches[0].clientX - state.startPoint.x);
+
+                            let touch = findTouchWithIdentifier(ev, state.identifier);
+
+                            this._touchSpaceController.panMove(touch.clientX - state.startPoint.x);
 
                             state.velocity = {
-                                x: (ev.touches[0].clientX - state.previousPoint.x) / (new Date().getTime() - state.previousPoint.time),
-                                y: (ev.touches[0].clientY - state.previousPoint.y) / (new Date().getTime() - state.previousPoint.time)
+                                x: (touch.clientX - state.previousPoint.x) / (new Date().getTime() - state.previousPoint.time),
+                                y: (touch.clientY - state.previousPoint.y) / (new Date().getTime() - state.previousPoint.time)
                             };
                             state.previousPoint = {
-                                x: ev.touches[0].clientX,
-                                y: ev.touches[0].clientY,
+                                x: touch.clientX,
+                                y: touch.clientY,
                                 time: new Date().getTime()
                             };
 
@@ -260,6 +272,21 @@ class TouchSpaceExperiment {
                         case "touchend":
                         case "touchcancel":
                             if (ev.touches.length >= 1) {
+
+                                // If old touch exists
+                                if (findTouchWithIdentifier(ev, state.identifier)) {
+                                    console.log('removed touch - old one stays')
+                                    break;
+                                }
+                                else {
+
+                                    console.log('removed touch - we need new one!')
+                                    this._touchSpaceController.panEnd(0);
+                                    changeStateToPanSwiper(ev.touches[0]); // let's take new touch
+                                }
+
+                                break;
+
                                 // keep pinching! (always first touch)
                             }
                             else {
