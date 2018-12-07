@@ -152,11 +152,9 @@ storiesOf('Experiment', module)
                 border: "1px solid black",
                 height: "40vh",
                 overflowY: "scroll",
-                width: "100%"
+                width: "100%",
+                marginBottom: "20px",
             }}>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
                 <h1>Test</h1>
                 <h1>Test</h1>
                 <h1>Test</h1>
@@ -169,24 +167,20 @@ storiesOf('Experiment', module)
                 <h1>Test</h1>
                 <h1>Test</h1>
                 <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
-                <h1>Test</h1>
             </div>
+
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <Test />
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+            <h1>Test</h1>
+
         </div>
     );

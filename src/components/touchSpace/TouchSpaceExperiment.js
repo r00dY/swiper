@@ -48,17 +48,15 @@ class TouchSpaceExperiment {
         // At this point in time we manually subscribe to touch events to detect whether user is scrolling the window. If deltaY is big and deltaX is so small that panleft/panright wasn't triggered yet it means that we're scrolling vertically and swiping left/right should be blocked.
 
 
-
-
-        let state = {
-            type: "init"
-        };
+        let state = null;
 
         let changeStateToInit = () => {
             console.log('change state to init');
             state = {
                 type: "init"
             };
+
+            // this._touchSpace.style.touchAction = "pan-y"; // for touchAction-compatible browsers
         };
 
         let changeStateToPinch = (touches) => {
@@ -91,7 +89,7 @@ class TouchSpaceExperiment {
             state = {
                 type: "pan-swiper",
                 startPoint: Object.assign({}, startPoint),
-                previousPoint: Object.assign({}, startPoint, { time: new Date().getTime() }),
+                previousPoint: Object.assign({}, startPoint, {time: new Date().getTime()}),
                 velocity: {
                     x: 0,
                     y: 0
@@ -100,6 +98,7 @@ class TouchSpaceExperiment {
 
             this._touchSpaceController.panStart();
         };
+
 
         let preventDefault = (ev) => {
             ev.stopPropagation();
@@ -111,11 +110,11 @@ class TouchSpaceExperiment {
          */
         let processNewEvent = (ev) => {
 
-            // console.log('new event', ev);
+            console.log('new event', ev.type);
 
-            switch(state.type) {
+            switch (state.type) {
                 case "init":
-                    switch(ev.type) {
+                    switch (ev.type) {
                         case "touchstart":
 
                             if (ev.touches.length === 1) {
@@ -133,7 +132,7 @@ class TouchSpaceExperiment {
                     break;
 
                 case "single-touch-init":
-                    switch(ev.type) {
+                    switch (ev.type) {
                         case "touchstart":
                             changeStateToPinch(ev.touches);
                             break;
@@ -142,15 +141,41 @@ class TouchSpaceExperiment {
 
                             let touch = ev.touches[0];
 
-                            if (Math.abs(touch.clientY - state.startPoint.y) > 10) {
-                                changeStateToNativeScroll();
-                            }
-                            else if (Math.abs(touch.clientX - state.startPoint.x) > 10) {
+                            let absDelta = {
+                                y: Math.abs(touch.clientY - state.startPoint.y),
+                                x: Math.abs(touch.clientX - state.startPoint.x)
+                            };
+
+                            /**
+                             * Order is very important below.
+                             *
+                             * It turns out that on Android, when you start moving your finger to right direction and then to bottom, browser won't recognize native vertical scroll.
+                             * This means that there's a risk that we can detect native scroll in library, but browser won't. This means that in "diagonal" movements, nothing will happen (browser doesn't not interpret native scroll and swiper does not recognize horizontal pan).
+                             * That's why we must be more eager to detect horizontal pan. It alleviates the risk from above. Actually can't reproduce this "swiper stalled" bug on Android.
+                             *
+                             * On iOS this behaviour doesn't exist.
+                             *
+                             * By the way.
+                             *
+                             * pan-y won't help a lot. If we set pan-y on Android, then OK, browser will detect vertical movement and start moving browser.
+                             * But still we don't get feedback about it. And we're still getting touchmove events. And we don't get any touchcancel.
+                             * This means that we need to detect if we should disable horizontal panning "in our way" anyway.
+                             *
+                             * This makes touch-action not that much useful.
+                             */
+                            if (absDelta.x > 10) {
                                 changeStateToPanSwiper({
                                     x: touch.clientX,
                                     y: touch.clientY
                                 });
+                                break;
                             }
+
+                            if (absDelta.y > 10) {
+                                changeStateToNativeScroll();
+                                break;
+                            }
+
                             break;
                         case "touchend":
                         case "touchcancel":
@@ -163,7 +188,7 @@ class TouchSpaceExperiment {
                 case "native-scroll":
                     // do not prevent default, simply do nothing!
 
-                    switch(ev.type) {
+                    switch (ev.type) {
                         case "touchstart":
                             break;
                         case "touchmove":
@@ -179,7 +204,7 @@ class TouchSpaceExperiment {
                 case "pinch":
                     preventDefault(ev);
 
-                    switch(ev.type) {
+                    switch (ev.type) {
                         case "touchstart":
                             // do nothing, keep pinching with old 2 fingers
                             break;
@@ -211,7 +236,7 @@ class TouchSpaceExperiment {
                 case "pan-swiper":
                     preventDefault(ev);
 
-                    switch(ev.type) {
+                    switch (ev.type) {
                         case "touchstart":
                             // do nothing, keep moving with old touch
                             break;
@@ -255,8 +280,7 @@ class TouchSpaceExperiment {
         touchSpace.ontouchend = processNewEvent;
         touchSpace.ontouchcancel = processNewEvent;
 
-
-
+        changeStateToInit();
 
 
         //
