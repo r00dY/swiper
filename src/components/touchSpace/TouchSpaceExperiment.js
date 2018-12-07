@@ -15,6 +15,11 @@ const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
  * TODO: Android touch-action (will prevent native browser actions to fire).
  */
 
+function getWindowForElement(element) {
+    let doc = element.ownerDocument || element;
+    return (doc.defaultView || doc.parentWindow || window);
+}
+
 class TouchSpaceExperiment {
 
     constructor(swiper, touchSpace) {
@@ -38,22 +43,22 @@ class TouchSpaceExperiment {
 
         let touchSpace = this._touchSpace;
 
-        this._mc = new Hammer.Manager(touchSpace);
-        let tap = new Hammer.Tap({event: 'singletap', taps: 1, time: 500});
-        let pan = new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
-        let pinch = new Hammer.Pinch();
-
-        this._mc.add([tap]);
-        // this._mc.add([tap, pan, pinch]);
-
-
-        let SESSION = null; // "pinch" (zoomer), "pan-zoomer" (zoomer), "pan-swiper" (swiper)
-        this._touchSpace.style.touchAction = "pan-y"; // for touchAction-compatible browsers
-
-        let touchDetection = 0; // 0 - not detected, 1 - pinch, 2 - up / down, 3 - left / right
-
-
-        let session = null;
+        // this._mc = new Hammer.Manager(touchSpace);
+        // let tap = new Hammer.Tap({event: 'singletap', taps: 1, time: 500});
+        // let pan = new Hammer.Pan({direction: Hammer.DIRECTION_HORIZONTAL, threshold: 20});
+        // let pinch = new Hammer.Pinch();
+        //
+        // this._mc.add([tap]);
+        // // this._mc.add([tap, pan, pinch]);
+        //
+        //
+        // let SESSION = null; // "pinch" (zoomer), "pan-zoomer" (zoomer), "pan-swiper" (swiper)
+        // this._touchSpace.style.touchAction = "pan-y"; // for touchAction-compatible browsers
+        //
+        // let touchDetection = 0; // 0 - not detected, 1 - pinch, 2 - up / down, 3 - left / right
+        //
+        //
+        // let session = null;
 
 
         // At this point in time we manually subscribe to touch events to detect whether user is scrolling the window. If deltaY is big and deltaX is so small that panleft/panright wasn't triggered yet it means that we're scrolling vertically and swiping left/right should be blocked.
@@ -568,45 +573,45 @@ class TouchSpaceExperiment {
         //     }
         // };
 
-
-        /**
-         * DOUBLE TAP
-         */
-        let waiting = false;
-
-        this._mc.on('singletap', (ev) => {
-
-            if (waiting) {
-
-                if (this._zoomer.pos.scale > 1.01) {
-                    this._zoomer.moveTo({
-                        x: 0,
-                        y: 0,
-                        scale: 1
-                    }, true);
-                }
-                else {
-                    let clientRect = this._touchSpace.getBoundingClientRect();
-
-                    this._zoomer.zoomToPoint({
-                        x: ev.center.x - clientRect.left,
-                        y: ev.center.y - clientRect.top
-                    }, true);
-                }
-
-                waiting = false;
-            }
-            else {
-                waiting = true;
-                setTimeout(() => {
-                    waiting = false;
-                }, 300);
-            }
-        });
-
-        /**
-         * PINCH
-         */
+        //
+        // /**
+        //  * DOUBLE TAP
+        //  */
+        // let waiting = false;
+        //
+        // this._mc.on('singletap', (ev) => {
+        //
+        //     if (waiting) {
+        //
+        //         if (this._zoomer.pos.scale > 1.01) {
+        //             this._zoomer.moveTo({
+        //                 x: 0,
+        //                 y: 0,
+        //                 scale: 1
+        //             }, true);
+        //         }
+        //         else {
+        //             let clientRect = this._touchSpace.getBoundingClientRect();
+        //
+        //             this._zoomer.zoomToPoint({
+        //                 x: ev.center.x - clientRect.left,
+        //                 y: ev.center.y - clientRect.top
+        //             }, true);
+        //         }
+        //
+        //         waiting = false;
+        //     }
+        //     else {
+        //         waiting = true;
+        //         setTimeout(() => {
+        //             waiting = false;
+        //         }, 300);
+        //     }
+        // });
+        //
+        // /**
+        //  * PINCH
+        //  */
 
         // let pinchStartScale; // we need this, because sometimes hammer gives initial scale not 1, but sth like 4 or 5, god knows why
         //
