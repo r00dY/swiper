@@ -115,15 +115,15 @@ class TouchSpaceExperiment {
             }
         };
 
-        let changeStateToPanSwiper = (touch) => {
+        // Helper for pan management (for pinch and swipe).
+        let initPanState = (touch) => {
             let startPoint = {
                 x: touch.clientX,
                 y: touch.clientY,
                 time: new Date().getTime()
             };
 
-            state = {
-                type: "pan-swiper",
+            return {
                 startPoint: startPoint,
                 identifier: touch.identifier,
                 previousPoint: Object.assign({}, startPoint),
@@ -132,8 +132,29 @@ class TouchSpaceExperiment {
                     y: 0
                 }
             };
+        };
 
+        let updatePanStateOnMove = (state, touch) => {
+            state.velocity = {
+                x: (touch.clientX - state.previousPoint.x) / (new Date().getTime() - state.previousPoint.time),
+                y: (touch.clientY - state.previousPoint.y) / (new Date().getTime() - state.previousPoint.time)
+            };
+            state.previousPoint = {
+                x: touch.clientX,
+                y: touch.clientY,
+                time: new Date().getTime()
+            };
+        };
+
+        let changeStateToPanSwiper = (touch) => {
+            state = initPanState(touch);
+            state.type = "pan-swiper";
             this._touchSpaceController.panStart();
+        };
+
+        let changeStateToPanZoomer = (touch) => {
+            state = initPanState(touch);
+            state.type = "pan-zoomer";
         };
 
 
@@ -189,6 +210,11 @@ class TouchSpaceExperiment {
                                 y: Math.abs(touch.clientY - state.startPoint.y),
                                 x: Math.abs(touch.clientX - state.startPoint.x)
                             };
+
+                            if (this._zoomer.pos.scale > 1.05) {
+                                changeStateToPanZoomer(touch);
+                                break;
+                            }
 
                             /**
                              * Order is very important below.
@@ -302,28 +328,16 @@ class TouchSpaceExperiment {
 
                     switch (ev.type) {
                         case "touchstart":
-
-                            console.log('new touch');
-                            // do nothing, keep moving with old touch
                             break;
 
                         case "touchmove":
 
                             let touch = findTouchWithIdentifier(ev, state.identifier);
 
+                            updatePanStateOnMove(state, touch);
+
                             this._touchSpaceController.panMove(touch.clientX - state.startPoint.x);
 
-                            state.velocity = {
-                                x: (touch.clientX - state.previousPoint.x) / (new Date().getTime() - state.previousPoint.time),
-                                y: (touch.clientY - state.previousPoint.y) / (new Date().getTime() - state.previousPoint.time)
-                            };
-                            state.previousPoint = {
-                                x: touch.clientX,
-                                y: touch.clientY,
-                                time: new Date().getTime()
-                            };
-
-                            // keep pinching!
                             break;
 
                         case "touchend":
@@ -331,23 +345,51 @@ class TouchSpaceExperiment {
                             if (ev.touches.length >= 1) {
 
                                 // If old touch exists
-                                if (findTouchWithIdentifier(ev, state.identifier)) {
-                                    console.log('removed touch - old one stays')
-                                    break;
-                                }
-                                else {
-
-                                    console.log('removed touch - we need new one!')
+                                if (findTouchWithIdentifier(ev, state.identifier) === null) {
                                     this._touchSpaceController.panEnd(0);
                                     changeStateToPanSwiper(ev.touches[0]); // let's take new touch
                                 }
-
                                 break;
-
-                                // keep pinching! (always first touch)
                             }
                             else {
                                 this._touchSpaceController.panEnd(-state.velocity.x);
+                                changeStateToInit();
+                            }
+                            break;
+                    }
+                    break;
+
+
+                case "pan-zoomer":
+                    preventDefault(ev);
+
+                    switch (ev.type) {
+                        case "touchstart":
+                            break;
+
+                        case "touchmove":
+
+                            let touch = findTouchWithIdentifier(ev, state.identifier);
+
+                            this._zoomer.moveTo({
+                                x: this._zoomer.pos.x + (touch.clientX - state.previousPoint.x),
+                                y: this._zoomer.pos.y + (touch.clientY - state.previousPoint.y),
+                                scale: this._zoomer.pos.scale
+                            });
+
+                            updatePanStateOnMove(state, touch);
+                            break;
+
+                        case "touchend":
+                        case "touchcancel":
+                            if (ev.touches.length >= 1) {
+                                if (findTouchWithIdentifier(ev, state.identifier) === null) {
+                                    changeStateToPanZoomer(ev.touches[0]); // let's take new touch
+                                }
+                                break;
+                            }
+                            else {
+                                this._zoomer.snap(true);
                                 changeStateToInit();
                             }
                             break;

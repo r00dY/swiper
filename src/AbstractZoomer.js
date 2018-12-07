@@ -21,6 +21,9 @@ import EventSystem from './helpers/EventSystem';
  * Methods for standard movement: moveTo, snap, zoomToPoint
  * moveTo method applies non-linearity. This means that if you call moveTo method with some position, this position will have edge non-linear effects applied and real position might be different from argument position.
  * This gives us nice overscroll effect when panning.
+ * zoomToPoint method always zooms to snapped version so it doesn't have to worry about non-linearities.
+ * snap method calls onMove inside, so it applies non-linearities too (it's obvious)
+ *
  *
  * Pinching movements
  *
@@ -44,6 +47,8 @@ import EventSystem from './helpers/EventSystem';
  * Now we want to snap big one into smaller one.
  *
  * It turns out that position only is not enough to snap correctly, because depending on starting point (A / B), different position would be appropriate.
+ *
+ * In other words, snapping scale down is relative to reference point (unlike snapping coordinates X and Y).
  *
  +----------------------------------------------------------------------------------------------------+
  |                                                                                                    |
@@ -105,10 +110,10 @@ import EventSystem from './helpers/EventSystem';
  * There is one HUGE consequence of this. The pos => coords function behind edges is different for pinch and panning.
  * This means that we cannot simply switch between them.
  * That's why we don't allow for panning until pinch snap animation finishes. Pinch move can go far away from center (not like pan because of non-linearity). If we decided to switch pinch to pan, then pan would be super unnatural.
- * We should start interpret pan events as soon as pinching finished.
+ * We should start interpret pan events as soon as pinch snapping finished.
  *
  * However, when pan snap animation is in progress, we can start pinching. It's because it's super natural position for pinch.
- * That's why we have code that copies coords to pos during pinchstart.
+ * That's why we have code that copies coords to pos during pinchstart (change from non-linear to linear edge function).
  *
  */
 class Zoomer  {
@@ -532,6 +537,14 @@ class Zoomer  {
 
     isAlignedToLeft() {
         return /* left edge */ (this._pos.x - this._itemSize.width * this._pos.scale / 2) > -this._containerSize.width / 2 - 10;
+    }
+
+    isAlignedToTop() {
+        return /* top edge */ (this._pos.y - this._itemSize.height * this._pos.scale / 2) > -this._containerSize.height / 2 - 10
+    }
+
+    isAlignedToBottom() {
+        return /* bottom edge */ (this._pos.y + this._itemSize.height * this._pos.scale / 2) < this._containerSize.height / 2 + 10
     }
 
 }
