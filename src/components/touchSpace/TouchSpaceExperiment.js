@@ -5,7 +5,7 @@ import TouchSpaceController from "./TouchSpaceController";
  * TODO: animation of velocity
  *
  *
- *
+ * TODO: swipe + swipe (in same place) is interpreted as tap. We should detect touch down and touch up place.
  *
  * TODO: prevent link clicking (stopPropagation in previous version)
  * TODO: tap / double tap gesture for snap to point
@@ -643,6 +643,9 @@ class TouchSpaceExperiment {
 
         };
 
+        let TAP_MAX_DISTANCE = 50;
+        let TAP_MAX_INTERVAL = 300;
+
         let processTapEvent = (ev) => {
 
             switch(tap.state.type) {
@@ -663,14 +666,15 @@ class TouchSpaceExperiment {
                         case "touchstart":
                             tap.changeStateToInit();
                             break;
-                        case "touchmove":
+                        case "touchmove": // we can't move between touches!
+                            tap.changeStateToInit();
                             break;
 
                         case "touchend":
-                            let previousTouch = tap.touches[tap.touches.length - 1];
+                            let touchDown = tap.touches[tap.touches.length - 1];
                             let time = new Date().getTime();
 
-                            if (time - previousTouch.time < 300) {
+                            if (time - touchDown.time < TAP_MAX_INTERVAL) {
                                 if (tap.touches.length === 2) { // double tap detected!
                                     tap.changeStateToInit();
 
@@ -685,8 +689,8 @@ class TouchSpaceExperiment {
                                         let clientRect = this._touchSpace.getBoundingClientRect();
 
                                         this._zoomer.zoomToPoint({
-                                            x: previousTouch.touch.clientX - clientRect.left,
-                                            y: previousTouch.touch.clientY - clientRect.top
+                                            x: touchDown.touch.clientX - clientRect.left,
+                                            y: touchDown.touch.clientY - clientRect.top
                                         }, true);
                                     }
                                 }
@@ -715,11 +719,7 @@ class TouchSpaceExperiment {
                             let timeDiff = time - tap.state.time;
                             let distance = calculateDistanceBetween2Touches(touch, previousTouch.touch);
 
-                            console.log('now', touch.clientX, touch.clientY);
-                            console.log('before', previousTouch.touch.clientX, previousTouch.touch.clientY);
-                            console.log('time diff', timeDiff, 'distance', distance);
-
-                            if (timeDiff < 200 && distance < 100) {
+                            if (timeDiff < TAP_MAX_INTERVAL && distance < TAP_MAX_DISTANCE) {
                                 tap.changeStateToTouch(touch);
                             }
                             else {
@@ -743,7 +743,7 @@ class TouchSpaceExperiment {
         let pointerId = null; // id of currently down pointer (for mouse we just take "mouse").
 
         let processPointerEvent = (ev, type) => { // type: "pointer" or "mouse"
-            console.log('process pointer event');
+            console.log('pointer event', ev.type);
 
             if (sessionType !== null && sessionType !== type) { return; } // return if different kind of session already started
 
@@ -798,12 +798,6 @@ class TouchSpaceExperiment {
             }
         };
 
-        // let mouseEventHandler = (ev) => { console.log(ev.type); processPointerEvent(ev, "mouse"); };
-        // touchSpace.addEventListener('mousedown', mouseEventHandler);
-        // touchSpace.addEventListener('mousemove', mouseEventHandler);
-        // touchSpace.addEventListener('mouseup', mouseEventHandler);
-        // window.addEventListener('mousemove', mouseEventHandler);
-        // window.addEventListener('mouseup', mouseEventHandler);
 
         // if (typeof PointerEvent === 'undefined') { // for pointerevents browsers
         //
@@ -842,6 +836,12 @@ class TouchSpaceExperiment {
         touchSpace.addEventListener('touchend', touchEventHandler);
         touchSpace.addEventListener('touchcancel', touchEventHandler);
 
+        // let mouseEventHandler = (ev) => { processPointerEvent(ev, "mouse"); };
+        // touchSpace.addEventListener('mousedown', mouseEventHandler);
+        // touchSpace.addEventListener('mousemove', mouseEventHandler);
+        // touchSpace.addEventListener('mouseup', mouseEventHandler);
+        // window.addEventListener('mousemove', mouseEventHandler);
+        // window.addEventListener('mouseup', mouseEventHandler);
 
     }
 
