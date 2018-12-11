@@ -378,6 +378,7 @@ class Zoomer  {
         return true;
     }
 
+
     /**
      * Very useful helper method. Takes container coords (relative to top/left of container and in container units), and transforms them to normalized point coords (as if scale=1, x=0, y=0).
      *

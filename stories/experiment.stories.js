@@ -38,6 +38,8 @@ class Test extends React.Component {
         // this.slider.touchSpace.enable();
         // Let's create new touch space which is external.
         this.touchSpace = new TouchSpace(this.slider, this.simpleSliderNodeRef.current);
+        this.touchSpace.enableDoubleTap = true;
+        this.touchSpace.enablePinch = true;
         this.touchSpace.zoomer = this.refs['ref0'].zoomer;
         this.touchSpace.enable();
 
