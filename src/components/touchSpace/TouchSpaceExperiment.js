@@ -201,104 +201,28 @@ class TouchSpaceExperiment {
             state.type = "pan-zoomer";
         };
 
-        // console.log(getWindowForElement(this._touchSpace));
-
-        // console.log('document', document);
-        // console.log('document', this._touchSpace.ownerDocument);
-        //
-        // let win = document.defaultView;
-        // console.log('window', win, win === window, window.document);
-        //
-        // console.log('parent doc', win.parent.document);
-        //
-        // setInterval(() => {
-        //     // console.log(win.parent.pageYOffset);
-        //     // console.log(win.pageYOffset);
-        // }, 1000);
-        //
-        // win.parent.document2 = document;
-        // win.parent.window2 = window;
-
-        // let win = document.querySelector('iframe').contentWindow;
-
-
-        // let doc = this._touchSpace.ownerDocument;
-        // let win = doc.defaultView;
-
-        // win.addEventListener('scroll', () => {
-        //     console.log('closest document scroll!');
-        // });
-
-        //
-        // let window2 = getWindowForElement(this._touchSpace);
-        //
-        // console.log('parent', doc.parentWindow);
-        // console.log('compare windows', window === window2);
-
-
         /**
-         * Why the HELL DOESN'T IT WORK ON iOS??? The scroll event???
+         * iOS preventDefault behaviour of touchmove event
+         *
+         * Well, this is interesting.
+         *
+         * Browser have some latency before it decides that given touch session is scroll up / scroll down.
+         * During this time, couple of touchmove events might be triggered. And now:
+         *
+         * a) when we call preventDefault() BEFORE browser decided it should scroll, it will give up scrolling at all during entire touch session.
+         * b) when we call preventDefault() AFTER browser decided it should scroll, it won't change anything. Browser will scroll anyway.
+         *
+         * Sometimes very quick movement might cause that with first touchmove browser already know it's scrolling -> then calling preventDefault() will never prevent browser scroll - no matter how hard you try.
+         * That's why you might encounter "sometimes works, sometimes not" behaviour with calling event.preventDefault() on every touchmove.
+         *
+         * It turns out behaviour is the same on Android. There's a event.cancelable which tells whether preventDeault makes sense or not. In Chrome there's even an error in console when you call preventDefault on cancelable=false event.
+         *
+         * TODO: bug with no gestures recognized on touchSpace after some global scrolling (it might be because of losing focus because of iframe + Storybook)
          */
 
-        // let w = getWindowForElement(this._touchSpace);
-        // w.addEventListener('scroll', () => {
-        //    console.log('closest window scroll!');
-        // });
-        //
-        // window.addEventListener('scroll', () => {
-        //     console.log('window scroll!');
-        // });
-        //
-        // console.log('window', w);
-
-
-        let isScrolling = false;
-
-        window.addEventListener('scroll', (ev) => {
+        let preventDefault = (ev) => {
+            ev.stopPropagation();
             ev.preventDefault();
-            // console.log('ON SCROLL!');
-            isScrolling = true;
-        }, { passive: false, capture: true });
-
-
-        let deltaX = false;
-
-        let preventDefault = (ev, preventDefaultOniOS) => {
-            if (isiOS()) {
-                if (preventDefaultOniOS) {
-                    console.log('iOS prevent default');
-                    ev.preventDefault();
-                }
-
-                console.log('iOS stop propagation');
-                ev.stopPropagation();
-
-                // ev.preventDefault();
-                /**
-                 * iOS preventDefault behaviour of touchmove event
-                 *
-                 * Well, this is interesting.
-                 *
-                 * Browser have some latency before it decides that given touch session is scroll up / scroll down.
-                 * During this time, couple of touchmove events might be triggered. And now:
-                 *
-                 * a) when we call preventDefault() BEFORE browser decided it should scroll, it will give up scrolling at all during entire touch session.
-                 * b) when we call preventDefault() AFTER browser decided it should scroll, it won't change anything. Browser will scroll anyway.
-                 *
-                 * Sometimes very quick movement might cause that with first touchmove browser already know it's scrolling -> then calling preventDefault() will never prevent browser scroll - no matter how hard you try.
-                 * That's why you might encounter "sometimes works, sometimes not" behaviour with calling event.preventDefault() on every touchmove.
-                 *
-                 * TODO: bug with no gestures recognized on touchSpace after some global scrolling (it might be because of losing focus because of iframe + Storybook)
-                 */
-            }
-            else {
-                // preventDefault(ev);;
-                ev.stopPropagation();
-                ev.preventDefault();
-            }
-
-            // ev.stopPropagation();
-            // ev.preventDefault();
         };
 
         let findTouchWithIdentifier = (ev, identifier) => {
@@ -314,17 +238,12 @@ class TouchSpaceExperiment {
          * STATE MACHINE BABY <3!
          */
 
-        let counter = 0;
-
         let processNewEvent = (ev) => {
 
             switch (state.type) {
                 case "init":
                     switch (ev.type) {
                         case "touchstart":
-
-                            isScrolling = false;
-
                             if (ev.touches.length === 1) {
                                 changeStateToSingleTouchInit(ev.touches[0]);
                             }
@@ -340,7 +259,6 @@ class TouchSpaceExperiment {
 
                 case "native-scroll":
                     // do not prevent default, simply do nothing!
-                    console.log('native scroll', ev.type);
 
                     switch (ev.type) {
                         case "touchstart":
@@ -361,27 +279,10 @@ class TouchSpaceExperiment {
                             changeStateToPinch(ev.touches[0], ev.touches[1]);
                             break;
                         case "touchmove":
-                            // preventDefault(ev);
-
-                            console.log('single touch init CANCELABLE', ev.cancelable);
-
-                            // cancelable to false means that browser already detected scrolling and doesn't allow for preventDefault. This is the moment when we can switch to native scroll in our detector as we don't want dual scrolling.
                             if (ev.cancelable === false) {
                                 changeStateToNativeScroll();
                                 break;
                             }
-
-
-
-
-                            console.log('single touch init touchmove', ev);
-
-                            // console.log('TOUCHMOVE isScrolling', isScrolling);
-                            //
-                            // if (isScrolling) {
-                            //     changeStateToNativeScroll();
-                            //     break;
-                            // }
 
                             let touch = ev.touches[0];
 
@@ -390,74 +291,28 @@ class TouchSpaceExperiment {
                                 x: touch.clientX - state.startPoint.x
                             };
 
-                            // setTimeout(() => {
-                            //     console.log('next frame start', 'is scrolling', isScrolling, 'deltaX', delta.x);
-                            // }, 0);
-
                             // Break if delta is small
                             if (Math.abs(delta.x) < 10 && Math.abs(delta.y) < 10) {
                                 break;
                             }
 
                             // If delta is bigger, for sure we need to make SOME movement (native scroll or swiper or pan or whatever).
-
                             let direction;
 
-                            /**
-                             * This code is critical on mobile!!!
-                             *
-                             * Mobile systems are different in how they interpret gestures and global scroll. That's why it's easy to write to separate codes for iOS and Android here.
-                             */
-
-
-                            if (isiOS()) {
-                                /**
-                                 * Direction is critical here.
-                                 *
-                                 * In iOS even if there's big X delta, Y deltas ALWAYS are interpreted as browser scroll. Opposite to Android Chrome.
-                                 */
-                                if (delta.y > 10) {
-                                    direction = "down";
-                                }
-                                else if (delta.y < -10) {
-                                    direction = "up";
-                                }
-                                else if (delta.x > 10) {
-                                    direction = "right";
-                                }
-                                else if (delta.x < -10) {
-                                    direction = "left";
-                                }
-
-                                console.log("[iOS pan], direction: ", direction, "delta: ", delta);
+                            if (delta.x > 10) {
+                                direction = "right";
                             }
-                            // Android
-                            else {
-
-
-                                if (delta.x > 10) {
-                                    direction = "right";
-                                }
-                                else if (delta.x < -10) {
-                                    direction = "left";
-                                }
-                                else if (delta.y > 10) {
-                                    direction = "down";
-                                }
-                                else if (delta.y < -10) {
-                                    direction = "up";
-                                }
-
+                            else if (delta.x < -10) {
+                                direction = "left";
+                            }
+                            else if (delta.y > 10) {
+                                direction = "down";
+                            }
+                            else if (delta.y < -10) {
+                                direction = "up";
                             }
 
 
-                            if (direction === "left") {
-                                console.log('TOUCHMOVE DIRECTION LFT!', delta, direction);
-                            }
-
-                                // console.log('single-touch-init preventDefault');
-                            // preventDefault(ev);
-                            //
                             if (this._zoomer.pos.scale > 1.05) {
 
                                 // pan right
@@ -486,7 +341,6 @@ class TouchSpaceExperiment {
                                 else if (direction === "down") {
 
                                     if (this._zoomer.isAlignedToTop()) {
-                                        // changeStateToNativeScroll();
                                         break;
                                     } else {
                                         changeStateToPanZoomer(touch);
@@ -498,7 +352,6 @@ class TouchSpaceExperiment {
                                 else if (direction === "up") {
                                     if (this._zoomer.isAlignedToBottom()) {
                                         break;
-                                        // changeStateToNativeScroll();
                                     } else {
                                         changeStateToPanZoomer(touch);
                                         preventDefault(ev);
@@ -514,7 +367,6 @@ class TouchSpaceExperiment {
                                 }
                                 else {
                                     break;
-                                    // changeStateToNativeScroll();
                                 }
 
                             }
@@ -541,7 +393,6 @@ class TouchSpaceExperiment {
 
                         case "touchend":
                         case "touchcancel":
-
                             changeStateToInit();
 
                     }
@@ -611,6 +462,12 @@ class TouchSpaceExperiment {
                             break;
 
                         case "touchmove":
+                            if (ev.cancelable === false) {
+                                changeStateToNativeScroll();
+                                break;
+                            }
+                            preventDefault(ev);
+
                             let touch = findTouchWithIdentifier(ev, state.identifier);
 
                             updatePanStateOnMove(state, touch);
@@ -647,6 +504,12 @@ class TouchSpaceExperiment {
                             break;
 
                         case "touchmove":
+                            if (ev.cancelable === false) {
+                                changeStateToNativeScroll();
+                                break;
+                            }
+                            preventDefault(ev);
+
                             let touch = findTouchWithIdentifier(ev, state.identifier);
 
                             this._zoomer.moveTo({
