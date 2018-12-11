@@ -206,6 +206,31 @@ class TouchSpaceExperiment {
             return null;
         };
 
+
+        /**
+         * Events batching by requestAnimationFrame
+         */
+
+        let actionsQueue = [];
+
+        let onFrame = () => {
+            if (actionsQueue.length > 0) {
+                console.log('ref', actionsQueue.length);
+            }
+
+            actionsQueue.forEach((action) => {
+                action();
+            });
+
+            actionsQueue = [];
+
+            requestAnimationFrame(onFrame);
+        };
+
+        requestAnimationFrame(onFrame);
+
+
+
         /**
          * STATE MACHINE BABY <3!
          */
@@ -373,7 +398,9 @@ class TouchSpaceExperiment {
 
                             deltas.scale = Math.abs(calculateDistanceBetween2Touches(touch1, touch2) / calculateDistanceBetween2Touches(state.startTouch1, state.startTouch2));
 
-                            this._zoomer.pinchmove(deltas);
+                            actionsQueue.push(() => {
+                                this._zoomer.pinchmove(deltas);
+                            });
 
                             // keep pinching!
                             break;
@@ -386,7 +413,11 @@ class TouchSpaceExperiment {
                                 let touch2 = findTouchWithIdentifier(ev, state.startTouch2.identifier);
 
                                 if (touch1 === null || touch2 === null) { // some of old touches got lost :(
-                                    this._zoomer.pinchend();
+
+                                    actionsQueue.push(() => {
+                                        this._zoomer.pinchend();
+                                    });
+
                                     changeStateToPinch(ev.touches[0], ev.touches[1]); // let's take new points
                                     break;
                                 }
@@ -396,11 +427,16 @@ class TouchSpaceExperiment {
                                 break;
                             }
                             else if (ev.touches.length === 1) {
-                                this._zoomer.pinchend();
+
+                                actionsQueue.push(() => {
+                                    this._zoomer.pinchend();
+                                });
                                 changeStateToPanSwiper(ev.touches[0]);
                             }
                             else {
-                                this._zoomer.pinchend();
+                                actionsQueue.push(() => {
+                                    this._zoomer.pinchend();
+                                });
                                 changeStateToInit();
                             }
                             break;
@@ -426,7 +462,11 @@ class TouchSpaceExperiment {
 
                             updatePanStateOnMove(state, touch);
 
-                            this._touchSpaceController.panMove(touch.clientX - state.startPoint.x);
+                            let deltaX = touch.clientX - state.startPoint.x;
+
+                            actionsQueue.push(() => {
+                                this._touchSpaceController.panMove(deltaX);
+                            });
 
                             break;
 
@@ -436,13 +476,22 @@ class TouchSpaceExperiment {
 
                                 // If old touch exists
                                 if (findTouchWithIdentifier(ev, state.identifier) === null) {
-                                    this._touchSpaceController.panEnd(0);
+
+                                    actionsQueue.push(() => {
+                                        this._touchSpaceController.panEnd(0);
+                                    });
+
                                     changeStateToPanSwiper(ev.touches[0]); // let's take new touch
                                 }
                                 break;
                             }
                             else {
-                                this._touchSpaceController.panEnd(-state.velocity.x);
+
+                                let velocity = -state.velocity.x;
+                                actionsQueue.push(() => {
+                                    this._touchSpaceController.panEnd(velocity);
+                                });
+
                                 changeStateToInit();
                             }
                             break;
@@ -466,10 +515,14 @@ class TouchSpaceExperiment {
 
                             let touch = findTouchWithIdentifier(ev, state.identifier);
 
-                            this._zoomer.moveTo({
+                            let pos = {
                                 x: this._zoomer.pos.x + (touch.clientX - state.previousPoint.x),
                                 y: this._zoomer.pos.y + (touch.clientY - state.previousPoint.y),
                                 scale: this._zoomer.pos.scale
+                            };
+
+                            actionsQueue.push(() => {
+                                this._zoomer.moveTo(pos);
                             });
 
                             updatePanStateOnMove(state, touch);
@@ -484,7 +537,10 @@ class TouchSpaceExperiment {
                                 break;
                             }
                             else {
-                                this._zoomer.snap(true);
+
+                                actionsQueue.push(() => {
+                                    this._zoomer.snap(true);
+                                });
                                 changeStateToInit();
                             }
                             break;
@@ -493,39 +549,7 @@ class TouchSpaceExperiment {
             }
         };
 
-        /**
-         * Events batching by requestAnimationFrame
-         */
-        // let events = [];
-        // let addEventToQueue = (ev) => {
-        //     if (events.length > 0) {
-        //         let previousEvent = events[events.length - 1];
-        //
-        //         // Batch touchmove events.
-        //         if (previousEvent.type === 'touchmove' && ev.type === 'touchmove') {
-        //             events.pop();
-        //         }
-        //     }
-        //
-        //     events.push(ev);
-        // };
-        //
-        // let onFrame = () => {
-        //
-        //     if (events.length > 0) {
-        //         console.log (' ====== RAF ======, isScrolling', isScrolling);
-        //     }
-        //     events.forEach((event) => {
-        //         processNewEvent(event);
-        //     });
-        //
-        //     events = [];
-        //     requestAnimationFrame(onFrame);
-        // };
-        //
-        // requestAnimationFrame(onFrame);
-        //
-        //
+
         // touchSpace.addEventListener('touchstart', addEventToQueue);
         // touchSpace.addEventListener('touchmove', addEventToQueue);
         // touchSpace.addEventListener('touchend', addEventToQueue);
