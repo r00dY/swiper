@@ -6,7 +6,6 @@ import TouchSpaceController from "./TouchSpaceController";
  *
  *
  * TODO: swipe + swipe (in same place) is interpreted as tap. We should detect touch down and touch up place.
- *
  * TODO: prevent link clicking (stopPropagation in previous version)
  * TODO: tap / double tap gesture for snap to point
  * TODO: iOS blocking of scroll.
@@ -836,12 +835,26 @@ class TouchSpaceExperiment {
         touchSpace.addEventListener('touchend', touchEventHandler);
         touchSpace.addEventListener('touchcancel', touchEventHandler);
 
-        // let mouseEventHandler = (ev) => { processPointerEvent(ev, "mouse"); };
-        // touchSpace.addEventListener('mousedown', mouseEventHandler);
-        // touchSpace.addEventListener('mousemove', mouseEventHandler);
-        // touchSpace.addEventListener('mouseup', mouseEventHandler);
-        // window.addEventListener('mousemove', mouseEventHandler);
-        // window.addEventListener('mouseup', mouseEventHandler);
+        let mouseEventHandler = (ev) => { processPointerEvent(ev, "mouse"); };
+        touchSpace.addEventListener('mousedown', mouseEventHandler);
+        touchSpace.addEventListener('mousemove', mouseEventHandler);
+        touchSpace.addEventListener('mouseup', mouseEventHandler);
+        window.addEventListener('mousemove', mouseEventHandler);
+        window.addEventListener('mouseup', mouseEventHandler);
+
+        // test for pointer events
+        let pointerEventHandler = (ev) => {
+
+            console.log('pointer', ev.type, 'cancelable', ev.cancelable);
+
+        };
+
+        touchSpace.addEventListener('pointerdown', pointerEventHandler);
+        touchSpace.addEventListener('pointermove', pointerEventHandler);
+        touchSpace.addEventListener('pointerup', pointerEventHandler);
+        touchSpace.addEventListener('pointercancel', pointerEventHandler);
+        window.addEventListener('pointermove', pointerEventHandler);
+        window.addEventListener('pointerup', pointerEventHandler);
 
     }
 
