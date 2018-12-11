@@ -10,10 +10,11 @@ const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
  * TODO: mouse+touch screens
  * TODO: nice animation of snapToPoint
  * TODO: animation of velocity
+ *
+ *
+ *
+ *
  * TODO: tap / double tap gesture for snap to point
- *
- *
- *
  * TODO: iOS blocking of scroll.
  * TODO: Android touch-action (will prevent native browser actions to fire).
  * TODO: RAF optimisation
@@ -66,6 +67,8 @@ class TouchSpaceExperiment {
             state = {
                 type: "init"
             };
+
+            unblockClick();
 
             let touchAction;
 
@@ -121,10 +124,22 @@ class TouchSpaceExperiment {
 
             let center = calculateCenterFrom2Touches(touch1, touch2);
 
+            blockClick();
+
             this._zoomer.pinchstart({
                 x: center.x - clientRect.left,
                 y: center.y - clientRect.top
             });
+        };
+
+        let blockClick = () => {
+            this._touchSpace.addEventListener('click', preventDefault, true);
+        };
+
+        let unblockClick = () => {
+            setTimeout(() => {
+                this._touchSpace.removeEventListener('click', preventDefault, true);
+            }, 0);
         };
 
         let changeStateToSingleTouchInit = (touch) => {
@@ -152,6 +167,8 @@ class TouchSpaceExperiment {
                 y: touch.clientY,
                 time: new Date().getTime()
             };
+
+            blockClick();
 
             return {
                 startPoint: startPoint,
