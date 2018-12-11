@@ -31,10 +31,22 @@ class TouchSpaceExperiment {
         this._touchSpace = touchSpace;
 
         this._inited = false;
+
+        this._applyStyles();
     }
 
     set zoomer(zoomer) {
         this._zoomer = zoomer;
+    }
+
+    _applyStyles() {
+
+        this._touchSpace.style.userSelect = 'none';
+        this._touchSpace.style.msUserSelect = 'none';
+        this._touchSpace.style.mozUserSelect = 'none';
+        this._touchSpace.style.webkitUserSelect = 'none';
+
+        this._touchSpace.style.webkitTapHighlightColor = 'transparent';
     }
 
     enable() {
