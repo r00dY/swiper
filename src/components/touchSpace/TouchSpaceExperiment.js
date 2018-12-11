@@ -696,6 +696,8 @@ class TouchSpaceExperiment {
                                 else {
                                     tap.changeStateToWaiting();
                                 }
+
+                                preventDefault(ev);
                             }
                             else {
                                 tap.changeStateToInit();
