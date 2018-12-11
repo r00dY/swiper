@@ -809,13 +809,22 @@ class TouchSpaceExperiment {
             }
         };
 
+        /**
+         * On Android / iOS mouse / Chrome console (literally any touch-enabled device) mouse events can be called too:
+         * - https://developer.mozilla.org/en-US/docs/Web/API/Touch_events/Supporting_both_TouchEvent_and_MouseEvent
+         *
+         * But it's sure that touch events are triggered first. We could run "preventdefault" not to trigger mouse events after, but we can't, because we don't want browser to give up potential scrolling.
+         * That's why we simply create a flag and add 1s timer (after touchdown many mouse events were fired anyway).
+         */
         let timer;
 
         let touchEventHandler = (ev) => {
-
             clearTimeout(timer);
 
             if (ev.touches.length === 0) {
+
+                blockMouseEvents = false;
+
                 timer = setTimeout(() => {
                     blockMouseEvents = false;
                 }, 1000);
