@@ -31,6 +31,9 @@ class TouchSpaceExperiment {
         this._inited = false;
 
         this._applyStyles();
+
+        this.enablePinch = false;
+        this.enableDoubleTap = false;
     }
 
     set zoomer(zoomer) {
@@ -436,9 +439,11 @@ class TouchSpaceExperiment {
 
                             deltas.scale = Math.abs(calculateDistanceBetween2Touches(touch1, touch2) / calculateDistanceBetween2Touches(state.startTouch1, state.startTouch2));
 
-                            actionsQueue.push(() => {
-                                this._zoomer.pinchmove(deltas);
-                            });
+                            if (this.enablePinch) {
+                                actionsQueue.push(() => {
+                                    this._zoomer.pinchmove(deltas);
+                                });
+                            }
 
                             // keep pinching!
                             break;
@@ -452,9 +457,11 @@ class TouchSpaceExperiment {
 
                                 if (touch1 === null || touch2 === null) { // some of old touches got lost :(
 
-                                    actionsQueue.push(() => {
-                                        this._zoomer.pinchend();
-                                    });
+                                    if (this.enablePinch) {
+                                        actionsQueue.push(() => {
+                                            this._zoomer.pinchend();
+                                        });
+                                    }
 
                                     changeStateToPinch(ev.touches[0], ev.touches[1]); // let's take new points
                                     preventDefault(ev);
@@ -467,16 +474,20 @@ class TouchSpaceExperiment {
                             }
                             else if (ev.touches.length === 1) {
 
-                                actionsQueue.push(() => {
-                                    this._zoomer.pinchend();
-                                });
+                                if (this.enablePinch) {
+                                    actionsQueue.push(() => {
+                                        this._zoomer.pinchend();
+                                    });
+                                }
                                 changeStateToInit();
                                 // changeStateToPanSwiper(ev.touches[0]); - giving this up, after total pinch out sometimes caused swipe.
                             }
                             else {
-                                actionsQueue.push(() => {
-                                    this._zoomer.pinchend();
-                                });
+                                if (this.enablePinch) {
+                                    actionsQueue.push(() => {
+                                        this._zoomer.pinchend();
+                                    });
+                                }
                                 changeStateToInit();
                             }
                             break;
@@ -601,7 +612,7 @@ class TouchSpaceExperiment {
             touches: [],
 
             changeStateToInit: () => {
-                console.log('tap init');
+                // console.log('tap init');
 
                 clearTimeout(tap.timeout);
 
@@ -616,7 +627,7 @@ class TouchSpaceExperiment {
             changeStateToTouch: (touch) => {
                 clearTimeout(tap.timeout);
 
-                console.log('tap touch', tap.touches.length + 1);
+                // console.log('tap touch', tap.touches.length + 1);
 
                 tap.touches.push({
                     touch: touch,
@@ -629,7 +640,7 @@ class TouchSpaceExperiment {
             },
 
             changeStateToWaiting: () => {
-                console.log('tap waiting');
+                // console.log('tap waiting');
 
                 tap.state = {
                     type: "waiting",
@@ -649,6 +660,8 @@ class TouchSpaceExperiment {
         let TAP_MAX_INTERVAL = 300;
 
         let processTapEvent = (ev) => {
+
+            if (!this.enableDoubleTap) { return; }
 
             switch(tap.state.type) {
                 case "init":
