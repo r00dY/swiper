@@ -82,7 +82,7 @@ class Test extends React.Component {
                                     justifyContent: 'center',
                                     alignItems: 'center'
                                 }}>
-                                    XXX
+                                    XX<a href="#" draggable={false}>X</a>
                                 </div>
                             </div>
                         </ReactZoomer>
