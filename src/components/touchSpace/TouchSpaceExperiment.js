@@ -282,6 +282,7 @@ class TouchSpaceExperiment {
                             }
                             else {
                                 changeStateToPinch(ev.touches[0], ev.touches[1]);
+                                preventDefault(ev);
                             }
                             break;
                         // other events that touchstart are ignored in null state
@@ -310,6 +311,7 @@ class TouchSpaceExperiment {
                     switch (ev.type) {
                         case "touchstart":
                             changeStateToPinch(ev.touches[0], ev.touches[1]);
+                            preventDefault(ev);
                             break;
                         case "touchmove":
                             if (ev.cancelable === false) {
@@ -455,6 +457,7 @@ class TouchSpaceExperiment {
                                     });
 
                                     changeStateToPinch(ev.touches[0], ev.touches[1]); // let's take new points
+                                    preventDefault(ev);
                                     break;
                                 }
                                 else {
@@ -697,6 +700,7 @@ class TouchSpaceExperiment {
                                     tap.changeStateToWaiting();
                                 }
 
+                                // This one is super important. We don't want to preventDefault touchstart as it could be browser scrolling. But here on touch down we know it's only click and we must prevent default to stop browser from interpreting double tap itself.
                                 preventDefault(ev);
                             }
                             else {
@@ -708,6 +712,8 @@ class TouchSpaceExperiment {
                             tap.changeStateToInit();
                             break;
                     }
+
+                    break;
 
                 case "waiting":
 
@@ -731,6 +737,7 @@ class TouchSpaceExperiment {
                         default:
                             break;
                     }
+                    break;
 
                 default:
                     break;
