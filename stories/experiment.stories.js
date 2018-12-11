@@ -2,7 +2,7 @@ import React from 'react';
 import {storiesOf} from '@storybook/react';
 import "./styles.scss";
 
-import TouchSpaceExperiment from "../src/components/touchSpace/TouchSpaceExperiment";
+import TouchSpace from "../src/components/touchSpace/TouchSpace";
 import SimpleSlider from "../src/SimpleSlider";
 import SimpleSliderContainer from "../src/react/SimpleSliderContainer";
 
@@ -37,7 +37,7 @@ class Test extends React.Component {
 
         // this.slider.touchSpace.enable();
         // Let's create new touch space which is external.
-        this.touchSpace = new TouchSpaceExperiment(this.slider, this.simpleSliderNodeRef.current);
+        this.touchSpace = new TouchSpace(this.slider, this.simpleSliderNodeRef.current);
         this.touchSpace.zoomer = this.refs['ref0'].zoomer;
         this.touchSpace.enable();
 
