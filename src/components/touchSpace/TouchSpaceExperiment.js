@@ -738,13 +738,16 @@ class TouchSpaceExperiment {
 
         tap.changeStateToInit();
 
+        let blockMouseEvents = false;
 
         let pointerId = null; // id of currently down pointer (for mouse we just take "mouse").
 
         let processPointerEvent = (ev, type) => { // type: "pointer" or "mouse"
-            console.log('pointer event', ev.type);
+            if (blockMouseEvents) {
+                return;
+            }
 
-            if (sessionType !== null && sessionType !== type) { return; } // return if different kind of session already started
+            // if (sessionType !== null && sessionType !== type) { return; } // return if different kind of session already started
 
             let evPointerId = type + (type === "pointer" ? ev.pointerId : "");
             if (pointerId !== null && pointerId !== evPointerId) { return; } // return if different pointer
@@ -797,34 +800,20 @@ class TouchSpaceExperiment {
             }
         };
 
-
-        // if (typeof PointerEvent === 'undefined') { // for pointerevents browsers
-        //
-        //     let mouseEventHandler = (ev) => { processPointerEvent(ev, "mouse"); };
-        //
-        //     touchSpace.addEventListener('mousedown', mouseEventHandler);
-        //     touchSpace.addEventListener('mousemove', mouseEventHandler);
-        //     touchSpace.addEventListener('mouseup', mouseEventHandler);
-        //     window.addEventListener('mousemove', mouseEventHandler);
-        //     window.addEventListener('mouseup', mouseEventHandler);
-        // }
-        // else {
-        //
-        //     let pointerEventHandler = (ev) => { processPointerEvent(ev, "pointer"); };
-        //
-        //     touchSpace.addEventListener('pointerdown', pointerEventHandler);
-        //     touchSpace.addEventListener('pointermove', pointerEventHandler);
-        //     touchSpace.addEventListener('pointerup', pointerEventHandler);
-        //     touchSpace.addEventListener('pointercancel', pointerEventHandler);
-        //     window.addEventListener('pointermove', pointerEventHandler);
-        //     window.addEventListener('pointerup', pointerEventHandler);
-        // }
+        let timer;
 
         let touchEventHandler = (ev) => {
-            if (sessionType !== null && sessionType !== 'touch') { return; } // return if different kind of session already started
 
-            sessionType = 'touch';
+            clearTimeout(timer);
 
+            if (ev.touches.length === 0) {
+                timer = setTimeout(() => {
+                    blockMouseEvents = false;
+                }, 1000);
+
+            } else {
+                blockMouseEvents = true;
+            }
             ev.realEv = ev;
             processTouchEvent(ev);
             processTapEvent(ev);
@@ -841,20 +830,6 @@ class TouchSpaceExperiment {
         touchSpace.addEventListener('mouseup', mouseEventHandler);
         window.addEventListener('mousemove', mouseEventHandler);
         window.addEventListener('mouseup', mouseEventHandler);
-
-        // test for pointer events
-        let pointerEventHandler = (ev) => {
-
-            console.log('pointer', ev.type, 'cancelable', ev.cancelable);
-
-        };
-
-        touchSpace.addEventListener('pointerdown', pointerEventHandler);
-        touchSpace.addEventListener('pointermove', pointerEventHandler);
-        touchSpace.addEventListener('pointerup', pointerEventHandler);
-        touchSpace.addEventListener('pointercancel', pointerEventHandler);
-        window.addEventListener('pointermove', pointerEventHandler);
-        window.addEventListener('pointerup', pointerEventHandler);
 
     }
 
