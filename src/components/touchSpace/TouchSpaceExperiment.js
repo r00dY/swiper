@@ -1,8 +1,6 @@
 import TouchSpaceController from "./TouchSpaceController";
 
 /**
- * TODO: mouse events
- * TODO: mouse+touch screens
  * TODO: nice animation of snapToPoint
  * TODO: animation of velocity
  *
@@ -14,6 +12,8 @@ import TouchSpaceController from "./TouchSpaceController";
  * TODO: iOS blocking of scroll.
  * TODO: Android touch-action (will prevent native browser actions to fire).
  * TODO: RAF optimisation
+ * TODO: mouse events
+ * TODO: mouse+touch screens
  */
 
 function isiOS() {
@@ -468,7 +468,8 @@ class TouchSpaceExperiment {
                                 actionsQueue.push(() => {
                                     this._zoomer.pinchend();
                                 });
-                                changeStateToPanSwiper(ev.touches[0]);
+                                changeStateToInit();
+                                // changeStateToPanSwiper(ev.touches[0]); - giving this up, after total pinch out sometimes caused swipe.
                             }
                             else {
                                 actionsQueue.push(() => {
@@ -598,6 +599,8 @@ class TouchSpaceExperiment {
             touches: [],
 
             changeStateToInit: () => {
+                console.log('tap init');
+
                 clearTimeout(tap.timeout);
 
                 tap.state = {
@@ -611,6 +614,8 @@ class TouchSpaceExperiment {
             changeStateToTouch: (touch) => {
                 clearTimeout(tap.timeout);
 
+                console.log('tap touch', tap.touches.length + 1);
+
                 tap.touches.push({
                     touch: touch,
                     time: new Date().getTime()
@@ -622,12 +627,15 @@ class TouchSpaceExperiment {
             },
 
             changeStateToWaiting: () => {
+                console.log('tap waiting');
+
                 tap.state = {
                     type: "waiting",
                     time: new Date().getTime()
                 };
 
                 tap.timeout = setTimeout(() => {
+                    console.log('timeout!');
                     tap.changeStateToInit()
                 }, 300);
 
@@ -704,7 +712,14 @@ class TouchSpaceExperiment {
                             let previousTouch = tap.touches[tap.touches.length - 1];
                             let touch = ev.touches[0];
 
-                            if (time - tap.state.time < 300 && calculateDistanceBetween2Touches(touch, previousTouch.touch) < 10) {
+                            let timeDiff = time - tap.state.time;
+                            let distance = calculateDistanceBetween2Touches(touch, previousTouch.touch);
+
+                            console.log('now', touch.clientX, touch.clientY);
+                            console.log('before', previousTouch.touch.clientX, previousTouch.touch.clientY);
+                            console.log('time diff', timeDiff, 'distance', distance);
+
+                            if (timeDiff < 200 && distance < 100) {
                                 tap.changeStateToTouch(touch);
                             }
                             else {
@@ -728,6 +743,8 @@ class TouchSpaceExperiment {
         let pointerId = null; // id of currently down pointer (for mouse we just take "mouse").
 
         let processPointerEvent = (ev, type) => { // type: "pointer" or "mouse"
+            console.log('process pointer event');
+
             if (sessionType !== null && sessionType !== type) { return; } // return if different kind of session already started
 
             let evPointerId = type + (type === "pointer" ? ev.pointerId : "");
@@ -781,27 +798,34 @@ class TouchSpaceExperiment {
             }
         };
 
-        if (typeof PointerEvent === 'undefined') { // for pointerevents browsers
+        // let mouseEventHandler = (ev) => { console.log(ev.type); processPointerEvent(ev, "mouse"); };
+        // touchSpace.addEventListener('mousedown', mouseEventHandler);
+        // touchSpace.addEventListener('mousemove', mouseEventHandler);
+        // touchSpace.addEventListener('mouseup', mouseEventHandler);
+        // window.addEventListener('mousemove', mouseEventHandler);
+        // window.addEventListener('mouseup', mouseEventHandler);
 
-            let mouseEventHandler = (ev) => { processPointerEvent(ev, "mouse"); };
-
-            touchSpace.addEventListener('mousedown', mouseEventHandler);
-            touchSpace.addEventListener('mousemove', mouseEventHandler);
-            touchSpace.addEventListener('mouseup', mouseEventHandler);
-            window.addEventListener('mousemove', mouseEventHandler);
-            window.addEventListener('mouseup', mouseEventHandler);
-        }
-        else {
-
-            let pointerEventHandler = (ev) => { processPointerEvent(ev, "pointer"); };
-
-            touchSpace.addEventListener('pointerdown', pointerEventHandler);
-            touchSpace.addEventListener('pointermove', pointerEventHandler);
-            touchSpace.addEventListener('pointerup', pointerEventHandler);
-            touchSpace.addEventListener('pointercancel', pointerEventHandler);
-            window.addEventListener('pointermove', pointerEventHandler);
-            window.addEventListener('pointerup', pointerEventHandler);
-        }
+        // if (typeof PointerEvent === 'undefined') { // for pointerevents browsers
+        //
+        //     let mouseEventHandler = (ev) => { processPointerEvent(ev, "mouse"); };
+        //
+        //     touchSpace.addEventListener('mousedown', mouseEventHandler);
+        //     touchSpace.addEventListener('mousemove', mouseEventHandler);
+        //     touchSpace.addEventListener('mouseup', mouseEventHandler);
+        //     window.addEventListener('mousemove', mouseEventHandler);
+        //     window.addEventListener('mouseup', mouseEventHandler);
+        // }
+        // else {
+        //
+        //     let pointerEventHandler = (ev) => { processPointerEvent(ev, "pointer"); };
+        //
+        //     touchSpace.addEventListener('pointerdown', pointerEventHandler);
+        //     touchSpace.addEventListener('pointermove', pointerEventHandler);
+        //     touchSpace.addEventListener('pointerup', pointerEventHandler);
+        //     touchSpace.addEventListener('pointercancel', pointerEventHandler);
+        //     window.addEventListener('pointermove', pointerEventHandler);
+        //     window.addEventListener('pointerup', pointerEventHandler);
+        // }
 
         let touchEventHandler = (ev) => {
             if (sessionType !== null && sessionType !== 'touch') { return; } // return if different kind of session already started
@@ -809,8 +833,8 @@ class TouchSpaceExperiment {
             sessionType = 'touch';
 
             ev.realEv = ev;
-            processTapEvent(ev);
             processTouchEvent(ev);
+            processTapEvent(ev);
         };
 
         touchSpace.addEventListener('touchstart', touchEventHandler);
