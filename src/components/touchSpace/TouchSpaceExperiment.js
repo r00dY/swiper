@@ -12,6 +12,8 @@ const Hammer = typeof window !== 'undefined' ? require('hammerjs') : undefined;
  * TODO: animation of velocity
  * TODO: tap / double tap gesture for snap to point
  *
+ *
+ *
  * TODO: iOS blocking of scroll.
  * TODO: Android touch-action (will prevent native browser actions to fire).
  * TODO: RAF optimisation
@@ -60,7 +62,7 @@ class TouchSpaceExperiment {
         let state = null;
 
         let changeStateToInit = () => {
-            console.log('change state to init');
+            // console.log('change state to init');
             state = {
                 type: "init"
             };
@@ -108,7 +110,7 @@ class TouchSpaceExperiment {
         };
 
         let changeStateToPinch = (touch1, touch2) => {
-            console.log('change state to pinch');
+            // console.log('change state to pinch');
             state = {
                 type: "pinch",
                 startTouch1: touch1,
@@ -126,7 +128,7 @@ class TouchSpaceExperiment {
         };
 
         let changeStateToSingleTouchInit = (touch) => {
-            console.log('change state to single-touch-init', touch);
+            // console.log('change state to single-touch-init', touch);
             state = {
                 type: "single-touch-init",
                 startPoint: {
@@ -137,7 +139,7 @@ class TouchSpaceExperiment {
         };
 
         let changeStateToNativeScroll = () => {
-            console.log('change state to native-scroll');
+            // console.log('change state to native-scroll');
             state = {
                 type: "native-scroll"
             }
@@ -226,9 +228,9 @@ class TouchSpaceExperiment {
         let actionsQueue = [];
 
         let onFrame = () => {
-            if (actionsQueue.length > 0) {
-                console.log('ref', actionsQueue.length);
-            }
+            // if (actionsQueue.length > 0) {
+            //     console.log('ref', actionsQueue.length);
+            // }
 
             actionsQueue.forEach((action) => {
                 action();
@@ -561,21 +563,12 @@ class TouchSpaceExperiment {
             }
         };
 
-
-        // touchSpace.addEventListener('touchstart', addEventToQueue);
-        // touchSpace.addEventListener('touchmove', addEventToQueue);
-        // touchSpace.addEventListener('touchend', addEventToQueue);
-        // touchSpace.addEventListener('touchcancel', addEventToQueue);
-
-
         touchSpace.addEventListener('touchstart', processNewEvent);
         touchSpace.addEventListener('touchmove', processNewEvent);
         touchSpace.addEventListener('touchend', processNewEvent);
         touchSpace.addEventListener('touchcancel', processNewEvent);
 
-
         changeStateToInit();
-
 
         // tap detector
         let tap;
@@ -623,7 +616,7 @@ class TouchSpaceExperiment {
 
         };
 
-        let processNewEvent2 = (ev) => {
+        let processTapEvent = (ev) => {
 
             switch(tap.state.type) {
                 case "init":
@@ -713,10 +706,10 @@ class TouchSpaceExperiment {
 
         tap.changeStateToInit();
 
-        touchSpace.addEventListener('touchstart', processNewEvent2);
-        touchSpace.addEventListener('touchmove', processNewEvent2);
-        touchSpace.addEventListener('touchend', processNewEvent2);
-        touchSpace.addEventListener('touchcancel', processNewEvent2);
+        touchSpace.addEventListener('touchstart', processTapEvent);
+        touchSpace.addEventListener('touchmove', processTapEvent);
+        touchSpace.addEventListener('touchend', processTapEvent);
+        touchSpace.addEventListener('touchcancel', processTapEvent);
 
     }
 
