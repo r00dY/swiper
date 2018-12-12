@@ -2,9 +2,9 @@ import TouchSpaceController from "./TouchSpaceController";
 
 /**
  * TODO: animation of velocity
+ *
+ *
  * TODO: start pan-swiper but then go to other direction and want to switch to pan-zoomer
- *
- *
  * TODO: nice animation of snapToPoint
  * TODO: swipe + swipe (in same place) is interpreted as tap. We should detect touch down and touch up place.
  * TODO: prevent link clicking (stopPropagation in previous version)
@@ -518,8 +518,12 @@ class TouchSpace {
                             let deltaX = touch.clientX - state.startPoint.x;
 
                             /**
-                             * VERY IMPORTANT EDGE CASE
-                             * If active pinch zoomer is scaled but aligned to left/right edge, pan-swiper could be activated. BUT, if we change direction during pan session, pan-zoomer should be activated.
+                             * pan-zoomer / pan-swiper switch
+                             *
+                             * When we pick pan-zoomer from the very beginning of gesture, then it is always pan-zoomer, it doesn't automatically switch to pan-swiper.
+                             *
+                             * However, if we activate pan-swiper and pan zoomer is on edge (left/right aligned), then we could reverse direction of swipe during our gesture. Then we should switch to pan-zoomer. And THEN, w should allow it to switch back.
+                             * direction flag is the key here. If undefined, no switching. "left" / "right" values suggest original direction and possibility of switching..
                              */
                             if (this._zoomer && this._zoomer.pos.scale > 1.05) {
                                 if (
@@ -595,8 +599,7 @@ class TouchSpace {
                             };
 
                             /**
-                             * VERY IMPORTANT EDGE CASE
-                             * If active pinch zoomer is scaled but aligned to left/right edge, pan-zoomer could be activated. BUT, if we change direction during pan session, pan-swiper should be activated.
+                             * pan-zoomer / pan-swiper switch (described above)
                              */
                             let deltaX = touch.clientX - state.startPoint.x;
 
