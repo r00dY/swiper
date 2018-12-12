@@ -239,46 +239,26 @@ class Zoomer  {
     pinchend() {
         if (!this._isPinching) { return; }
 
+        let oldPos = Object.assign({}, this._pos);
         let newPos = this._getSnappedPos(this._pos);
 
         // If we need to snap
         if (newPos.x !== this._pos.x || newPos.y !== this._pos.y || newPos.scale !== this._pos.scale) {
 
-            let animationX = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
-            let animationY = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
-            let animationScale = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+            let anim = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
 
-            let counter = 3;
-
-            let onFinishAnimation = () => {
+            anim.animate(0, 1, (val) => {
+                let pos = {
+                    x: oldPos.x + (newPos.x - oldPos.x) * val,
+                    y: oldPos.y + (newPos.y - oldPos.y) * val,
+                    scale: oldPos.scale + (newPos.scale - oldPos.scale) * val
+                };
+                this._updatePos(pos);
+            }, () => {
                 this._isPinching = false;
-            };
-
-            animationX.animate(this._pos.x, newPos.x, (x) => {
-                this._updatePos(Object.assign(this._pos, { x: x }));
-            }, () => {
-                counter--;
-                if (counter === 0) { onFinishAnimation() };
             });
 
-            animationY.animate(this._pos.y, newPos.y, (y) => {
-                this._updatePos(Object.assign(this._pos, { y: y }));
-            }, () => {
-                counter--;
-                if (counter === 0) { onFinishAnimation() };
-
-            });
-
-            animationScale.animate(this._pos.scale, newPos.scale, (scale) => {
-                this._updatePos(Object.assign(this._pos, { scale: scale }));
-            }, () => {
-                counter--;
-                if (counter === 0) { onFinishAnimation() };
-            });
-
-            this._animations.push(animationX);
-            this._animations.push(animationY);
-            this._animations.push(animationScale);
+            this._animations.push(anim);
         }
         else {
             this._isPinching = false;
