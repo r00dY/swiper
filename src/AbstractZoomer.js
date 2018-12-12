@@ -289,25 +289,22 @@ class Zoomer  {
         this._killAnimations();
 
         if (animated) {
-            let animationX = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
-            let animationY = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
-            let animationScale = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
 
-            animationX.animate(this._pos.x, pos.x, (x) => {
-                this._updatePos(Object.assign(this._pos, { x: x }));
+            let oldPos = Object.assign({}, this._pos);
+            let newPos = pos;
+
+            let anim = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+
+            anim.animate(0, 1, (val) => {
+                let pos = {
+                    x: oldPos.x + (newPos.x - oldPos.x) * val,
+                    y: oldPos.y + (newPos.y - oldPos.y) * val,
+                    scale: oldPos.scale + (newPos.scale - oldPos.scale) * val
+                };
+                this._updatePos(pos);
             });
 
-            animationY.animate(this._pos.y, pos.y, (y) => {
-                this._updatePos(Object.assign(this._pos, { y: y }));
-            });
-
-            animationScale.animate(this._pos.scale, pos.scale, (scale) => {
-                this._updatePos(Object.assign(this._pos, { scale: scale }));
-            });
-
-            this._animations.push(animationX);
-            this._animations.push(animationY);
-            this._animations.push(animationScale);
+            this._animations.push(anim);
         }
         else {
             this._updatePos(pos);
