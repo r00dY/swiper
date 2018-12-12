@@ -518,8 +518,8 @@ class TouchSpace {
                             let deltaX = touch.clientX - state.startPoint.x;
 
                             /**
+                             * VERY IMPORTANT EDGE CASE
                              * If active pinch zoomer is scaled but aligned to left/right edge, pan-swiper could be activated. BUT, if we change direction during pan session, pan-zoomer should be activated.
-                             * Could be reversed too.
                              */
                             if (this._zoomer && this._zoomer.pos.scale > 1.05) {
                                 if (
@@ -595,7 +595,8 @@ class TouchSpace {
                             };
 
                             /**
-                             * Potential switch between pan and swipe.
+                             * VERY IMPORTANT EDGE CASE
+                             * If active pinch zoomer is scaled but aligned to left/right edge, pan-zoomer could be activated. BUT, if we change direction during pan session, pan-swiper should be activated.
                              */
                             let deltaX = touch.clientX - state.startPoint.x;
 
