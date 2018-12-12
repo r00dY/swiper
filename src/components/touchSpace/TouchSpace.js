@@ -207,8 +207,9 @@ class TouchSpace {
             this._touchSpaceController.panStart();
         };
 
-        let changeStateToPanZoomer = (touch) => {
+        let changeStateToPanZoomer = (touch, direction) => {
             state = initPanState(touch);
+            state.direction = direction;
             state.type = "pan-zoomer";
         };
 
@@ -518,16 +519,17 @@ class TouchSpace {
 
                             /**
                              * If active pinch zoomer is scaled but aligned to left/right edge, pan-swiper could be activated. BUT, if we change direction during pan session, pan-zoomer should be activated.
+                             * Could be reversed too.
                              */
                             if (this._zoomer && this._zoomer.pos.scale > 1.05) {
                                 if (
                                     (state.direction === 'right' && deltaX < 0) ||
                                     (state.direction === 'left' && deltaX > 0)
                                 ) {
-                                    changeStateToPanZoomer(touch);
+                                    changeStateToPanZoomer(touch, state.direction);
 
                                     actionsQueue.push(() => {
-                                        this._touchSpaceController.panEnd(0);
+                                        this._touchSpaceController.panEnd(0, false);
                                     });
 
                                     break;
@@ -591,6 +593,28 @@ class TouchSpace {
                                 y: this._zoomer.pos.y + (touch.clientY - state.previousPoint.y),
                                 scale: this._zoomer.pos.scale
                             };
+
+                            /**
+                             * Potential switch between pan and swipe.
+                             */
+                            let deltaX = touch.clientX - state.startPoint.x;
+
+                            if (this._zoomer && this._zoomer.pos.scale > 1.05) {
+                                if (
+                                    (state.direction === 'right' && deltaX > 0) ||
+                                    (state.direction === 'left' && deltaX < 0)
+                                ) {
+
+                                    changeStateToPanSwiper(touch, state.direction);
+
+                                    actionsQueue.push(() => {
+                                        this._zoomer.moveTo(pos);
+                                        this._zoomer.snap(true);
+                                    });
+
+                                    break;
+                                }
+                            }
 
                             actionsQueue.push(() => {
                                 this._zoomer.moveTo(pos);
@@ -667,7 +691,7 @@ class TouchSpace {
                 };
 
                 tap.timeout = setTimeout(() => {
-                    console.log('timeout!');
+                    // console.log('timeout!');
                     tap.changeStateToInit()
                 }, 300);
 
