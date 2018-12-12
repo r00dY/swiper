@@ -694,19 +694,22 @@ class TouchSpace {
                                     tap.changeStateToInit();
 
                                     if (this._zoomer.pos.scale > 1.01) {
-                                        this._zoomer.moveTo({
-                                            x: 0,
-                                            y: 0,
-                                            scale: 1
-                                        }, true);
+                                        this._zoomer.zoomToPoint({
+                                            normalized: {
+                                                x: 0,
+                                                y: 0
+                                            }
+                                        }, 1, true);
                                     }
                                     else {
                                         let clientRect = this._touchSpace.getBoundingClientRect();
 
                                         this._zoomer.zoomToPoint({
-                                            x: touchDown.touch.clientX - clientRect.left,
-                                            y: touchDown.touch.clientY - clientRect.top
-                                        }, true);
+                                            container: {
+                                                x: touchDown.touch.clientX - clientRect.left,
+                                                y: touchDown.touch.clientY - clientRect.top
+                                            }
+                                        }, 3, true);
                                     }
                                 }
                                 else {

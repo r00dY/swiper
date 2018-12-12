@@ -148,7 +148,7 @@ class Zoomer  {
     }
 
     get containerSize() {
-        return this.containerSize;
+        return this._containerSize;
     }
 
     set itemSize(itemSize) {
@@ -333,8 +333,6 @@ class Zoomer  {
             this._updatePos(pos);
         }
 
-
-
         return true;
     }
 
@@ -354,9 +352,9 @@ class Zoomer  {
     /**
      * "Double tap" method.
      *
-     * @param containerCoords - coordinates relative to container top/left.
+     * @param containerCoords - coordinates object
      */
-    zoomToPoint(containerCoords, animated) {
+    zoomToPoint(coords, scale, animated) {
 
         /**
          * Can't do it while pinching.
@@ -367,14 +365,47 @@ class Zoomer  {
             return false;
         }
 
-        let targetPointNormalizedCoords = this._getNormalizedPointCoordinates(containerCoords, this._pos);
+        coords = this._getFullCoords(coords);
+        scale = scale || this._zoomScale;
 
-        this.moveTo(this._getSnappedPos({
-            x: -targetPointNormalizedCoords.x * this._zoomScale,
-            y: -targetPointNormalizedCoords.y * this._zoomScale,
+        let snappedPos = this._getSnappedPos({
+            x: -coords.normalized.x * this._zoomScale,
+            y: -coords.normalized.y * this._zoomScale,
             scale: this._zoomScale
-        }), animated);
+        });
 
+        if (!animated) {
+            this.moveTo(snappedPos, false);
+        }
+        else {
+            /**
+             * ZoomToPoint must be animated "as pinch", not with moveTo(animated=true). This is because the latter one creates "weird effect" during animation (target point doesn't have straight line way to center point)
+             * If we animate as if we were animating pinch gesture, we force that A point zoomed to C (center) goes with straight line no matter of zoom, x, y, etc.
+             */
+
+            let targetContainerCoords = this._getContainerPointCoordinates(coords.normalized, snappedPos);
+
+            let deltas = { // how much center (in container coords) must be transferred
+                x: (targetContainerCoords.x - coords.container.x),
+                y: (targetContainerCoords.y - coords.container.y),
+                scale: scale / this._pos.scale
+            };
+
+            let animation = new AnimationEngine(AnimationEngine.Ease.outExpo, 0.3);
+
+            this.pinchstart(coords.container);
+
+            animation.animate(0, 1, (val) => {
+                this.pinchmove({
+                    x: deltas.x * val,
+                    y: deltas.y * val,
+                    scale: 1 + (deltas.scale - 1) * val
+                });
+            }, () => {
+                this.pinchend();
+            });
+
+        }
         return true;
     }
 
@@ -398,6 +429,45 @@ class Zoomer  {
             x: (touchPointCoords.x - pos.x) / pos.scale,
             y: (touchPointCoords.y - pos.y) / pos.scale
         };
+    }
+
+    /**
+     * Inverse of _getNormalizedPointCoordinates, gets container coordinates (relative to top/left) from normalized ones
+     * @private
+     */
+    _getContainerPointCoordinates(normalizedCoords, pos) {
+        let touchPointCoords = {
+            x: normalizedCoords.x * pos.scale + pos.x,
+            y: normalizedCoords.y * pos.scale + pos.y
+        };
+
+        return {
+            x: touchPointCoords.x + this._containerSize.width / 2,
+            y: touchPointCoords.y + this._containerSize.height / 2
+        }
+    }
+
+    /**
+     * Helper method for dealing with coords
+     * @private
+     */
+    _getFullCoords(coords, pos) {
+        pos = pos || this._pos;
+
+        if (coords.container && !coords.normalized) {
+            return {
+                normalized: this._getNormalizedPointCoordinates(coords.container, pos),
+                container: Object.assign({}, coords.container)
+            };
+        }
+        else if (!coords.container && coords.normalized) {
+            return {
+                normalized: Object.assign({}, coords.normalized),
+                container: this._getContainerPointCoordinates(coords.normalized, pos)
+            };
+        }
+
+        return coords;
     }
 
     _killAnimations() {
