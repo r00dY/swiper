@@ -1,10 +1,11 @@
 import TouchSpaceController from "./TouchSpaceController";
 
 /**
- * TODO: nice animation of snapToPoint
  * TODO: animation of velocity
+ * TODO: start pan-swiper but then go to other direction and want to switch to pan-zoomer
  *
  *
+ * TODO: nice animation of snapToPoint
  * TODO: swipe + swipe (in same place) is interpreted as tap. We should detect touch down and touch up place.
  * TODO: prevent link clicking (stopPropagation in previous version)
  * TODO: tap / double tap gesture for snap to point
@@ -199,9 +200,10 @@ class TouchSpace {
             };
         };
 
-        let changeStateToPanSwiper = (touch) => {
+        let changeStateToPanSwiper = (touch, direction) => {
             state = initPanState(touch);
             state.type = "pan-swiper";
+            state.direction = direction;
             this._touchSpaceController.panStart();
         };
 
@@ -350,13 +352,12 @@ class TouchSpace {
                                 direction = "up";
                             }
 
-
                             if (this._zoomer && this._zoomer.pos.scale > 1.05) {
 
                                 // pan right
                                 if (direction === "right") {
                                     if (this._zoomer.isAlignedToLeft()) {
-                                        changeStateToPanSwiper(touch);
+                                        changeStateToPanSwiper(touch, direction);
                                         preventDefault(ev);
                                     } else {
                                         changeStateToPanZoomer(touch);
@@ -367,7 +368,7 @@ class TouchSpace {
                                 // pan left
                                 else if (direction === "left") {
                                     if (this._zoomer.isAlignedToRight()) {
-                                        changeStateToPanSwiper(touch);
+                                        changeStateToPanSwiper(touch, direction);
                                         preventDefault(ev);
                                     } else {
                                         changeStateToPanZoomer(touch);
@@ -514,6 +515,24 @@ class TouchSpace {
                             updatePanStateOnMove(state, touch);
 
                             let deltaX = touch.clientX - state.startPoint.x;
+
+                            /**
+                             * If active pinch zoomer is scaled but aligned to left/right edge, pan-swiper could be activated. BUT, if we change direction during pan session, pan-zoomer should be activated.
+                             */
+                            if (this._zoomer && this._zoomer.pos.scale > 1.05) {
+                                if (
+                                    (state.direction === 'right' && deltaX < 0) ||
+                                    (state.direction === 'left' && deltaX > 0)
+                                ) {
+                                    changeStateToPanZoomer(touch);
+
+                                    actionsQueue.push(() => {
+                                        this._touchSpaceController.panEnd(0);
+                                    });
+
+                                    break;
+                                }
+                            }
 
                             actionsQueue.push(() => {
                                 this._touchSpaceController.panMove(deltaX);
