@@ -124,7 +124,7 @@ class AbstractSlider {
         this.state.isTouched = true;
 
         this._runEventListeners('touchdown');
-        this._runEventListeners('stateChanged');
+        this._runEventListeners('stateChange');
 
         this._updateStillness();
     }
@@ -136,7 +136,7 @@ class AbstractSlider {
 
         this.state.isTouched = false;
         this._runEventListeners('touchup');
-        this._runEventListeners('stateChanged');
+        this._runEventListeners('stateChange');
 
         this._updateStillness();
     }
@@ -145,12 +145,12 @@ class AbstractSlider {
         if (!this.state.isStill && !this.state.isAnimating && !this.state.isTouched) {
             this.state.isStill = true;
             this._runEventListeners('stillnessChange');
-            this._runEventListeners('stateChanged');
+            this._runEventListeners('stateChange');
         }
         else if (this.state.isStill && (this.state.isAnimating || this.state.isTouched)) {
             this.state.isStill = false;
             this._runEventListeners('stillnessChange');
-            this._runEventListeners('stateChanged');
+            this._runEventListeners('stateChange');
         }
 
     };
@@ -377,14 +377,14 @@ class AbstractSlider {
     }
 
     _isSlideVisible(n) {
-        return this.slideVisibility(n) > 0;
+        return this._slideVisibility(n) > 0;
     }
 
     _visibleSlides() {
         let visibleSlides = [];
 
-        for (let n = 0; n < this.count; n++) {
-            if (this.isSlideVisible(n)) {
+        for (let n = 0; n < this.state.slides.length; n++) {
+            if (this._isSlideVisible(n)) {
                 visibleSlides.push(n);
             }
         }
@@ -396,11 +396,11 @@ class AbstractSlider {
 
         let activeSlides = [];
 
-        for (let n = 0; n < this.count; n++) {
-            if (this.slideVisibility(n) > 0.5) {
+        for (let n = 0; n < this.state.slides.length; n++) {
+            if (this._slideVisibility(n) > 0.5) {
                 activeSlides.push({
                     index: n,
-                    pos: this.slideCoord(n)
+                    pos: this.state.slides[n].coord
                 });
             }
         }
@@ -408,10 +408,10 @@ class AbstractSlider {
         if (activeSlides.length == 0) { // There must be at least 1 active slide. If none, then most visible one is picked.
 
             let maxVisibility = 0, maxIndex = 0;
-            for (let n = 0; n < this.count; n++) {
-                if (this.slideVisibility(n) > maxVisibility) {
+            for (let n = 0; n < this.state.slides.length; n++) {
+                if (this._slideVisibility(n) > maxVisibility) {
                     maxIndex = n;
-                    maxVisibility = this.slideVisibility(n);
+                    maxVisibility = this._slideVisibility(n);
                 }
             }
 
@@ -429,9 +429,9 @@ class AbstractSlider {
         });
     }
 
-    // isSlideActive(n) {
-    //     return this.activeSlides().indexOf(n) >= -1;
-    // }
+    _isSlideActive(n) {
+        return this._activeSlides().indexOf(n) > -1;
+    }
 
     _normalizePos(position) {
 
@@ -549,7 +549,12 @@ class AbstractSlider {
         // TODO: Awfully non-optimal. To refactor and optimise!!!
         for (let i = 0; i < this.state.slides.length; i++) {
             this.state.slides[i].coord = this._getSlideCoordForPos(i, pos);
+        }
+
+        // this loop must be separate from the one above. We must first calculate all the coords.
+        for (let i = 0; i < this.state.slides.length; i++) {
             this.state.slides[i].visibility = this._slideVisibility(i);
+            this.state.slides[i].active = this._isSlideActive(i);
         }
 
         this._runEventListeners('move');

@@ -41,6 +41,7 @@ function sliderRegular(extraConfig) {
 }
 
 
+
 describe("SwiperEngine (no animations / finite mode)", function() {
 
     it("returns correct slideable width", function() {
@@ -655,6 +656,165 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
         swiper.moveLeft(false);
         expect(swiper.state.slides[4].coord).toBe(0);
     });
+});
 
+
+/**
+ * Events / state
+ */
+describe("SwiperEngine (no animations)", function() {
+
+    it("properly handles 'isTouched' and 'isStill'", () => {
+        let swiper = sliderRegular();
+
+        let counters;
+
+        let resetCounters = () => {
+            counters = {
+                stillnessChange: 0,
+                touchup: 0,
+                touchdown: 0,
+                stateChange: 0
+            };
+        };
+
+        resetCounters();
+
+        swiper.addEventListener('stillnessChange', () => counters.stillnessChange++);
+        swiper.addEventListener('touchup', () => counters.touchup++);
+        swiper.addEventListener('touchdown', () => counters.touchdown++);
+        swiper.addEventListener('stateChange', () => counters.stateChange++);
+
+        expect(swiper.state.isStill).toBe(true);
+        expect(swiper.state.isTouched).toBe(false);
+
+        swiper.touchup(); // nothing should change, as this doesn't change state
+
+        expect(swiper.state.isStill).toBe(true);
+        expect(swiper.state.isTouched).toBe(false);
+        expect(counters.stillnessChange).toBe(0);
+        expect(counters.touchup).toBe(0);
+        expect(counters.touchdown).toBe(0);
+        expect(counters.stateChange).toBe(0);
+        resetCounters();
+
+        swiper.touchdown(); // let's touch down
+
+        expect(swiper.state.isStill).toBe(false);
+        expect(swiper.state.isTouched).toBe(true);
+        expect(counters.stillnessChange).toBe(1);
+        expect(counters.touchup).toBe(0);
+        expect(counters.touchdown).toBe(1);
+        expect(counters.stateChange).toBeGreaterThan(0);
+        resetCounters();
+
+        swiper.touchdown(); // touch down again -> no state change
+
+        expect(swiper.state.isStill).toBe(false);
+        expect(swiper.state.isTouched).toBe(true);
+        expect(counters.stillnessChange).toBe(0);
+        expect(counters.touchup).toBe(0);
+        expect(counters.touchdown).toBe(0);
+        expect(counters.stateChange).toBe(0);
+        resetCounters();
+
+        swiper.touchup(); // touch down again -> no state change
+
+        expect(swiper.state.isStill).toBe(true);
+        expect(swiper.state.isTouched).toBe(false);
+        expect(counters.stillnessChange).toBe(1);
+        expect(counters.touchup).toBe(1);
+        expect(counters.touchdown).toBe(0);
+        expect(counters.stateChange).toBeGreaterThan(0);
+    });
+
+    it("properly handles 'isAnimating'", () => {
+        // TODO: implement this! Probably in section above
+    });
+
+    it("properly handles 'visibility' and 'active' state for slides", () => {
+        let swiper = sliderRegular();
+
+        let counters;
+
+        let resetCounters = () => {
+            counters = {
+                visibleSlidesChange: 0,
+                activeSlidesChange: 0,
+                stateChange: 0
+            };
+        };
+
+        resetCounters();
+
+        swiper.addEventListener('visibleSlidesChange', () => counters.visibleSlidesChange++);
+        swiper.addEventListener('activeSlidesChange', () => counters.activeSlidesChange++);
+        swiper.addEventListener('stateChange', () => counters.stateChange++);
+
+        // initial state
+        expect(swiper.state.slides[0].active).toBe(true);
+        expect(swiper.state.slides[1].active).toBe(false);
+        expect(swiper.state.slides[2].active).toBe(false);
+        expect(swiper.state.slides[3].active).toBe(false);
+        expect(swiper.state.slides[4].active).toBe(false);
+
+        expect(swiper.state.slides[0].visibility).toBe(0.8);
+        expect(swiper.state.slides[1].visibility).toBe(0);
+        expect(swiper.state.slides[2].visibility).toBe(0);
+        expect(swiper.state.slides[3].visibility).toBe(0);
+        expect(swiper.state.slides[4].visibility).toBe(0);
+
+        resetCounters();
+
+        // let's move slider 200 points right
+        swiper.moveTo(200, false);
+
+        expect(swiper.state.slides[0].active).toBe(true);
+        expect(swiper.state.slides[1].active).toBe(false);
+        expect(swiper.state.slides[2].active).toBe(false);
+        expect(swiper.state.slides[3].active).toBe(false);
+        expect(swiper.state.slides[4].active).toBe(false);
+
+        expect(swiper.state.slides[0].visibility).toBe(0.8);
+        expect(swiper.state.slides[1].visibility).toBe(0.2);
+        expect(swiper.state.slides[2].visibility).toBe(0);
+        expect(swiper.state.slides[3].visibility).toBe(0);
+        expect(swiper.state.slides[4].visibility).toBe(0);
+
+        expect(counters.visibleSlidesChange).toBe(1);
+        expect(counters.activeSlidesChange).toBe(0);
+        expect(counters.stateChange).toBeGreaterThan(0);
+
+        resetCounters();
+
+        // let's move slider 500 points left so that 2nd slide is active
+        swiper.moveTo(500, false);
+
+        expect(swiper.state.slides[0].active).toBe(false);
+        expect(swiper.state.slides[1].active).toBe(true);
+        expect(swiper.state.slides[2].active).toBe(false);
+        expect(swiper.state.slides[3].active).toBe(false);
+        expect(swiper.state.slides[4].active).toBe(false);
+
+        expect(swiper.state.slides[0].visibility).toBe(0.2);
+        expect(swiper.state.slides[1].visibility).toBe(0.8);
+        expect(swiper.state.slides[2].visibility).toBe(0);
+        expect(swiper.state.slides[3].visibility).toBe(0);
+        expect(swiper.state.slides[4].visibility).toBe(0);
+
+        expect(counters.visibleSlidesChange).toBe(0);
+        expect(counters.activeSlidesChange).toBe(1);
+        expect(counters.stateChange).toBeGreaterThan(0);
+    });
 
 });
+
+
+
+
+
+
+
+
+
+
