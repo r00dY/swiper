@@ -1,23 +1,25 @@
 import AnimationEngine from "./animationEngines/AnimationEngine";
 import EventSystem from "./helpers/EventSystem";
 
+// TODO: tests for events
+// TODO: tests for animated
+
 let defaults = {
-    slideMarginFunction: () => 0,
-    slideSnapOffsetFunction: () => 0,
-    leftOffsetFunction: () => 0,
-    rightOffsetFunction: () => 0,
+    slideMargin: () => 0,
+    slideSnapOffset: () => 0,
+    leftOffset: () => 0,
+    rightOffset: () => 0,
     infinite: false,
     snapOnlyToAdjacentSlide: false,
     overscrollFunction: (x) => 0.5 * Math.log(1 + x), // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
     animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8),
+    initialPos: 0
 };
 
 class AbstractSlider {
 
     constructor(config) {
         this._applyConfig(config);
-
-        this._pos = 0;
 
         this._isTouched = false;
         this._isStill = true;
@@ -35,155 +37,77 @@ class AbstractSlider {
         EventSystem.addEvent(this, 'touchup');
         EventSystem.addEvent(this, 'activeSlidesChange');
         EventSystem.addEvent(this, 'visibleSlidesChange');
+
+        this.layout();
     }
 
     _applyConfig(config) {
         if (config.initialPos) {
             config.initialSlide = undefined;
         }
-        if (config.initialSlide) {
+        else if (config.initialSlide) {
             config.initialPos = undefined;
         }
 
-        this._config = Object.assign(defaults, config);
+        this._config = Object.assign({}, defaults, config);
     }
 
-    // set animationEngine(engine) {
-    //     this._animationEngine = engine || defaults.animationEngine;
-    // }
-    //
-    // get animationEngine() {
-    //     return this._animationEngine;
-    // }
-    //
-    // set containerSizeFunction(containerSizeFunction) {
-    //     this._containerSizeFunction = containerSizeFunction;
-    // }
-    //
-    // get containerSizeFunction() {
-    //     return this._containerSizeFunction;
-    // }
-    //
-    // set count(newCount) {
-    //     this._count = newCount;
-    // }
-    //
-    // get count() {
-    //     return this._count;
-    // }
-    //
-    // set slideSizeFunction(slideSizeFunction) {
-    //     this._slideSizeFunction = slideSizeFunction || defaults.slideSizeFunction;
-    // }
-    //
-    // get slideSizeFunction() {
-    //     return this._slideSizeFunction;
-    // }
-    //
-    // set slideMarginFunction(slideMarginFunction) {
-    //     this._slideMarginFunction = slideMarginFunction || defaults.slideMarginFunction;
-    // }
-    //
-    // get slideMarginFunction() {
-    //     return this._slideMarginFunction;
-    // }
-    //
-    //
-    // set slideSnapOffsetFunction(slideSnapOffsetFunction) {
-    //     this._slideSnapOffsetFunction = slideSnapOffsetFunction || defaults.slideSnapOffsetFunction;
-    // }
-    //
-    // get slideSnapOffsetFunction() {
-    //     return this._slideSnapOffsetFunction;
-    // }
-    //
-    // set rightOffsetFunction(rightOffsetFunction) {
-    //     this._rightOffsetFunction = rightOffsetFunction || defaults.rightOffsetFunction;
-    // }
-    //
-    // get rightOffsetFunction() {
-    //     return this._rightOffsetFunction;
-    // }
-    //
-    // set leftOffsetFunction(leftOffsetFunction) {
-    //     this._leftOffsetFunction = leftOffsetFunction || defaults.leftOffsetFunction;
-    // }
-    //
-    // get leftOffsetFunction() {
-    //     return this._leftOffsetFunction;
-    // }
-    //
-    // set overscrollFunction(overscrollFunction) {
-    //     this._overscrollFunction = overscrollFunction || defaults.overscrollFunction;
-    // }
-    //
-    // set infinite(infinite) {
-    //     this._infinite = infinite || defaults.infinite;
-    // }
-    //
-    // get infinite() {
-    //     return this._infinite;
-    // }
-    //
-    // set snapOnlyToAdjacentSlide(snapOnlyToAdjacentSlide) {
-    //     this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide || defaults.snapOnlyToAdjacentSlide;
-    // }
-    //
-    // get snapOnlyToAdjacentSlide() {
-    //     return this._snapOnlyToAdjacentSlide;
-    // }
-    //
-    // set initialSlide(n) {
-    //     this._initialSlide = n;
-    //     this._initialPos = undefined;
-    // }
-    //
-    // get initialSlide() {
-    //     return this._initialSlide;
-    // }
-    //
-    // set initialPos(pos) {
-    //     this._initialPos = pos;
-    //     this._initialSlide = undefined;
-    // }
-    //
-    // get initialPos() {
-    //     return this._initialPos;
-    // }
-
-    /**
-     *
-     */
     layout() {
-        this._CACHE = {
-            slideSize: {},
-            slideMargin: {},
-            slideSnapOffset: {},
+        // validate
+        if (typeof this._config.containerSize !== "function") {
+            throw "'containerSizeFunction' is not defined or is not a function";
+        }
+        if (typeof this._config.slideSize !== "function") {
+            throw "'slideSize' is not defined or is not a function";
+        }
+        if (typeof this._config.count !== "number") {
+            throw "'count' is not defined or is not a number";
+        }
+
+        this.state = {
+            // constant
+            containerSize: this._config.containerSize(),
+            leftOffset: this._config.leftOffset(),
+            rightOffset: this._config.rightOffset(),
+            slides: [],
+
+            // changing
+            isAnimating: false,
+            isTouched: false,
+            isStill: true,
+            pos: 0
         };
 
-        this._activeSlidesString = undefined;
-        this._visibleSlidesString = undefined;
+        for (let i = 0; i < this._config.count; i++) {
+            this.state.slides.push({
+                // constant
+                index: i,
+                size: this._config.slideSize(i),
+                margin: this._config.slideMargin(i),
+                snapOffset: this._config.slideSnapOffset(i),
 
-        // containerSize validation
-        if (typeof this._containerSizeFunction !== "function") { throw "'containerSizeFunction' is not defined or is not a function"; }
+                // changing
+                active: undefined,
+                visible: undefined,
+                coord: undefined
+            })
+        }
 
-        // slideSize validation
-        if (typeof this._slideSizeFunction !== "function") { throw "'slideSize' is not defined or is not a function"; }
-
-        // count validation
-        if (typeof this._count !== "number") { throw "'count' is not defined or is not a number"; }
+        // Let's calculate values based on config
+        this.state.slideableWidth = this._calculateSlideableWidth();
+        this.state.maxPos = this._calculateMaxPos();
 
         // if user didn't set initialSlide and initialPos, then by default we take pos 0 for finite and first slide snap point for infinite.
-        if (typeof this._initialSlide === 'undefined' && typeof this._initialPos === 'undefined') {
-            if (this._infinite) {
+        if (typeof this._config.initialSlide === 'undefined' && typeof this._config.initialPos === 'undefined') {
+            if (this._config.infinite) {
                 this._updatePos(this._getSlideSnapPos(0));
             } else {
                 this._updatePos(0); // just to run event listener -> layout should invoke 'move' once
             }
-        } else if (typeof this._initialSlide !== 'undefined') {
-            this._updatePos(this._getSlideSnapPos(this.initialSlide));
-        } else if (typeof this._initialPos !== 'undefined') {
-            this._updatePos(this.initialPos);
+        } else if (typeof this._config.initialSlide !== 'undefined') {
+            this._updatePos(this._getSlideSnapPos(this._config.initialSlide));
+        } else if (typeof this._config.initialPos !== 'undefined') {
+            this._updatePos(this._config.initialPos);
         }
     }
 
@@ -191,7 +115,9 @@ class AbstractSlider {
      * Mock method not doing anything except for being helper for touchdown, touchup, and stillness events.
      */
     touchdown() {
-        if (this._isTouched) { return; }
+        if (this._isTouched) {
+            return;
+        }
 
         this._isTouched = true;
 
@@ -201,7 +127,9 @@ class AbstractSlider {
     }
 
     touchup() {
-        if (!this._isTouched) { return; }
+        if (!this._isTouched) {
+            return;
+        }
 
         this._isTouched = false;
         this._runEventListeners('touchup');
@@ -236,11 +164,15 @@ class AbstractSlider {
      */
     moveTo(pos, animated, side) {
 
-        if (typeof animated === 'undefined') { animated = true; }
-        if (typeof side === 'undefined') { side = 0; }
+        if (typeof animated === 'undefined') {
+            animated = true;
+        }
+        if (typeof side === 'undefined') {
+            side = 0;
+        }
 
         // Don't initiate animation if we're already in the same spot.
-        let diff = Math.abs(pos - this._pos);
+        let diff = Math.abs(pos - this.state.pos);
         if (diff < 1) {
             return;
         }
@@ -250,29 +182,29 @@ class AbstractSlider {
         if (animated) {
 
             // this.setStill(false);
-            if (this._infinite) {
+            if (this._config.infinite) {
 
                 if (side == 0) { // shortest path strategy
 
-                    if (Math.abs(pos - this._pos) > this.slideableWidth / 2) {
-                        if (pos - this._pos > 0) {
-                            pos -= this.slideableWidth;
+                    if (Math.abs(pos - this.state.pos) > this.state.slideableWidth / 2) {
+                        if (pos - this.state.pos > 0) {
+                            pos -= this.state.slideableWidth;
                         }
                         else {
-                            pos += this.slideableWidth;
+                            pos += this.state.slideableWidth;
                         }
                     }
                 }
-                else if (side == 1 && pos - this._pos < 0) { // force right movement
-                    pos += this.slideableWidth;
+                else if (side == 1 && pos - this.state.pos < 0) { // force right movement
+                    pos += this.state.slideableWidth;
                 }
-                else if (side == -1 && pos - this._pos > 0) { // force left movement
-                    pos -= this.slideableWidth;
+                else if (side == -1 && pos - this.state.pos > 0) { // force left movement
+                    pos -= this.state.slideableWidth;
                 }
 
             }
 
-            this.animationEngine.animate(this._pos, pos, this._updatePos.bind(this), this._finishAnimation.bind(this));
+            this._config.animationEngine.animate(this.state.pos, pos, this._updatePos.bind(this), this._finishAnimation.bind(this));
 
             this._startAnimation();
         }
@@ -300,24 +232,24 @@ class AbstractSlider {
 
         let pos = this._getSlideSnapPos(n);
 
-        if (this._infinite) {
+        if (this._config.infinite) {
 
             if (direction === 0) { // shortest path strategy
 
-                if (Math.abs(pos - this._pos) > this.slideableWidth / 2) {
-                    if (pos - this._pos > 0) {
-                        pos -= this.slideableWidth;
+                if (Math.abs(pos - this.state.pos) > this.state.slideableWidth / 2) {
+                    if (pos - this.state.pos > 0) {
+                        pos -= this.state.slideableWidth;
                     }
                     else {
-                        pos += this.slideableWidth;
+                        pos += this.state.slideableWidth;
                     }
                 }
             }
-            else if (direction === 1 && pos - this._pos < 0) { // force right movement
-                pos += this.slideableWidth;
+            else if (direction === 1 && pos - this.state.pos < 0) { // force right movement
+                pos += this.state.slideableWidth;
             }
-            else if (direction === -1 && pos - this._pos > 0) { // force left movement
-                pos -= this.slideableWidth;
+            else if (direction === -1 && pos - this.state.pos > 0) { // force left movement
+                pos -= this.state.slideableWidth;
             }
         }
 
@@ -328,14 +260,14 @@ class AbstractSlider {
      * This method moves 1 container width to the right (with snap)
      */
     moveRight(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos + this.containerSize), animated, 1);
+        this.moveTo(this._getClosestSnapPosition(this.state.pos + this.state.containerSize), animated, 1);
     }
 
     /**
      * This method moves 1 container width to the left (with snap)
      */
     moveLeft(animated) {
-        this.moveTo(this._getClosestSnapPosition(this._pos - this.containerSize), animated, -1);
+        this.moveTo(this._getClosestSnapPosition(this.state.pos - this.state.containerSize), animated, -1);
     }
 
     /**
@@ -347,19 +279,19 @@ class AbstractSlider {
     snap(velocity, animated) {
 
         if (velocity === 0) {
-            this.moveTo(this._getClosestSnapPosition(this._pos), animated);
+            this.moveTo(this._getClosestSnapPosition(this.state.pos), animated);
             return;
         }
 
-        let s = 0.2 * velocity * this._animationEngine.time / 2;
-        let targetPos = this._pos + s; // targetPos at this stage is not snapped to any slide.
+        let s = 0.2 * velocity * this._config.animationEngine.time / 2;
+        let targetPos = this.state.pos + s; // targetPos at this stage is not snapped to any slide.
 
         // If this options is true, we want to snap to as closest slide as possible and not further.
         // This is necessary because when you have slider when slide is 100% width, strong flick gestures
         // would make swiper move 2 or 3 positions to right / left which feels bad. This flag should be
         // disabled in case of "item swiper" when couple of items are visible in viewport at the same time.
-        if (this._snapOnlyToAdjacentSlide) {
-            targetPos = velocity < 0 ? this._pos - 1 : this._pos + 1;
+        if (this._config.snapOnlyToAdjacentSlide) {
+            targetPos = velocity < 0 ? this.state.pos - 1 : this.state.pos + 1;
         }
 
         let direction = velocity < 0 ? -1 : 1;
@@ -367,90 +299,95 @@ class AbstractSlider {
         this.moveTo(this._getClosestSnapPosition(targetPos, direction), animated, direction);
     }
 
-    /**
-     *
-     *
-     * @param n
-     */
-    slideCoord(n) {
-        return this._getSlideCoordForPos(n, this._pos);
-    }
-
-    get pos() {
-        return this._pos;
-    }
-
-    slideSize(n) {
-        if (this._CACHE["slideSize"][n]) { return this._CACHE["slideSize"][n]; }
-
-        this._CACHE["slideSize"][n] = this._slideSizeFunction(n);
-
-        return this._CACHE["slideSize"][n];
-    }
-
-
-    slideMargin(n) {
-        if (this._CACHE["slideMargin"][n]) { return this._CACHE["slideMargin"][n]; }
-
-        this._CACHE["slideMargin"][n] = this._slideMarginFunction(n);
-
-        return this._CACHE["slideMargin"][n];
-    }
-
-    slideSnapOffset(n) {
-        if (this._CACHE["slideSnapOffset"][n]) { return this._CACHE["slideSnapOffset"][n]; }
-
-        this._CACHE["slideSnapOffset"][n] = this._slideSnapOffsetFunction(n);
-
-        return this._CACHE["slideSnapOffset"][n];
-    }
-
-    get containerSize() {
-        if (typeof this._CACHE["containerSize"] !== 'undefined') { return this._CACHE["containerSize"]; }
-
-        let result = this._containerSizeFunction();
-
-        this._CACHE["containerSize"] = result;
-
-        return result;
-    }
+    // /**
+    //  *
+    //  *
+    //  * @param n
+    //  */
+    // slideCoord(n) {
+    //     return this._getSlideCoordForPos(n, this.state.pos);
+    // }
+    //
+    // get pos() {
+    //     return this.state.pos;
+    // }
+    //
+    // slideSize(n) {
+    //     if (this._CACHE["slideSize"][n]) {
+    //         return this._CACHE["slideSize"][n];
+    //     }
+    //
+    //     this._CACHE["slideSize"][n] = this._slideSizeFunction(n);
+    //
+    //     return this._CACHE["slideSize"][n];
+    // }
+    //
+    //
+    // slideMargin(n) {
+    //     if (this._CACHE["slideMargin"][n]) {
+    //         return this._CACHE["slideMargin"][n];
+    //     }
+    //
+    //     this._CACHE["slideMargin"][n] = this._slideMarginFunction(n);
+    //
+    //     return this._CACHE["slideMargin"][n];
+    // }
+    //
+    // slideSnapOffset(n) {
+    //     if (this._CACHE["slideSnapOffset"][n]) {
+    //         return this._CACHE["slideSnapOffset"][n];
+    //     }
+    //
+    //     this._CACHE["slideSnapOffset"][n] = this._slideSnapOffsetFunction(n);
+    //
+    //     return this._CACHE["slideSnapOffset"][n];
+    // }
+    //
+    // get containerSize() {
+    //     if (typeof this._CACHE["containerSize"] !== 'undefined') {
+    //         return this._CACHE["containerSize"];
+    //     }
+    //
+    //     let result = this._containerSizeFunction();
+    //
+    //     this._CACHE["containerSize"] = result;
+    //
+    //     return result;
+    // }
 
 
     /**
      * Helpers
      */
-    get slideableWidth() {
-
-        if (this._CACHE["slideableWidth"]) { return this._CACHE["slideableWidth"]; }
+    _calculateSlideableWidth() {
+        const slides = this.state.slides;
 
         let result = 0;
-        for (let i = 0; i < this._count; i++) { // get full _width and _snapPoints
+        for (let i = 0; i < this._config.count; i++) { // get full _width and _snapPoints
 
-            result += this.slideSize(i);
+            result += slides[i].size;
 
-            if (i === this._count - 1 && !this._infinite) {
+            if (i === slides.length - 1 && !this._config.infinite) {
                 break;
             } // total slideable width can't include right margin of last element unless we are at infinite scrolling!
 
-            result += this.slideMargin(i);
+            result += slides[i].margin;
         }
 
         // Finite scroll should take left and right offset into account.
-        if (!this._infinite) {
-            result += (this._leftOffsetFunction() + this._rightOffsetFunction());
+        if (!this._config.infinite) {
+            result += (this.state.leftOffset + this.state.rightOffset);
         }
-
-        this._CACHE["slideableWidth"] = result;
 
         return result;
     }
 
-    get maxPos() {
-        if (this._infinite) {
+    _calculateMaxPos() {
+        if (this._config.infinite) {
             throw "maxPos method not available in infinite mode"
         }
 
-        return Math.max(0, this.slideableWidth - this.containerSize);
+        return Math.max(0, this.state.slideableWidth - this.state.containerSize);
     }
 
     isAnimating() {
@@ -465,27 +402,27 @@ class AbstractSlider {
         return this._isStill;
     }
 
-    slideVisibility (n) {
-        let leftEdge = this.slideCoord(n);
-        let rightEdge = leftEdge + this.slideSize(n);
+    slideVisibility(n) {
+        let leftEdge = this.state.slides[n].coord;
+        let rightEdge = leftEdge + this.state.slides[n].size;
 
         if (rightEdge < 0) {
             return 0;
         }
-        else if (leftEdge > this.containerSize) {
+        else if (leftEdge > this.state.containerSize) {
             return 0;
         }
-        else if (leftEdge < 0 && rightEdge > this.containerSize) {
+        else if (leftEdge < 0 && rightEdge > this.state.containerSize) {
             return 1;
         }
-        else if (leftEdge >= 0 && rightEdge <= this.containerSize) {
+        else if (leftEdge >= 0 && rightEdge <= this.state.containerSize) {
             return 1;
         }
-        else if (leftEdge < 0 && rightEdge <= this.containerSize) {
-            return rightEdge / this.slideSize(n);
+        else if (leftEdge < 0 && rightEdge <= this.state.containerSize) {
+            return rightEdge / this.state.slides[n].size;
         }
-        else if (leftEdge >= 0 && rightEdge > this.containerSize) {
-            return (this.containerSize - leftEdge) / this.slideSize(n);
+        else if (leftEdge >= 0 && rightEdge > this.state.containerSize) {
+            return (this.state.containerSize - leftEdge) / this.state.slides[n].size;
         }
     }
 
@@ -548,11 +485,11 @@ class AbstractSlider {
 
     _normalizePos(position) {
 
-        if (this._infinite) {
+        if (this._config.infinite) {
 
-            position = position % this.slideableWidth;
+            position = position % this.state.slideableWidth;
             if (position < 0) {
-                position += this.slideableWidth;
+                position += this.state.slideableWidth;
             } // this is needed because Javascript is shit and doesn't correctly calculate modulo on negative numbers.
 
             return position;
@@ -572,36 +509,28 @@ class AbstractSlider {
      */
     _getSlideCoordForPos(n, pos) {
 
-        if (this._infinite) {
+        if (this._config.infinite) {
 
             pos = this._normalizePos(pos);
 
             let coord = -pos;
 
             for (let i = 0; i < n; i++) { // get full _width and _snapPoints
-                coord += this.slideSize(i);
-                coord += this.slideMargin(i);
+                coord += this.state.slides[i].size;
+                coord += this.state.slides[i].margin;
             }
 
-            let rightEdge = coord + this.slideSize(n);
+            let rightEdge = coord + this.state.slides[n].size;
 
             let multiplier = 0;
 
             if (rightEdge < 0) {
                 multiplier = 1;
-            } else if (rightEdge > this.slideableWidth) {
+            } else if (rightEdge > this.state.slideableWidth) {
                 multiplier = -1
             }
 
-            coord = coord + this.slideableWidth * multiplier;
-
-            // If slide invisible
-            // if (coord + this.slideSize(n) < 0) {
-            //     coord = undefined;
-            // }
-            // else if (coord > this.containerSizeFunction) {
-            //     coord = undefined;
-            // }
+            coord = coord + this.state.slideableWidth * multiplier;
 
             return coord;
         }
@@ -609,14 +538,18 @@ class AbstractSlider {
 
             let posCapped = pos;
 
-            if (posCapped < 0) { posCapped = 0 }
-            else if (posCapped > this.maxPos) { posCapped = this.maxPos }
+            if (posCapped < 0) {
+                posCapped = 0
+            }
+            else if (posCapped > this.state.maxPos) {
+                posCapped = this.state.maxPos
+            }
 
-            let coord = this._leftOffsetFunction() - posCapped;
+            let coord = this.state.leftOffset - posCapped;
 
             for (let i = 0; i < n; i++) {
-                coord += this.slideSize(i);
-                coord += this.slideMargin(i);
+                coord += this.state.slides[i].size;
+                coord += this.state.slides[i].margin;
             }
 
             /* at this moment coord is like overscroll was disabled and scrolling was blocked beyond edges */
@@ -626,12 +559,12 @@ class AbstractSlider {
             let extraTranslation = 0;
 
             if (pos < 0) {
-                let rest = -pos / this.containerSize;
-                extraTranslation = this._overscrollFunction(rest) * this.containerSize;
+                let rest = -pos / this.state.containerSize;
+                extraTranslation = this._config.overscrollFunction(rest) * this.state.containerSize;
             }
-            else if (pos > this.maxPos) {
-                let rest = (pos - this.maxPos) / this.containerSize;
-                extraTranslation = -this._overscrollFunction(rest) * this.containerSize;
+            else if (pos > this.state.maxPos) {
+                let rest = (pos - this.state.maxPos) / this.state.containerSize;
+                extraTranslation = -this._config.overscrollFunction(rest) * this.state.containerSize;
             }
 
             coord += extraTranslation;
@@ -642,55 +575,61 @@ class AbstractSlider {
 
     _getSlideSnapPos(n) {
 
-        let pos = this._getSlideCoordForPos(n, 0) - this.slideSnapOffset(n);
+        let pos = this._getSlideCoordForPos(n, 0) - this.state.slides[n].snapOffset;
 
-        if (this._infinite) { // in case of infinite, snap position is always slide position
+        if (this._config.infinite) { // in case of infinite, snap position is always slide position
             return this._normalizePos(pos);
         }
         else {
 
             if (n === 0) {
-                let pos = this._getSlideCoordForPos(n, 0) - this.slideSnapOffset(n);
+                pos = this._getSlideCoordForPos(n, 0) - this.state.slides[n].snapOffset;
             }
 
             pos = Math.max(pos, 0);
-            pos = Math.min(pos, this.maxPos);
+            pos = Math.min(pos, this.state.maxPos);
             return pos;
         }
     }
 
     _updatePos(pos) {
 
-        this._pos = this._normalizePos(pos);
+        this.state.pos = this._normalizePos(pos);
+
+        // TODO: Awfully non-optimal. To refactor and optimise!!!
+        for (let i = 0; i < this.state.slides.length; i++) {
+            this.state.slides[i].coord = this._getSlideCoordForPos(i, pos);
+        }
+
         this._runEventListeners('move');
 
         // Active slides event
-        let activeSlides = this.activeSlides();
-        let activeSlidesString = activeSlides.join(",");
-
-        if (activeSlidesString !== this._activeSlidesString) {
-            this._runEventListeners('activeSlidesChange');
-            this._activeSlidesString = activeSlidesString;
-        }
-
-        // Visible slides event
-        let visibleSlides = this.visibleSlides();
-        let visibleSlidesString = visibleSlides.join(",");
-
-        if (visibleSlidesString !== this._visibleSlidesString) {
-            this._runEventListeners('visibleSlidesChange');
-            this._visibleSlidesString = visibleSlidesString;
-        }
-
+        // TODO: EVENTS
+        // let activeSlides = this.activeSlides();
+        // let activeSlidesString = activeSlides.join(",");
+        //
+        // if (activeSlidesString !== this._activeSlidesString) {
+        //     this._runEventListeners('activeSlidesChange');
+        //     this._activeSlidesString = activeSlidesString;
+        // }
+        //
+        // // Visible slides event
+        // let visibleSlides = this.visibleSlides();
+        // let visibleSlidesString = visibleSlides.join(",");
+        //
+        // if (visibleSlidesString !== this._visibleSlidesString) {
+        //     this._runEventListeners('visibleSlidesChange');
+        //     this._visibleSlidesString = visibleSlidesString;
+        // }
     }
 
     _minPositionDistance(pos1, pos2) {
 
-        if (this._infinite) {
+        if (this._config.infinite) {
             pos1 = this._normalizePos(pos1);
             pos2 = this._normalizePos(pos2);
 
-            return Math.min(Math.abs(pos1 - pos2), pos1 + (this.slideableWidth - pos2), pos2 + (this.slideableWidth - pos1));
+            return Math.min(Math.abs(pos1 - pos2), pos1 + (this.state.slideableWidth - pos2), pos2 + (this.state.slideableWidth - pos1));
         }
         else {
             return Math.abs(pos1 - pos2);
@@ -699,42 +638,50 @@ class AbstractSlider {
 
     _getClosestSnapPosition(pos, side) {
 
-        if (typeof side === 'undefined') { side = 0; }
+        if (typeof side === 'undefined') {
+            side = 0;
+        }
 
         pos = this._normalizePos(pos);
 
         let snapPositions = [];
 
-        if (!this._infinite) {
+        if (!this._config.infinite) {
 
             // Get all snap positions in array
-            for (let n = 0; n < this._count; n++) {
+            for (let n = 0; n < this.state.slides.length; n++) {
 
                 let snapPos = this._getSlideSnapPos(n);
 
-                if (side === -1 && snapPos > pos) { continue; } // in finite mode and snapping to left side, remove all snap points on the right
-                if (side === 1 && snapPos < pos) { continue; } // in finite mode and snapping to right side, remove all snap points on the left
+                if (side === -1 && snapPos > pos) {
+                    continue;
+                } // in finite mode and snapping to left side, remove all snap points on the right
+                if (side === 1 && snapPos < pos) {
+                    continue;
+                } // in finite mode and snapping to right side, remove all snap points on the left
 
                 snapPositions.push(snapPos);
             }
 
-            if (side !== 1 || pos < 0) { snapPositions.unshift(0); }
-            if (side !== -1 || pos > this.maxPos) { snapPositions.push(this.maxPos); }
+            if (side !== 1 || pos < 0) {
+                snapPositions.unshift(0);
+            }
+            if (side !== -1 || pos > this.state.maxPos) {
+                snapPositions.push(this.state.maxPos);
+            }
         }
         else {
 
             // Get all snap positions in array
-            for (let n = 0; n < this._count; n++) {
+            for (let n = 0; n < this.state.slides.length; n++) {
                 snapPositions.push(this._getSlideSnapPos(n));
             }
-
-
 
 
             let maxSnapPoint = Math.max.apply(Math, snapPositions);
 
             if (side === -1 || side === 1) {
-                for(let i = 0; i < snapPositions.length-1; i++) {
+                for (let i = 0; i < snapPositions.length - 1; i++) {
                     if (
                         (snapPositions[i] < pos && pos < snapPositions[i + 1]) ||
                         (snapPositions[i] === maxSnapPoint && (pos > snapPositions[i] || pos < snapPositions[i + 1]))
@@ -749,7 +696,7 @@ class AbstractSlider {
                 }
 
                 if (side === -1) {
-                    return snapPositions[this._count - 1];
+                    return snapPositions[this.state.slides.length - 1];
                 }
                 else if (side === 1) {
                     return snapPositions[0];
@@ -773,7 +720,9 @@ class AbstractSlider {
     }
 
     _startAnimation() {
-        if (this._isAnimating) { return; }
+        if (this._isAnimating) {
+            return;
+        }
 
         this._runEventListeners('animationStart');
         this._isAnimating = true;
@@ -781,9 +730,11 @@ class AbstractSlider {
     }
 
     _finishAnimation() {
-        if (!this._isAnimating) { return; }
+        if (!this._isAnimating) {
+            return;
+        }
 
-        this.animationEngine.killAnimation();
+        this._config.animationEngine.killAnimation();
 
         this._runEventListeners('animationEnd');
         this._isAnimating = false;
