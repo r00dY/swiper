@@ -13,7 +13,6 @@ let defaults = {
     snapOnlyToAdjacentSlide: false,
     overscrollFunction: (x) => 0.5 * Math.log(1 + x), // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
     animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8),
-    initialPos: 0
 };
 
 class AbstractSlider {
@@ -384,7 +383,7 @@ class AbstractSlider {
 
     _calculateMaxPos() {
         if (this._config.infinite) {
-            throw "maxPos method not available in infinite mode"
+            return;
         }
 
         return Math.max(0, this.state.slideableWidth - this.state.containerSize);
