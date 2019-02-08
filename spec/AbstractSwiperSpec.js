@@ -55,35 +55,6 @@ function sliderRegular(infinite) {
 
 describe("SwiperEngine (no animations / finite mode)", function() {
 
-    // let swiper;
-    //
-    // beforeEach(function() {
-    //
-    //     swiper = new SwiperEngine();
-    //
-    //     swiper.containerSize = 500;
-    //     swiper.count = 5;
-    //     swiper.leftOffset = 100;
-    //     swiper.rightOffset = 200;
-    //
-    //     swiper.slideSizeFunction = function(n) {
-    //         return (n + 1) * 10 + 300;
-    //     };
-    //
-    //     swiper.slideMarginFunction = function(n) {
-    //         return (n + 1) * 10;
-    //     };
-    //     swiper.slideSnapOffset = function(n) {
-    //         return (n + 1) * 10;
-    //     };
-    //
-    //     swiper.overscrollFunction = (x) => {
-    //         return x / 2;
-    //     };
-    //
-    //     swiper.layout();
-    // });
-
     it("returns correct slideable width", function() {
         sliderIrregular(false);
         expect(swiper.slideableWidth).toBe(100 + 310 + 10 + 320 + 20 + 330 + 30 + 340 + 40 + 350 + 200);

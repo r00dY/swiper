@@ -6,17 +6,19 @@ function AnimationEngine(animationFunction, animationTime) {
     let finishCallback = null;
     let start = null;
     let requestAnimationId = null;
-    animationTime *= 1000;
+
+    this.time = animationTime;
+    let timeMs = animationTime*1000;
 
     function draw(timestamp) {
         if (!start) start = timestamp;
 
-        let t = (timestamp - start) / animationTime;
+        let t = (timestamp - start) / timeMs;
         let currentXPosition = startPosition + ( endPosition - startPosition ) * animationFunction(t);
 
         updateCallback(currentXPosition);
 
-        if (start + animationTime <= timestamp) {
+        if (start + timeMs <= timestamp) {
             if (finishCallback) finishCallback(currentXPosition);
 
             return;

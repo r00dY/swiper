@@ -9,25 +9,13 @@ let defaults = {
     infinite: false,
     snapOnlyToAdjacentSlide: false,
     overscrollFunction: (x) => 0.5 * Math.log(1 + x), // Overscroll function for finite sliders. If it's f(x) = x it will be linear. x = 1 means entire container width movement.
-    animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8)
+    animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8),
 };
 
 class AbstractSlider {
 
-    constructor() {
-
-        this.defaults = defaults;
-
-        this._slideMarginFunction = defaults.slideMarginFunction;
-        this._slideSnapOffsetFunction = defaults.slideSnapOffsetFunction;
-        this._leftOffsetFunction = defaults.leftOffsetFunction;
-        this._rightOffsetFunction = defaults.rightOffsetFunction;
-        this._infinite = defaults.infinite;
-        this._snapOnlyToAdjacentSlide = defaults.snapOnlyToAdjacentSlide;
-        this._overscrollFunction = defaults.overscrollFunction;
-        this._animationEngine = defaults.animationEngine;
-
-        this._scrollingAnimationTime = 0.8;
+    constructor(config) {
+        this._applyConfig(config);
 
         this._pos = 0;
 
@@ -49,108 +37,119 @@ class AbstractSlider {
         EventSystem.addEvent(this, 'visibleSlidesChange');
     }
 
-    set animationEngine(engine) {
-        this._animationEngine = engine || defaults.animationEngine;
+    _applyConfig(config) {
+        if (config.initialPos) {
+            config.initialSlide = undefined;
+        }
+        if (config.initialSlide) {
+            config.initialPos = undefined;
+        }
+
+        this._config = Object.assign(defaults, config);
     }
 
-    get animationEngine() {
-        return this._animationEngine;
-    }
-
-    set containerSizeFunction(containerSizeFunction) {
-        this._containerSizeFunction = containerSizeFunction;
-    }
-
-    get containerSizeFunction() {
-        return this._containerSizeFunction;
-    }
-
-    set count(newCount) {
-        this._count = newCount;
-    }
-
-    get count() {
-        return this._count;
-    }
-
-    set slideSizeFunction(slideSizeFunction) {
-        this._slideSizeFunction = slideSizeFunction || defaults.slideSizeFunction;
-    }
-
-    get slideSizeFunction() {
-        return this._slideSizeFunction;
-    }
-
-    set slideMarginFunction(slideMarginFunction) {
-        this._slideMarginFunction = slideMarginFunction || defaults.slideMarginFunction;
-    }
-
-    get slideMarginFunction() {
-        return this._slideMarginFunction;
-    }
-
-
-    set slideSnapOffsetFunction(slideSnapOffsetFunction) {
-        this._slideSnapOffsetFunction = slideSnapOffsetFunction || defaults.slideSnapOffsetFunction;
-    }
-
-    get slideSnapOffsetFunction() {
-        return this._slideSnapOffsetFunction;
-    }
-
-    set rightOffsetFunction(rightOffsetFunction) {
-        this._rightOffsetFunction = rightOffsetFunction || defaults.rightOffsetFunction;
-    }
-
-    get rightOffsetFunction() {
-        return this._rightOffsetFunction;
-    }
-
-    set leftOffsetFunction(leftOffsetFunction) {
-        this._leftOffsetFunction = leftOffsetFunction || defaults.leftOffsetFunction;
-    }
-
-    get leftOffsetFunction() {
-        return this._leftOffsetFunction;
-    }
-
-    set overscrollFunction(overscrollFunction) {
-        this._overscrollFunction = overscrollFunction || defaults.overscrollFunction;
-    }
-
-    set infinite(infinite) {
-        this._infinite = infinite || defaults.infinite;
-    }
-
-    get infinite() {
-        return this._infinite;
-    }
-
-    set snapOnlyToAdjacentSlide(snapOnlyToAdjacentSlide) {
-        this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide || defaults.snapOnlyToAdjacentSlide;
-    }
-
-    get snapOnlyToAdjacentSlide() {
-        return this._snapOnlyToAdjacentSlide;
-    }
-
-    set initialSlide(n) {
-        this._initialSlide = n;
-        this._initialPos = undefined;
-    }
-
-    get initialSlide() {
-        return this._initialSlide;
-    }
-
-    set initialPos(pos) {
-        this._initialPos = pos;
-        this._initialSlide = undefined;
-    }
-
-    get initialPos() {
-        return this._initialPos;
-    }
+    // set animationEngine(engine) {
+    //     this._animationEngine = engine || defaults.animationEngine;
+    // }
+    //
+    // get animationEngine() {
+    //     return this._animationEngine;
+    // }
+    //
+    // set containerSizeFunction(containerSizeFunction) {
+    //     this._containerSizeFunction = containerSizeFunction;
+    // }
+    //
+    // get containerSizeFunction() {
+    //     return this._containerSizeFunction;
+    // }
+    //
+    // set count(newCount) {
+    //     this._count = newCount;
+    // }
+    //
+    // get count() {
+    //     return this._count;
+    // }
+    //
+    // set slideSizeFunction(slideSizeFunction) {
+    //     this._slideSizeFunction = slideSizeFunction || defaults.slideSizeFunction;
+    // }
+    //
+    // get slideSizeFunction() {
+    //     return this._slideSizeFunction;
+    // }
+    //
+    // set slideMarginFunction(slideMarginFunction) {
+    //     this._slideMarginFunction = slideMarginFunction || defaults.slideMarginFunction;
+    // }
+    //
+    // get slideMarginFunction() {
+    //     return this._slideMarginFunction;
+    // }
+    //
+    //
+    // set slideSnapOffsetFunction(slideSnapOffsetFunction) {
+    //     this._slideSnapOffsetFunction = slideSnapOffsetFunction || defaults.slideSnapOffsetFunction;
+    // }
+    //
+    // get slideSnapOffsetFunction() {
+    //     return this._slideSnapOffsetFunction;
+    // }
+    //
+    // set rightOffsetFunction(rightOffsetFunction) {
+    //     this._rightOffsetFunction = rightOffsetFunction || defaults.rightOffsetFunction;
+    // }
+    //
+    // get rightOffsetFunction() {
+    //     return this._rightOffsetFunction;
+    // }
+    //
+    // set leftOffsetFunction(leftOffsetFunction) {
+    //     this._leftOffsetFunction = leftOffsetFunction || defaults.leftOffsetFunction;
+    // }
+    //
+    // get leftOffsetFunction() {
+    //     return this._leftOffsetFunction;
+    // }
+    //
+    // set overscrollFunction(overscrollFunction) {
+    //     this._overscrollFunction = overscrollFunction || defaults.overscrollFunction;
+    // }
+    //
+    // set infinite(infinite) {
+    //     this._infinite = infinite || defaults.infinite;
+    // }
+    //
+    // get infinite() {
+    //     return this._infinite;
+    // }
+    //
+    // set snapOnlyToAdjacentSlide(snapOnlyToAdjacentSlide) {
+    //     this._snapOnlyToAdjacentSlide = snapOnlyToAdjacentSlide || defaults.snapOnlyToAdjacentSlide;
+    // }
+    //
+    // get snapOnlyToAdjacentSlide() {
+    //     return this._snapOnlyToAdjacentSlide;
+    // }
+    //
+    // set initialSlide(n) {
+    //     this._initialSlide = n;
+    //     this._initialPos = undefined;
+    // }
+    //
+    // get initialSlide() {
+    //     return this._initialSlide;
+    // }
+    //
+    // set initialPos(pos) {
+    //     this._initialPos = pos;
+    //     this._initialSlide = undefined;
+    // }
+    //
+    // get initialPos() {
+    //     return this._initialPos;
+    // }
 
     /**
      *
@@ -352,7 +351,7 @@ class AbstractSlider {
             return;
         }
 
-        let s = 0.2 * velocity * this._scrollingAnimationTime / 2;
+        let s = 0.2 * velocity * this._animationEngine.time / 2;
         let targetPos = this._pos + s; // targetPos at this stage is not snapped to any slide.
 
         // If this options is true, we want to snap to as closest slide as possible and not further.
