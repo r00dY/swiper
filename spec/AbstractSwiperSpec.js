@@ -219,7 +219,7 @@ describe("SwiperEngine (no animations / finite mode)", function() {
 
     // move listener
 
-    it ("properly adds and removes 'move' event listeners", function() {
+    it ("properly adds and removes 'stateChange' event listeners", function() {
         let swiper = sliderIrregular(false);
 
         let event1counter = 0;
@@ -232,28 +232,28 @@ describe("SwiperEngine (no animations / finite mode)", function() {
         expect(event1counter).toBe(0);
         expect(event2counter).toBe(0);
 
-        swiper.addEventListener('move', event1);
+        swiper.addEventListener('stateChange', event1);
         swiper.moveTo(400, false);
         expect(event1counter).toBe(1);
         expect(event2counter).toBe(0);
 
-        swiper.addEventListener('move', event2);
+        swiper.addEventListener('stateChange', event2);
         swiper.moveTo(500, false);
         expect(event1counter).toBe(2);
         expect(event2counter).toBe(1);
 
-        swiper.removeEventListener('move', event1);
+        swiper.removeEventListener('stateChange', event1);
         swiper.moveTo(600, false);
         expect(event1counter).toBe(2);
         expect(event2counter).toBe(2);
 
-        swiper.removeEventListener('move', event2);
+        swiper.removeEventListener('stateChange', event2);
         swiper.moveTo(700, false);
         expect(event1counter).toBe(2);
         expect(event2counter).toBe(2);
     });
-
-    // it ("runs single 'move' event after layout", function() {
+    //
+    // it ("doesn't run 'move' event after layout", function() {
     //     let swiper = sliderIrregular(false);
     //
     //     let eventCounter = 0;
@@ -297,6 +297,16 @@ describe("SwiperEngine (no animations / finite mode)", function() {
         expect(swiper.state.slides[2].coord).toBe(30);
     });
 
+
+    // isTouched / isStill
+    // it ("moves properly to the right with moveRight method", function() {
+    //     let swiper = sliderIrregular(false);
+    //     swiper.moveRight(false);
+    //     expect(swiper.state.slides[1].coord).toBe(20);
+    //
+    //     swiper.moveRight(false);
+    //     expect(swiper.state.slides[2].coord).toBe(30);
+    // });
 });
 
 
@@ -579,26 +589,26 @@ describe("SwiperEngine (no animations / infinite mode)", function() {
         expect(swiper.state.pos).toBe(310 + 10 - 20);
     });
 
-    it ("runs single 'move' event after layout", function() {
-        let swiper = sliderIrregular({ infinite: true });
-
-        let eventCounter = 0;
-        let event = () => { eventCounter++; };
-
-        swiper.addEventListener('move', event);
-
-        swiper.layout();
-        expect(eventCounter).toBe(1);
-
-        swiper.initialSlide = 3;
-        swiper.layout();
-        expect(eventCounter).toBe(2);
-
-        swiper.initialPos = 100;
-        swiper.layout();
-        expect(eventCounter).toBe(3);
-
-    });
+    // it ("runs single 'move' event after layout", function() {
+    //     let swiper = sliderIrregular({ infinite: true });
+    //
+    //     let eventCounter = 0;
+    //     let event = () => { eventCounter++; };
+    //
+    //     swiper.addEventListener('move', event);
+    //
+    //     swiper.layout();
+    //     expect(eventCounter).toBe(1);
+    //
+    //     swiper.initialSlide = 3;
+    //     swiper.layout();
+    //     expect(eventCounter).toBe(2);
+    //
+    //     swiper.initialPos = 100;
+    //     swiper.layout();
+    //     expect(eventCounter).toBe(3);
+    //
+    // });
 
     // move left / move right
 

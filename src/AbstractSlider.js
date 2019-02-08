@@ -20,14 +20,17 @@ class AbstractSlider {
     constructor(config) {
         this._applyConfig(config);
 
-        this._isTouched = false;
-        this._isStill = true;
-        this._isAnimating = false;
+        // this._isTouched = false;
+        // this._isStill = true;
+        // this._isAnimating = false;
 
         this._activeSlidesString = undefined; // comma separated list of active slides indexes
         this._visibleSlidesString = undefined; // comma separated list of active slides indexes
 
         EventSystem.register(this);
+        EventSystem.addEvent(this, 'stateChange');
+
+
         EventSystem.addEvent(this, 'move');
         EventSystem.addEvent(this, 'animationStart');
         EventSystem.addEvent(this, 'animationEnd');
@@ -114,37 +117,42 @@ class AbstractSlider {
      * Mock method not doing anything except for being helper for touchdown, touchup, and stillness events.
      */
     touchdown() {
-        if (this._isTouched) {
+        if (this.state.isTouched) {
             return;
         }
 
-        this._isTouched = true;
+        this.state.isTouched = true;
 
         this._runEventListeners('touchdown');
+        this._runEventListeners('stateChanged');
 
         this._updateStillness();
     }
 
     touchup() {
-        if (!this._isTouched) {
+        if (!this.state.isTouched) {
             return;
         }
 
-        this._isTouched = false;
+        this.state.isTouched = false;
         this._runEventListeners('touchup');
+        this._runEventListeners('stateChanged');
 
         this._updateStillness();
     }
 
     _updateStillness() {
-        if (!this._isStill && !this.isAnimating() && !this.isTouched()) {
-            this._isStill = true;
+        if (!this.state.isStill && !this.state.isAnimating && !this.state.isTouched) {
+            this.state.isStill = true;
             this._runEventListeners('stillnessChange');
+            this._runEventListeners('stateChanged');
         }
-        else if (this._isStill && (this.isAnimating() || this.isTouched())) {
-            this._isStill = false;
+        else if (this.state.isStill && (this.state.isAnimating || this.state.isTouched)) {
+            this.state.isStill = false;
             this._runEventListeners('stillnessChange');
+            this._runEventListeners('stateChanged');
         }
+
     };
 
 
@@ -298,63 +306,6 @@ class AbstractSlider {
         this.moveTo(this._getClosestSnapPosition(targetPos, direction), animated, direction);
     }
 
-    // /**
-    //  *
-    //  *
-    //  * @param n
-    //  */
-    // slideCoord(n) {
-    //     return this._getSlideCoordForPos(n, this.state.pos);
-    // }
-    //
-    // get pos() {
-    //     return this.state.pos;
-    // }
-    //
-    // slideSize(n) {
-    //     if (this._CACHE["slideSize"][n]) {
-    //         return this._CACHE["slideSize"][n];
-    //     }
-    //
-    //     this._CACHE["slideSize"][n] = this._slideSizeFunction(n);
-    //
-    //     return this._CACHE["slideSize"][n];
-    // }
-    //
-    //
-    // slideMargin(n) {
-    //     if (this._CACHE["slideMargin"][n]) {
-    //         return this._CACHE["slideMargin"][n];
-    //     }
-    //
-    //     this._CACHE["slideMargin"][n] = this._slideMarginFunction(n);
-    //
-    //     return this._CACHE["slideMargin"][n];
-    // }
-    //
-    // slideSnapOffset(n) {
-    //     if (this._CACHE["slideSnapOffset"][n]) {
-    //         return this._CACHE["slideSnapOffset"][n];
-    //     }
-    //
-    //     this._CACHE["slideSnapOffset"][n] = this._slideSnapOffsetFunction(n);
-    //
-    //     return this._CACHE["slideSnapOffset"][n];
-    // }
-    //
-    // get containerSize() {
-    //     if (typeof this._CACHE["containerSize"] !== 'undefined') {
-    //         return this._CACHE["containerSize"];
-    //     }
-    //
-    //     let result = this._containerSizeFunction();
-    //
-    //     this._CACHE["containerSize"] = result;
-    //
-    //     return result;
-    // }
-
-
     /**
      * Helpers
      */
@@ -389,19 +340,19 @@ class AbstractSlider {
         return Math.max(0, this.state.slideableWidth - this.state.containerSize);
     }
 
-    isAnimating() {
-        return this._isAnimating;
-    }
+    // isAnimating() {
+    //     return this._isAnimating;
+    // }
+    //
+    // isTouched() {
+    //     return this._isTouched;
+    // }
+    //
+    // isStill() {
+    //     return this._isStill;
+    // }
 
-    isTouched() {
-        return this._isTouched;
-    }
-
-    isStill() {
-        return this._isStill;
-    }
-
-    slideVisibility(n) {
+    _slideVisibility(n) {
         let leftEdge = this.state.slides[n].coord;
         let rightEdge = leftEdge + this.state.slides[n].size;
 
@@ -425,11 +376,11 @@ class AbstractSlider {
         }
     }
 
-    isSlideVisible(n) {
+    _isSlideVisible(n) {
         return this.slideVisibility(n) > 0;
     }
 
-    visibleSlides() {
+    _visibleSlides() {
         let visibleSlides = [];
 
         for (let n = 0; n < this.count; n++) {
@@ -441,7 +392,7 @@ class AbstractSlider {
         return visibleSlides;
     }
 
-    activeSlides() {
+    _activeSlides() {
 
         let activeSlides = [];
 
@@ -478,9 +429,9 @@ class AbstractSlider {
         });
     }
 
-    isSlideActive(n) {
-        return this.activeSlides().indexOf(n) >= -1;
-    }
+    // isSlideActive(n) {
+    //     return this.activeSlides().indexOf(n) >= -1;
+    // }
 
     _normalizePos(position) {
 
@@ -598,28 +549,30 @@ class AbstractSlider {
         // TODO: Awfully non-optimal. To refactor and optimise!!!
         for (let i = 0; i < this.state.slides.length; i++) {
             this.state.slides[i].coord = this._getSlideCoordForPos(i, pos);
+            this.state.slides[i].visibility = this._slideVisibility(i);
         }
 
         this._runEventListeners('move');
 
         // Active slides event
-        // TODO: EVENTS
-        // let activeSlides = this.activeSlides();
-        // let activeSlidesString = activeSlides.join(",");
-        //
-        // if (activeSlidesString !== this._activeSlidesString) {
-        //     this._runEventListeners('activeSlidesChange');
-        //     this._activeSlidesString = activeSlidesString;
-        // }
-        //
-        // // Visible slides event
-        // let visibleSlides = this.visibleSlides();
-        // let visibleSlidesString = visibleSlides.join(",");
-        //
-        // if (visibleSlidesString !== this._visibleSlidesString) {
-        //     this._runEventListeners('visibleSlidesChange');
-        //     this._visibleSlidesString = visibleSlidesString;
-        // }
+        let activeSlides = this._activeSlides();
+        let activeSlidesString = activeSlides.join(",");
+
+        if (activeSlidesString !== this._activeSlidesString) {
+            this._runEventListeners('activeSlidesChange');
+            this._activeSlidesString = activeSlidesString;
+        }
+
+        // Visible slides event
+        let visibleSlides = this._visibleSlides();
+        let visibleSlidesString = visibleSlides.join(",");
+
+        if (visibleSlidesString !== this._visibleSlidesString) {
+            this._runEventListeners('visibleSlidesChange');
+            this._visibleSlidesString = visibleSlidesString;
+        }
+
+        this._runEventListeners('stateChange');
     }
 
     _minPositionDistance(pos1, pos2) {
@@ -719,24 +672,26 @@ class AbstractSlider {
     }
 
     _startAnimation() {
-        if (this._isAnimating) {
+        if (this.state.isAnimating) {
             return;
         }
 
+        this.state.isAnimating = true;
         this._runEventListeners('animationStart');
-        this._isAnimating = true;
+        this._runEventListeners('stateChange');
         this._updateStillness();
     }
 
     _finishAnimation() {
-        if (!this._isAnimating) {
+        if (!this.state.isAnimating) {
             return;
         }
 
         this._config.animationEngine.killAnimation();
 
+        this.state.isAnimating = false;
         this._runEventListeners('animationEnd');
-        this._isAnimating = false;
+        this._runEventListeners('stateChange');
         this._updateStillness();
     }
 
