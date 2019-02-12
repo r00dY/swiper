@@ -4,7 +4,6 @@ import "./styles.scss";
 
 import TouchSpace from "../src/components/touchSpace/TouchSpace";
 import SimpleSlider from "../src/SimpleSlider";
-import SimpleSliderContainer from "../src/react/SimpleSliderContainer";
 
 import ReactZoomer from '../src/react/ReactZoomer';
 

@@ -1,6 +1,10 @@
 import TouchSpace from "../components/touchSpace/TouchSpace";
 import AbstractSlider from "../AbstractSlider";
 
+/**
+ * This slider has following traits:
+ * - all its items are laid out with Javascript and have position: absolute;
+ */
 class SliderAbsolute {
 
     constructor(container, config) {

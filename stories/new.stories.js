@@ -2,7 +2,7 @@ import React from 'react';
 import {storiesOf} from '@storybook/react';
 import "./styles.scss";
 
-import SliderAbsolute from "../src/react/SliderAbsolute";
+import ReactSliderAbsolute from "../src/react/ReactSliderAbsolute";
 
 class SimpleSwiperWithParams extends React.Component {
     constructor(props) {
@@ -12,7 +12,6 @@ class SimpleSwiperWithParams extends React.Component {
     };
 
     componentDidMount() {
-        console.log(this.swiper.current.touchSpace);
         this.swiper.current.touchSpace.enable();
     }
 
@@ -20,7 +19,7 @@ class SimpleSwiperWithParams extends React.Component {
         return (
             <div>
                 <div className={"swiper"}>
-                    <SliderAbsolute config={{
+                    <ReactSliderAbsolute config={{
                         slideSize: () => 200,
                         slideMargin: () => 20
                     }} ref={this.swiper}>
@@ -34,7 +33,7 @@ class SimpleSwiperWithParams extends React.Component {
                         <div className="slide"></div>
                         <div className="slide"></div>
                         <div className="slide"></div>
-                    </SliderAbsolute>
+                    </ReactSliderAbsolute>
                 </div>
                 <button onClick={() => this.swiper.current.engine.moveLeft()}>Left</button>
                 <button onClick={() => this.swiper.current.engine.moveRight()}>Right</button>

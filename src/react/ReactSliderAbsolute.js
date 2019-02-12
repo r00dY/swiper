@@ -1,7 +1,7 @@
 import React from "react";
-import { default as VanillaSliderAbsolute } from "../vanilla/SliderAbsolute";
+import SliderAbsolute from "../vanilla/SliderAbsolute";
 
-class SliderAbsolute extends React.Component {
+class ReactSliderAbsolute extends React.Component {
     constructor(props) {
         super(props);
 
@@ -9,7 +9,7 @@ class SliderAbsolute extends React.Component {
     }
 
     componentDidMount() {
-        this.vanillaSlider = new VanillaSliderAbsolute(this.containerRef.current, this.props.config);
+        this.vanillaSlider = new SliderAbsolute(this.containerRef.current, this.props.config);
         this.vanillaSlider.layout();
         this.engine = this.vanillaSlider.engine;
         this.touchSpace = this.vanillaSlider.touchSpace;
@@ -24,4 +24,4 @@ class SliderAbsolute extends React.Component {
     }
 }
 
-export default SliderAbsolute;
+export default ReactSliderAbsolute;
