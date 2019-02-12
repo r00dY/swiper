@@ -15,6 +15,11 @@ let defaults = {
     animationEngine: new AnimationEngine(AnimationEngine.Ease.outExpo, 0.8),
 };
 
+const getVal = (x, ...args) => {
+    if (typeof x === 'function') { return x(...args) };
+    return x;
+};
+
 class AbstractSlider {
 
     constructor(config) {
@@ -56,8 +61,8 @@ class AbstractSlider {
 
     layout() {
         // validate
-        if (typeof this._config.containerSize !== "function") {
-            throw "'containerSizeFunction' is not defined or is not a function";
+        if (typeof this._config.containerSize === "undefined") {
+            throw "'containerSizeFunction' is not defined";
         }
         if (typeof this._config.slideSize !== "function") {
             throw "'slideSize' is not defined or is not a function";
@@ -68,9 +73,9 @@ class AbstractSlider {
 
         this.state = {
             // constant
-            containerSize: this._config.containerSize(),
-            leftOffset: this._config.leftOffset(),
-            rightOffset: this._config.rightOffset(),
+            containerSize: getVal(this._config.containerSize),
+            leftOffset: getVal(this._config.leftOffset),
+            rightOffset: getVal(this._config.rightOffset),
             slides: [],
 
             // changing
@@ -84,9 +89,9 @@ class AbstractSlider {
             this.state.slides.push({
                 // constant
                 index: i,
-                size: this._config.slideSize(i),
-                margin: this._config.slideMargin(i),
-                snapOffset: this._config.slideSnapOffset(i),
+                size: getVal(this._config.slideSize, i),
+                margin: getVal(this._config.slideMargin, i),
+                snapOffset: getVal(this._config.slideSnapOffset, i),
 
                 // changing
                 active: undefined,

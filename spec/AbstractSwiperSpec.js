@@ -4,10 +4,10 @@ let swiper;
 
 function sliderIrregular(extraConfig) {
     let config = {
-        containerSize: () => 500,
+        containerSize: () => 500, // function
         count: 5,
-        leftOffset: () => 100,
-        rightOffset: () => 200,
+        leftOffset: 100, // value
+        rightOffset: 200, // value
         infinite: false,
         slideSize: (n) => ((n + 1) * 10 + 300),
         slideMargin: (n) => ((n + 1) * 10),

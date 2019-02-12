@@ -277,8 +277,6 @@ class TouchSpace {
 
         let processTouchEvent = (ev) => {
 
-            // console.log('process new event!', sessionType, ev.type);
-
             switch (state.type) {
                 case "init":
                     switch (ev.type) {

@@ -5,7 +5,7 @@ class TouchSpaceController {
     }
 
     panStart() {
-        this._panStartPos = this.swiper.pos;
+        this._panStartPos = this.swiper.state.pos;
         this.swiper.stopMovement();
         this.swiper.touchdown();
     }
@@ -24,10 +24,6 @@ class TouchSpaceController {
     panMove(deltaX) {
         this.swiper.moveTo(this._panStartPos - deltaX, false);
     }
-
-    // swipe(velocityX) {
-    //     this.swiper.snap(velocityX * 1000, this.animated);
-    // }
 }
 
 export default TouchSpaceController;
