@@ -22,8 +22,8 @@ function sliderIrregular(extraConfig) {
     return new AbstractSlider(config);
 }
 
-function sliderRegular(extraConfig) {
-    let config = {
+function sliderRegularConfig() {
+    return {
         containerSize: () => 500,
         count: 5,
         leftOffset: () => 100,
@@ -32,6 +32,10 @@ function sliderRegular(extraConfig) {
         slideSize: () => 500,
         overscrollFunction: (x) => (x/2)
     };
+}
+
+function sliderRegular(extraConfig) {
+    let config = sliderRegularConfig();
 
     if (extraConfig) {
         Object.assign(config, extraConfig);
@@ -296,6 +300,25 @@ describe("SwiperEngine (no animations / finite mode)", function() {
 
         swiper.moveLeft(false);
         expect(swiper.state.slides[2].coord).toBe(30);
+    });
+
+
+    it ("properly reapplies config", function() {
+        let swiper = sliderRegular();
+
+        let eventCounter = 0;
+
+        swiper.addEventListener('move', () => { eventCounter++; });
+        swiper.moveTo(700, false);
+        expect(eventCounter).toBe(1);
+        expect(swiper.state.pos).toBe(700);
+
+        eventCounter = 0; // reset
+        let config = sliderRegularConfig();
+        config.slideSize = 501;
+        swiper.applyConfig(config);
+        expect(eventCounter).toBe(0); // applyConfig shouldn't run any events
+        expect(swiper.state.pos).toBe(601); // offset + slide length. Reapplying config should restore position and snap it
     });
 
 

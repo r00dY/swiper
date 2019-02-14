@@ -21,6 +21,10 @@ let EventSystem = {
             }
         };
 
+        object._removeAllEventListeners = function() {
+            object._eventListeners = {};
+        };
+
         object._runEventListeners = function(event) {
             if (object._eventsBlocked) {
                 return;

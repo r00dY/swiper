@@ -23,18 +23,9 @@ const getVal = (x, ...args) => {
 class AbstractSlider {
 
     constructor(config) {
-        this._applyConfig(config);
-
-        // this._isTouched = false;
-        // this._isStill = true;
-        // this._isAnimating = false;
-
-        this._activeSlidesString = undefined; // comma separated list of active slides indexes
-        this._visibleSlidesString = undefined; // comma separated list of active slides indexes
-
         EventSystem.register(this);
-        EventSystem.addEvent(this, 'stateChange');
 
+        EventSystem.addEvent(this, 'stateChange');
 
         EventSystem.addEvent(this, 'move');
         EventSystem.addEvent(this, 'animationStart');
@@ -45,10 +36,16 @@ class AbstractSlider {
         EventSystem.addEvent(this, 'activeSlidesChange');
         EventSystem.addEvent(this, 'visibleSlidesChange');
 
-        this.layout();
+        this.applyConfig(config);
     }
 
-    _applyConfig(config) {
+    destroy() {
+        this._removeAllEventListeners();
+        this._config = undefined;
+        this.state = undefined;
+    }
+
+    applyConfig(config) {
         if (config.initialPos) {
             config.initialSlide = undefined;
         }
@@ -57,19 +54,26 @@ class AbstractSlider {
         }
 
         this._config = Object.assign({}, defaults, config);
+
+        this._layout();
     }
 
-    layout() {
+    _layout() {
+        this._activeSlidesString = undefined; // comma separated list of active slides indexes
+        this._visibleSlidesString = undefined; // comma separated list of active slides indexes
+
         // validate
         if (typeof this._config.containerSize === "undefined") {
             throw "'containerSizeFunction' is not defined";
         }
-        if (typeof this._config.slideSize !== "function") {
-            throw "'slideSize' is not defined or is not a function";
+        if (typeof this._config.slideSize === "undefined") {
+            throw "'slideSize' is not defined ";
         }
         if (typeof this._config.count !== "number") {
             throw "'count' is not defined or is not a number";
         }
+
+        let defaultPos = this.state ? this.state.pos : 0;
 
         this.state = {
             // constant
@@ -82,7 +86,6 @@ class AbstractSlider {
             isAnimating: false,
             isTouched: false,
             isStill: true,
-            pos: 0
         };
 
         for (let i = 0; i < this._config.count; i++) {
@@ -104,18 +107,22 @@ class AbstractSlider {
         this.state.slideableWidth = this._calculateSlideableWidth();
         this.state.maxPos = this._calculateMaxPos();
 
+        this.blockEvents();
+
         // if user didn't set initialSlide and initialPos, then by default we take pos 0 for finite and first slide snap point for infinite.
         if (typeof this._config.initialSlide === 'undefined' && typeof this._config.initialPos === 'undefined') {
             if (this._config.infinite) {
                 this._updatePos(this._getSlideSnapPos(0));
             } else {
-                this._updatePos(0); // just to run event listener -> layout should invoke 'move' once
+                this._updatePos(this._getClosestSnapPosition(defaultPos));
             }
         } else if (typeof this._config.initialSlide !== 'undefined') {
             this._updatePos(this._getSlideSnapPos(this._config.initialSlide));
         } else if (typeof this._config.initialPos !== 'undefined') {
             this._updatePos(this._config.initialPos);
         }
+
+        this.unblockEvents();
     }
 
     /**
@@ -704,7 +711,6 @@ class AbstractSlider {
         this._runEventListeners('stateChange');
         this._updateStillness();
     }
-
 
 }
 
