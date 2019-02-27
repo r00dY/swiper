@@ -116,7 +116,7 @@ import EventSystem from './helpers/EventSystem';
  * That's why we have code that copies coords to pos during pinchstart (change from non-linear to linear edge function).
  *
  */
-class Zoomer  {
+class AbstractZoomer  {
     constructor() {
         /**
          * Position is always translation first (not dependent of scale) and then scale.
@@ -597,4 +597,4 @@ class Zoomer  {
 
 }
 
-export default Zoomer;
+export default AbstractZoomer;

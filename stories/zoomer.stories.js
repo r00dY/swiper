@@ -4,7 +4,6 @@ import "./styles.css";
 
 import ReactZoomer from "../src/react/ReactZoomer";
 
-
 class ZoomerDemo extends React.Component {
 
     render() {
