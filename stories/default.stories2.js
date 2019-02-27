@@ -1,6 +1,6 @@
 import React from 'react';
 import {storiesOf} from '@storybook/react';
-import "./styles.scss";
+import "./styles.css";
 
 import SimpleSlider from "../src/SimpleSlider";
 import SwiperArrows from "../src/components/arrows/SwiperArrows";

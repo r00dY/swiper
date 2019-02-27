@@ -4,19 +4,15 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.scss$/,
-                loaders: ["style-loader", "css-loader", "sass-loader"],
-            },
-            {
-                test: /\.svg$/,
-                loader: 'svg-inline-loader'
+                test: /\.css$/,
+                loaders: ["style-loader", "css-loader"],
             },
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
                 loader: 'babel-loader',
                 options: {
-                    presets: ["react", "es2015"]
+                    presets: ["@babel/preset-env", "@babel/preset-react"]
                 }
             }
         ]

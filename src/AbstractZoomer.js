@@ -273,7 +273,7 @@ class Zoomer  {
      *
      * It has its logic. Pinching doesn't have non-linearities which means that pinch-move might move image far far away from center (creating a long distance of snapping).
      * Snap animation in such case has quite a distance to go. If we started panning right after we released pinch gesture we would be in incredibly unnatural place for panning.
-     * That's because we CAN'T pan that far (becuase of non-linearities). That's why it's better for pinch snap to finish and then release panning behaviour.
+     * That's because we CAN'T pan that far (because of non-linearities). That's why it's better for pinch snap to finish and then release panning behaviour.
      *
      * Returns true if was allowed, and false otherwise.
      *

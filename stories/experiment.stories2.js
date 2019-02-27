@@ -1,9 +1,9 @@
 import React from 'react';
 import {storiesOf} from '@storybook/react';
-import "./styles.scss";
+import "./styles.css";
 
 import TouchSpace from "../src/components/touchSpace/TouchSpace";
-import SimpleSlider from "../src/SimpleSlider";
+import Slider
 
 import ReactZoomer from '../src/react/ReactZoomer';
 
@@ -21,7 +21,7 @@ class Test extends React.Component {
     }
 
     componentDidMount() {
-        this.slider = new SimpleSlider(this.simpleSliderNodeRef.current);
+        this.slider = new SliderAbsolute(this.simpleSliderNodeRef.current);
         this.slider.slideSizeFunction = () => 800;
         this.slider.slideMarginFunction = () => 20;
         this.slider.slideSnapOffsetFunction = () => 0;

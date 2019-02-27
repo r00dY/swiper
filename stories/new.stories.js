@@ -1,6 +1,6 @@
 import React from 'react';
 import {storiesOf} from '@storybook/react';
-import "./styles.scss";
+import "./styles.css";
 
 import ReactSliderAbsolute from "../src/react/ReactSliderAbsolute";
 
@@ -23,11 +23,11 @@ class SimpleSwiperWithParams extends React.Component {
                         slideSize: () => 200,
                         slideMargin: () => 20
                     }} ref={this.swiper}>
+                        <div className="slide"><a draggable={false} href="#">Link</a></div>
                         <div className="slide"><a href="#">Link</a></div>
                         <div className="slide"><a href="#">Link</a></div>
                         <div className="slide"><a href="#">Link</a></div>
-                        <div className="slide"><a href="#">Link</a></div>
-                        <div className="slide"></div>
+                        <div className="slide"><img draggable={false} src={"https://via.placeholder.com/150"} /></div>
                         <div className="slide"></div>
                         <div className="slide"></div>
                         <div className="slide"></div>
