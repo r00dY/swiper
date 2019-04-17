@@ -10,7 +10,9 @@
         "react-dom": "^16.5.2"
     },
     "devDependencies": {
+        "@babel/cli": "^7.2.3",
         "@babel/core": "^7.3.3",
+        "@babel/node": "^7.2.2",
         "@babel/preset-env": "^7.3.1",
         "@babel/preset-react": "^7.0.0",
         "@storybook/addon-actions": "^3.4.11",
@@ -24,7 +26,7 @@
         "webpack-cli": "^3.2.3"
     },
     "scripts": {
-        "test": "./node_modules/.bin/babel-node ./spec/run.js",
+        "test": "babel-node ./spec/run.js",
         "storybook": "start-storybook -s . -p 3131",
         "build": "webpack"
     },

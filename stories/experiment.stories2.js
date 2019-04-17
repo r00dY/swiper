@@ -3,7 +3,6 @@ import {storiesOf} from '@storybook/react';
 import "./styles.css";
 
 import TouchSpace from "../src/components/touchSpace/TouchSpace";
-import Slider
 
 import ReactZoomer from '../src/react/ReactZoomer';
 

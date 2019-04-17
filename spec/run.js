@@ -1,4 +1,4 @@
-import Jasmine from 'jasmine';
+import Jasmine from "jasmine";
 
 let jasmine = new Jasmine();
 
